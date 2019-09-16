@@ -136,7 +136,7 @@ if __name__=='__main__':
             docno_snapshots_json=work_json[docno],
             interval_dict=interval_dict,
             docno_ref_json=curr_ref_json)
-        docnos_processed += 1,
+        docnos_processed += 1
         covered_intervals_processed += covered_intervals
         print("Docno : " + str(docno) + ' , Covered: ' + str(covered_intervals))
         print("Docnos Processed: " + str(docnos_processed))
