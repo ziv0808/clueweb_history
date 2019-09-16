@@ -145,4 +145,4 @@ if __name__=='__main__':
         summary_df.loc[next_index] = [docno, covered_intervals]
         next_index += 1
 
-    summary_df.to_csv(filename.replace('.json', '_Html_retrival_summary.tsv'), sep = '\t', index = False)
+    summary_df.to_csv(os.path.join(save_folder, filename.replace('.json', '_Html_retrival_summary.tsv')), sep = '\t', index = False)
