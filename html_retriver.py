@@ -105,8 +105,9 @@ if __name__=='__main__':
         frequency='2W')
 
     save_folder = "/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2008/"
-    filename = "history_snapshots_2008.json"
-    reference_filename = None#"history_snapshots_2008_with_html_with_html.json"
+    resource_path = "/lv_local/home/zivvasilisky/ziv/data/bkup/2008"
+    filename = os.path.join(resource_path, "history_snapshots_2008.json")
+    reference_filename = os.path.join(resource_path, "history_snapshots_2008_with_html_with_html.json")
 
     summary_df = pd.DataFrame(columns=['Docno', 'NumOfCoveredIntervals'])
     next_index = 0
