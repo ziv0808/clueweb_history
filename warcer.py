@@ -111,9 +111,9 @@ def create_warc_record(
                    "Connection: close" + "\n" + \
                    "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
                    "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
-                   "Content-Length: " + str(len((html).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + html.decode('windows-1252').encode('utf-8') + '\n\n'
+                   "Content-Length: " + str(len((html).decode('windows-1252').strip().encode('utf-8')) + 1) + "\n\n" + html.decode('windows-1252').strip().encode('utf-8') + '\n\n'
 
-            record_str += str(len((next_str).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + next_str
+            record_str += str(len((next_str).decode('windows-1252').strip().encode('utf-8')) + 1) + "\n\n" + next_str
         except Exception as e:
             with open('Prob.txt' ,'w') as f:
                 f.write(html)
