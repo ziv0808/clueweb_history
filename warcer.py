@@ -121,8 +121,8 @@ def create_warc_record(
         except Exception as e:
             with open('Prob.txt' ,'w') as f:
                 f.write(html)
+            record_str = ''
 
-            raise e
     return record_str
 
 
@@ -169,14 +169,18 @@ def create_warc_files_for_time_interval(
                     warc_date=warc_date,
                     warc_info_id=warc_info_id)
             for doc in folder_files_hirarcy_dict[folder_name][file_name]:
-                warc_str += create_warc_record(
+                curr_str = create_warc_record(
                     docno=doc['Docno'],
                     url=doc['Url'],
                     timstamp=doc['TimeStamp'],
                     html=doc['HTML'],
                     warc_date=warc_date,
                     warc_info_id=warc_info_id)
-                num_of_records_in_interval += 1
+                if curr_str != '':
+                    warc_str += curr_str
+                    num_of_records_in_interval += 1
+                else:
+                    print('Docno: '  + doc['Docno'] + " Problematic")
             if not os.path.exists(os.path.join(destination_folder, time_interval, folder_name)):
                 os.mkdir(os.path.join(destination_folder, time_interval, folder_name))
             with open(os.path.join(destination_folder, time_interval, folder_name, file_name + '.warc'), 'w') as f:
