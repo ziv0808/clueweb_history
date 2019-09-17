@@ -2,7 +2,6 @@ import os
 import ast
 import uuid
 import pandas as pd
-from io import open as iopen
 
 
 def build_interval_list(
@@ -101,7 +100,8 @@ def create_warc_record(
         record_str += str(len((next_str).encode('utf-8')) + 1) + "\n\n" + next_str
     except Exception as e:
         # print (html)
-        next_str = "HTTP/1.1 200 OK" + "\n" + \
+        try:
+            next_str = "HTTP/1.1 200 OK" + "\n" + \
                    "Content-Type: text/html" + "\n" + \
                    "Date: " + parse_timestamp(timstamp) + "\n" + \
                    "Pragma: no-cache" + "\n" + \
@@ -113,8 +113,10 @@ def create_warc_record(
                    "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
                    "Content-Length: " + str(len((html).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + html.decode('windows-1252').encode('utf-8') + '\n\n'
 
-        record_str += str(len((next_str).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + next_str
-
+            record_str += str(len((next_str).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + next_str
+        except Exception as e:
+            with open('Prob.txt' ,'w') as f:
+                f.write(html)
     return record_str
 
 
@@ -127,7 +129,7 @@ def create_warc_files_for_time_interval(
     folder_files_hirarcy_dict = {}
     for filename in os.listdir(data_folder):
         if filename.endswith('.json'):
-            with iopen(os.path.join(data_folder, filename), 'r', encoding='utf-8') as f:
+            with open(os.path.join(data_folder, filename), 'r', encoding='utf-8') as f:
                 curr_json = f.read()
             curr_json = ast.literal_eval(curr_json)
             for snapshot in curr_json:
