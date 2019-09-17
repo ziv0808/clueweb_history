@@ -24,7 +24,7 @@ def gzip_all_folder(
         for file_name in os.listdir(os.path.join(folder_name, inner_folder)):
             if not file_name.endswith('.gz'):
                 print(os.path.join(os.path.join(folder_name, inner_folder), file_name))
-                res = subprocess.check_call(['gzip ' + os.path.join(os.path.join(folder_name, inner_folder), file_name)])
+                res = subprocess.check_call(['gzip', os.path.join(os.path.join(folder_name, inner_folder), file_name)])
 
 if __name__=='__main__':
     work_year = '2008'
@@ -46,7 +46,7 @@ if __name__=='__main__':
                   'w') as f:
             f.write(params_text.replace('###', str(os.path.join(destination_folder,interval))).replace('%%%', str(os.path.join(data_folder,interval))))
         print('Params fixed...')
-        res = subprocess.check_call(['/lv_local/home/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex /lv_local/home/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(interval) + '.xml'])
+        res = subprocess.check_call(['/lv_local/home/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex', '/lv_local/home/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(interval) + '.xml'])
         print('Index built...')
 
 
