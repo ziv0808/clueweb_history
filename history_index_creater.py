@@ -20,8 +20,10 @@ def gzip_all_folder(
         folder_name):
 
     for inner_folder in os.listdir(folder_name):
+        print (inner_folder)
         for file_name in os.listdir(os.path.join(folder_name, inner_folder)):
             if not file_name.endswith('.gz'):
+                print(file_name)
                 res = subprocess.check_call(['gzip ' + os.path.join(folder_name, inner_folder, file_name)])
 
 if __name__=='__main__':
