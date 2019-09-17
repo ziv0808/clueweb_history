@@ -117,6 +117,7 @@ def create_warc_record(
         except Exception as e:
             with open('Prob.txt' ,'w') as f:
                 f.write(html)
+            raise e
     return record_str
 
 
