@@ -117,7 +117,7 @@ def create_warc_files_for_time_interval(
                 if curr_json[snapshot]['RelevantInterval'] == time_interval:
                     docno = filename.replace('.json','')
                     inner_folder_name = docno.split('-')[1]
-                    inner_file_name = docno.split('-')[1]
+                    inner_file_name = docno.split('-')[2]
                     if inner_folder_name not in folder_files_hirarcy_dict:
                         folder_files_hirarcy_dict[inner_folder_name] = {}
                     if inner_file_name not in folder_files_hirarcy_dict[inner_folder_name]:
@@ -132,7 +132,7 @@ def create_warc_files_for_time_interval(
                                                'TimeStamp'  : snapshot,
                                                'HTML'       : curr_json[snapshot]['html']}
 
-                    folder_files_hirarcy_dict[inner_folder_name][inner_file_name].append(folder_files_hirarcy_dict[inner_folder_name][inner_file_name])
+                    folder_files_hirarcy_dict[inner_folder_name][inner_file_name].append(curr_doc_representation)
     print('Hirarchy Dict Finished...')
     for folder_name in folder_files_hirarcy_dict:
         for file_name in folder_files_hirarcy_dict[folder_name]:
