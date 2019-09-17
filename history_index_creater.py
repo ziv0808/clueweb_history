@@ -35,7 +35,7 @@ if __name__=='__main__':
     destination_folder = "/mnt/bi-strg3/v/zivvasilisky/index/2008/"
     data_folder = "/mnt/bi-strg3/v/zivvasilisky/data/2008/"
 
-    for interval in interval_list[:1]:
+    for interval in interval_list:
         print("Curr interval: " + str(interval))
         gzip_all_folder(os.path.join(data_folder, interval))
         print('Gziped all...')
