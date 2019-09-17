@@ -98,7 +98,7 @@ def create_warc_record(
                      "Content-Length: " + str(len((html).encode('utf-8')) + 1) + "\n\n" + html + '\n\n'
 
     except Exception as e:
-        print (html)
+        # print (html)
         next_str = "HTTP/1.1 200 OK" + "\n" + \
                    "Content-Type: text/html" + "\n" + \
                    "Date: " + parse_timestamp(timstamp) + "\n" + \
@@ -109,7 +109,7 @@ def create_warc_record(
                    "Connection: close" + "\n" + \
                    "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
                    "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
-                   "Content-Length: " + str(len((html).decode('utf8').encode('utf-8')) + 1) + "\n\n" + html.decode('utf8').encode('utf-8') + '\n\n'
+                   "Content-Length: " + str(len((html).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + html.decode('windows-1252').encode('utf-8') + '\n\n'
 
     record_str += str(len((next_str).encode('utf-8')) + 1) + "\n\n" + next_str
 
