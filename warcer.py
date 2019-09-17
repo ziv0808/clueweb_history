@@ -84,17 +84,31 @@ def create_warc_record(
                  "Content-Type: application/http;msgtype=response" + "\n" + \
                  "WARC-Identified-Payload-Type: " + "\n" + \
                  "Content-Length: "
-    next_str   = "HTTP/1.1 200 OK" + "\n" + \
-                 "Content-Type: text/html" + "\n" + \
-                 "Date: " + parse_timestamp(timstamp) + "\n" + \
-                 "Pragma: no-cache"+ "\n" + \
-                 "Cache-Control: no-cache, must-revalidate" + "\n" + \
-                 "X-Powered-By: PHP/4.4.8" + "\n" + \
-                 "Server: WebServerX" + "\n" + \
-                 "Connection: close" + "\n" + \
-                 "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
-                 "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
-                 "Content-Length: " + str(len((html).encode('utf-8')) + 1) + "\n\n" + html + '\n\n'
+    try:
+        next_str   = "HTTP/1.1 200 OK" + "\n" + \
+                     "Content-Type: text/html" + "\n" + \
+                     "Date: " + parse_timestamp(timstamp) + "\n" + \
+                     "Pragma: no-cache"+ "\n" + \
+                     "Cache-Control: no-cache, must-revalidate" + "\n" + \
+                     "X-Powered-By: PHP/4.4.8" + "\n" + \
+                     "Server: WebServerX" + "\n" + \
+                     "Connection: close" + "\n" + \
+                     "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
+                     "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
+                     "Content-Length: " + str(len((html).encode('utf-8')) + 1) + "\n\n" + html + '\n\n'
+
+    except Exception as e:
+        next_str = "HTTP/1.1 200 OK" + "\n" + \
+                   "Content-Type: text/html" + "\n" + \
+                   "Date: " + parse_timestamp(timstamp) + "\n" + \
+                   "Pragma: no-cache" + "\n" + \
+                   "Cache-Control: no-cache, must-revalidate" + "\n" + \
+                   "X-Powered-By: PHP/4.4.8" + "\n" + \
+                   "Server: WebServerX" + "\n" + \
+                   "Connection: close" + "\n" + \
+                   "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
+                   "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
+                   "Content-Length: " + str(len((html).decode('utf8').encode('utf-8')) + 1) + "\n\n" + html.decode('utf8').encode('utf-8') + '\n\n'
 
     record_str += str(len((next_str).encode('utf-8')) + 1) + "\n\n" + next_str
 
