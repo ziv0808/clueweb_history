@@ -97,6 +97,7 @@ def create_warc_record(
                      "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
                      "Content-Length: " + str(len((html).encode('utf-8')) + 1) + "\n\n" + html + '\n\n'
 
+        record_str += str(len((next_str).encode('utf-8')) + 1) + "\n\n" + next_str
     except Exception as e:
         # print (html)
         next_str = "HTTP/1.1 200 OK" + "\n" + \
@@ -111,7 +112,7 @@ def create_warc_record(
                    "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
                    "Content-Length: " + str(len((html).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + html.decode('windows-1252').encode('utf-8') + '\n\n'
 
-    record_str += str(len((next_str).encode('utf-8')) + 1) + "\n\n" + next_str
+        record_str += str(len((next_str).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + next_str
 
     return record_str
 
