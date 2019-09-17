@@ -98,6 +98,7 @@ def create_warc_record(
                      "Content-Length: " + str(len((html).encode('utf-8')) + 1) + "\n\n" + html + '\n\n'
 
     except Exception as e:
+        print (html)
         next_str = "HTTP/1.1 200 OK" + "\n" + \
                    "Content-Type: text/html" + "\n" + \
                    "Date: " + parse_timestamp(timstamp) + "\n" + \
