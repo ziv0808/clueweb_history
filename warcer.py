@@ -2,6 +2,8 @@ import os
 import ast
 import uuid
 import pandas as pd
+from io import open
+
 
 def build_interval_list(
         work_year,
@@ -125,7 +127,7 @@ def create_warc_files_for_time_interval(
     folder_files_hirarcy_dict = {}
     for filename in os.listdir(data_folder):
         if filename.endswith('.json'):
-            with open(os.path.join(data_folder, filename), 'r', encoding="utf-8") as f:
+            with open(os.path.join(data_folder, filename), 'r', encoding='utf-8') as f:
                 curr_json = f.read()
             curr_json = ast.literal_eval(curr_json)
             for snapshot in curr_json:
