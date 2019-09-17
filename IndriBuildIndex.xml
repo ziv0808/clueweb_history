@@ -1,0 +1,12 @@
+<parameters>
+<memory>1G</memory>
+<index>###</index>
+<corpus> 
+<path>%%%</path>
+<class>warc</class>
+</corpus>
+<stemmer> 
+<name>krovetz</name>
+</stemmer>
+<metadata><field>url</field></metadata>  
+</parameters>
