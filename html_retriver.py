@@ -99,15 +99,15 @@ def handle_docno_retrival(
 
 if __name__=='__main__':
 
-    work_year = '2008'
+    work_year = '2009'
     interval_dict = build_interval_dict(
         work_year=work_year,
         frequency='2W')
 
-    save_folder = "/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2008/"
-    resource_path = "/lv_local/home/zivvasilisky/ziv/data/bkup/2008"
-    filename = os.path.join(resource_path, "history_snapshots_2008.json")
-    reference_filename = os.path.join(resource_path, "history_snapshots_2008_with_html_with_html.json")
+    save_folder = "/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2009/"
+    resource_path = "/lv_local/home/zivvasilisky/ziv/data"
+    filename = os.path.join(resource_path, "history_snapshots_2009.json")
+    reference_filename = None#os.path.join(resource_path, "history_snapshots_2008_with_html_with_html.json")
 
     summary_df = pd.DataFrame(columns=['Docno', 'NumOfCoveredIntervals'])
     next_index = 0
