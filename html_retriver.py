@@ -56,7 +56,7 @@ def handle_docno_retrival(
             with open(os.path.join(dest_folder, docno + '.json'), 'r') as f:
                 res_json = f.read()
                 res_json = ast.literal_eval(res_json)
-            for existsing_snap in ref_json:
+            for existsing_snap in res_json:
                 covered_intervals.append(res_json[existsing_snap]['RelevantInterval'])
 
     snapshot_list = sorted(list(docno_snapshots_json.keys()))
