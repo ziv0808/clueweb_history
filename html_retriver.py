@@ -44,11 +44,21 @@ def handle_docno_retrival(
         docno,
         docno_snapshots_json,
         interval_dict,
-        docno_ref_json = None):
+        docno_ref_json = None,
+        file_exists    = True):
     # the output to be saved in file
     res_json = {}
     # the defined time intervals that are already covered to this doc
     covered_intervals = []
+    if (True == file_exists):
+        if os.path.isfile(os.path.join(dest_folder, docno + '.json')):
+            print("Found File")
+            with open(os.path.join(dest_folder, docno + '.json'), 'r') as f:
+                res_json = f.read()
+                res_json = ast.literal_eval(res_json)
+            for existsing_snap in ref_json:
+                covered_intervals.append(res_json[existsing_snap]['RelevantInterval'])
+
     snapshot_list = sorted(list(docno_snapshots_json.keys()))
     for snapshot in snapshot_list:
         # find relevant interval
@@ -99,14 +109,15 @@ def handle_docno_retrival(
 
 if __name__=='__main__':
 
-    work_year = '2009'
+    work_year = '2008'
+    files_exists = True # if res files alredy exists and only delta need to run
     interval_dict = build_interval_dict(
         work_year=work_year,
         frequency='2W')
 
-    save_folder = "/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2009/"
+    save_folder = "/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2008/"
     resource_path = "/lv_local/home/zivvasilisky/ziv/data"
-    filename = os.path.join(resource_path, "history_snapshots_2009.json")
+    filename = os.path.join(resource_path, "history_snapshots_2008.json")
     reference_filename = None#os.path.join(resource_path, "history_snapshots_2008_with_html_with_html.json")
 
     summary_df = pd.DataFrame(columns=['Docno', 'NumOfCoveredIntervals'])
@@ -135,7 +146,8 @@ if __name__=='__main__':
             docno=docno,
             docno_snapshots_json=work_json[docno],
             interval_dict=interval_dict,
-            docno_ref_json=curr_ref_json)
+            docno_ref_json=curr_ref_json,
+            file_exists=files_exists)
         docnos_processed += 1
         covered_intervals_processed += covered_intervals
         print("Docno : " + str(docno) + ' , Covered: ' + str(covered_intervals))
