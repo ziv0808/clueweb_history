@@ -120,11 +120,11 @@ def create_lost_snapshot_stats(
                     interval_covered_dict[relevant_interval] += 1
 
                 doc_dict[docno] += 1
-
-        with open(os.path.join(doc_retrived_folder, docno + '.json'), 'r') as f:
-            covered_json = f.read()
-            covered_json = ast.literal_eval(covered_json)
-        doc_dict[docno] = doc_dict[docno] - len(covered_json)
+        if os._exists(os.path.join(doc_retrived_folder, docno + '.json')):
+            with open(os.path.join(doc_retrived_folder, docno + '.json'), 'r') as f:
+                covered_json = f.read()
+                covered_json = ast.literal_eval(covered_json)
+            doc_dict[docno] = doc_dict[docno] - len(covered_json)
 
     for index, row in warcer_stats.iterrows():
         for interval in interval_covered_dict:
