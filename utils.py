@@ -142,7 +142,7 @@ def create_lost_snapshot_stats(
     plt.xlabel('Interval')
     plt.tick_params(axis='x', labelsize=5)
     plt.xticks(rotation=45)
-    plt.ylabel('#Documents')
+    plt.ylabel('#Losts Snapshots')
     plt.savefig("lost_doc_per_interval.png", dpi=300)
 
     summary_df = pd.DataFrame(columns=['Docno', '#Documents'])
@@ -155,9 +155,9 @@ def create_lost_snapshot_stats(
     print_df = print_df.set_index('Docno')
 
     print_df.plot(legend=False,  color='r')
-    plt.xlabel('Doc')
+    plt.xlabel('Document')
     plt.xticks(visible=False)
-    plt.ylabel('#Documents')
+    plt.ylabel('#Losts Snapshots')
     plt.savefig("lost_snapshots_per_doc.png", dpi=300)
 
 create_lost_snapshot_stats()
