@@ -62,7 +62,7 @@ def calc_tfidf_dict(
         if df_list[i] > 0:
             res_dict[stem_list[i]] = round(tf_list[i]*math.log10(500000000.0/float(df_list[i])), 6)
         else:
-
+            print(stem_list[i])
             res_dict[stem_list[i]] = round(tf_list[i] * math.log10(500000000.0 / float(50000000)), 6)
 
     return res_dict
