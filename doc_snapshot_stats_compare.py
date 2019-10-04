@@ -50,7 +50,7 @@ def create_doc_json(
 
 def calc_shannon_entopy(tf_list):
     total = sum(tf_list)
-    return sum(freq / total * math.log2(total / freq) for freq in tf_list)
+    return sum(freq / total * math.log(total / freq, 2) for freq in tf_list)
 
 def calc_tfidf_dict(
         stem_list,
@@ -110,6 +110,7 @@ if __name__=='__main__':
     with open(stop_word_file, 'r') as f:
         stopword_str = f.read()
     stopword_list = stopword_str.split('\n')
+    stopword_list.remove('')
     print(stopword_list, len(stopword_list))
     for file_name in os.listdir(doc_vector_folder):
         if file_name.startswith('clueweb09') and not file_name.endswith('.json'):
