@@ -109,7 +109,7 @@ if __name__=='__main__':
     save_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors'
     with open(stop_word_file, 'r') as f:
         stopword_str = f.read()
-    stopword_list = stopword_str.aplit('\n')
+    stopword_list = stopword_str.split('\n')
     print(stopword_list, len(stopword_list))
     for file_name in os.listdir(doc_vector_folder):
         if file_name.startswith('clueweb09') and not file_name.endswith('.json'):
