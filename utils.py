@@ -154,7 +154,7 @@ def create_lost_snapshot_stats(
     print_df = summary_df.sort_values('#Documents', ascending=False)
     print_df = print_df.set_index('Docno')
 
-    print_df.plot(legend=False, kind='bar', color='r')
+    print_df.plot(legend=False,  color='r')
     plt.xlabel('Doc')
     plt.xticks(visible=False)
     plt.ylabel('#Documents')
