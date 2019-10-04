@@ -115,8 +115,8 @@ if __name__=='__main__':
         if file_name.startswith('clueweb09') and not file_name.endswith('.json'):
             print (file_name)
             doc_json = create_doc_json(doc_vector_folder, file_name, stopword_list)
-        with open(os.path.join(save_folder, file_name + '.json'), 'w') as f:
-            f.write(str(doc_json))
+            with open(os.path.join(save_folder, file_name + '.json'), 'w') as f:
+                f.write(str(doc_json))
     # create_doc_json('','clueweb09-enwp03-26-02724')
 
 
