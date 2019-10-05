@@ -146,7 +146,6 @@ if __name__=='__main__':
             query_to_docno_mapping[query_num].append(row['Docno'])
         else:
             query_to_docno_mapping[query_num] = [row['Docno']]
-    print(query_to_docno_mapping)
     # get stopword list
     with open(stop_word_file, 'r') as f:
         stopword_str = f.read()
