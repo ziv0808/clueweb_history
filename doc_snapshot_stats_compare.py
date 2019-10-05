@@ -49,8 +49,8 @@ def create_doc_json(
     return doc_json
 
 def calc_shannon_entopy(tf_list):
-    total = sum(tf_list)
-    return sum(freq / total * math.log(total / freq, 2) for freq in tf_list)
+    total = float(sum(tf_list))
+    return sum(float(freq) / total * math.log(total / freq, 2) for freq in tf_list)
 
 def calc_tfidf_dict(
         stem_list,
