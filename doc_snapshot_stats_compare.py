@@ -142,7 +142,7 @@ if __name__=='__main__':
     print (query_to_stem_mapping)
     for index, row in df_query_to_doc.iterrows():
         query_num = ('0'*(3 - len(str(row['QueryNum'])))) + str(row['QueryNum'])
-        if row['QueryNum'] in query_to_docno_mapping:
+        if query_num in query_to_docno_mapping:
             query_to_docno_mapping[query_num].append(row['Docno'])
         else:
             query_to_docno_mapping[query_num] = [row['Docno']]
