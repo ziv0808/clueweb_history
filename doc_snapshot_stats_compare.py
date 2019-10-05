@@ -63,7 +63,7 @@ def calc_tfidf_dict(
             res_dict[stem_list[i]] = round(tf_list[i]*math.log10(500000000.0/float(df_list[i])), 6)
         else:
             print(stem_list[i])
-            res_dict[stem_list[i]] = round(tf_list[i] * math.log10(500000000.0 / float(50000000)), 6)
+            res_dict[stem_list[i]] = 0.0
 
     return res_dict
 
@@ -107,22 +107,95 @@ def build_text_and_tf(
     return fulltext[:-1], tf_list, num_of_words, num_stopwords
 
 
+def build_interval_list(
+        work_year,
+        frequency):
+
+    interval_list = []
+    for i in range(1, 13):
+        if frequency == '2W':
+            interval_list.extend(
+                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
+                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
+        else:
+            raise Exception('build_interval_dict: Unknoen frequency...')
+
+    return interval_list
+
 
 if __name__=='__main__':
+    work_year = '2008'
     doc_vector_folder = '/lv_local/home/zivvasilisky/ziv/data/document_vectors/'
     stop_word_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Stop_Words'
     save_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors'
+    query_stem_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Query_Words'
+    query_to_doc_file = '/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'
+
+    df_query_to_doc = pd.read_csv(query_to_doc_file, sep = '\t', index_col= False)
+    df_query_stems = pd.read_csv(query_stem_file, sep = '\t', index_col= False)
+    # create query to stems index
+    query_to_stem_mapping = {}
+    for index, row in df_query_stems.iterrows():
+        query_to_stem_mapping[row['QueryNum']] = row['QueryStems'].split(' ')
+    # create query to doc index
+    query_to_docno_mapping = {}
+    for index, row in df_query_to_doc.iterrows():
+        query_num = ('0'*(3 - len(str(row['QueryNum'])))) + str(row['QueryNum'])
+        if row['QueryNum'] in query_to_docno_mapping:
+            query_to_docno_mapping[query_num].append(row['Docno'])
+        else:
+            query_to_docno_mapping[query_num] = [row['Docno']]
+    # get stopword list
     with open(stop_word_file, 'r') as f:
         stopword_str = f.read()
     stopword_list = stopword_str.split('\n')
     stopword_list.remove('')
+
+    summary_df = pd.DataFrame(columns = ['Docno', 'Interval', 'PrevValidInterval', 'QueryNum','TextLen', '#Stopword', 'QueryWords',
+                                         'Entropy', 'SimToClueWeb', 'SimToPrev', 'SimToClosePrev'])
+    next_index = 0
+    interval_ordered_list = build_interval_list(work_year, '2W')
+    interval_ordered_list.append('ClueWeb09')
     print(stopword_list, len(stopword_list))
     for file_name in os.listdir(doc_vector_folder):
         if file_name.startswith('clueweb09') and not file_name.endswith('.json'):
             print (file_name)
             doc_json = create_doc_json(doc_vector_folder, file_name, stopword_list)
+            prev_interval = None
+            for interval in interval_ordered_list:
+                if doc_json[interval] is None:
+                    continue
+                txt_len             = doc_json[interval]['NumWords']
+                num_stop_words      = doc_json[interval]['NumStopWords']
+                entropy             = doc_json[interval]['Entropy']
+                sim_to_clueweb      = calc_cosine(doc_json[interval]['TfIdf'], doc_json['ClueWeb09']['TfIdf'])
+                sim_to_prev         = None
+                sim_to_close_prev   = None
+                if prev_interval is not None:
+                    sim_to_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
+                    if (pd.to_datetime(interval.replace('ClueWeb09', '2009-01-01')) - pd.to_datetime(prev_interval)).days <= 31:
+                        sim_to_close_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
+                found_related_query = False
+                for query_num in query_to_docno_mapping:
+                    if file_name in query_to_docno_mapping[query_num]:
+                        found_related_query = True
+                        query_word_num = 0
+                        for j in range(len(doc_json[interval]['StemList'])):
+                            if doc_json[interval]['StemList'][j] in query_to_stem_mapping[query_num]:
+                                query_word_num += doc_json[interval]['TfList'][j]
+
+                        summary_df.loc[next_index] = [file_name, interval, prev_interval, query_num,
+                                                      txt_len, num_stop_words, query_word_num, entropy,
+                                                      sim_to_clueweb, sim_to_prev, sim_to_close_prev]
+                        next_index += 1
+
+                if found_related_query == False:
+                    raise Exception("found_related_query is false for " + file_name)
+                prev_interval = interval
             with open(os.path.join(save_folder, file_name + '.json'), 'w') as f:
                 f.write(str(doc_json))
+
+    summary_df.to_csv('Summay_snapshot_stats.tsv', sep ='\t', index= False)
     # create_doc_json('','clueweb09-enwp03-26-02724')
 
 
