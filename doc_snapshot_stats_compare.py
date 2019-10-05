@@ -139,12 +139,14 @@ if __name__=='__main__':
         query_to_stem_mapping[row['QueryNum']] = row['QueryStems'].split(' ')
     # create query to doc index
     query_to_docno_mapping = {}
+    print (query_to_stem_mapping)
     for index, row in df_query_to_doc.iterrows():
         query_num = ('0'*(3 - len(str(row['QueryNum'])))) + str(row['QueryNum'])
         if row['QueryNum'] in query_to_docno_mapping:
             query_to_docno_mapping[query_num].append(row['Docno'])
         else:
             query_to_docno_mapping[query_num] = [row['Docno']]
+    print(query_to_docno_mapping)
     # get stopword list
     with open(stop_word_file, 'r') as f:
         stopword_str = f.read()
