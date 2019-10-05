@@ -136,7 +136,8 @@ if __name__=='__main__':
     # create query to stems index
     query_to_stem_mapping = {}
     for index, row in df_query_stems.iterrows():
-        query_to_stem_mapping[row['QueryNum']] = row['QueryStems'].split(' ')
+        query_num = ('0' * (3 - len(str(row['QueryNum'])))) + str(row['QueryNum'])
+        query_to_stem_mapping[query_num] = row['QueryStems'].split(' ')
     # create query to doc index
     query_to_docno_mapping = {}
     print (query_to_stem_mapping)
