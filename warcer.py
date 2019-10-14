@@ -121,7 +121,7 @@ def create_warc_record(
     #
     #         record_str += str(len((next_str).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + next_str
     except Exception as e:
-        print("Wrcer Prob - Docno:" + docno)
+        print("Warcer Prob - Docno:" + docno)
         with open('Prob.txt' ,'w') as f:
             f.write(html)
         record_str = ''
@@ -191,31 +191,31 @@ def create_warc_files_for_time_interval(
 
     return num_of_records_in_interval
 
-# if __name__ == '__main__':
-#     work_year = '2008'
-#     interval_list = build_interval_list(
-#         work_year=work_year,
-#         frequency='2W')
-#
-#     destination_folder = "/mnt/bi-strg3/v/zivvasilisky/data/2008/"
-#     data_folder ="/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2008/"
-#
-#     summary_df = pd.DataFrame(columns = ['Interval', 'NumOfDocs'])
-#     next_index = 0
-#     for interval in interval_list:
-#         print ("Curr interval: " + str(interval))
-#         if not os.path.exists(os.path.join(destination_folder, interval)):
-#             os.mkdir(os.path.join(destination_folder, interval))
-#
-#         num_records = create_warc_files_for_time_interval(
-#             destination_folder=destination_folder,
-#             time_interval=interval,
-#             data_folder=data_folder)
-#
-#         summary_df.loc[next_index] = [interval, num_records]
-#         next_index += 1
-#
-#     summary_df.to_csv(os.path.join(data_folder, 'Summry_warcer.tsv'), sep = '\t', index = False)
+if __name__ == '__main__':
+    work_year = '2008'
+    interval_list = build_interval_list(
+        work_year=work_year,
+        frequency='2W')
+
+    destination_folder = "/mnt/bi-strg3/v/zivvasilisky/data/2008/"
+    data_folder ="/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2008/"
+
+    summary_df = pd.DataFrame(columns = ['Interval', 'NumOfDocs'])
+    next_index = 0
+    for interval in interval_list:
+        print ("Curr interval: " + str(interval))
+        if not os.path.exists(os.path.join(destination_folder, interval)):
+            os.mkdir(os.path.join(destination_folder, interval))
+
+        num_records = create_warc_files_for_time_interval(
+            destination_folder=destination_folder,
+            time_interval=interval,
+            data_folder=data_folder)
+
+        summary_df.loc[next_index] = [interval, num_records]
+        next_index += 1
+
+    summary_df.to_csv(os.path.join(data_folder, 'Summry_warcer.tsv'), sep = '\t', index = False)
 
 
 # test ####
