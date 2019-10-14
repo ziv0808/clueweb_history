@@ -162,6 +162,7 @@ def create_warc_files_for_time_interval(
 
                     folder_files_hirarcy_dict[inner_folder_name][inner_file_name].append(curr_doc_representation)
     print('Hirarchy Dict Finished...')
+    lost_records = 0
     for folder_name in folder_files_hirarcy_dict:
         for file_name in folder_files_hirarcy_dict[folder_name]:
             print("Creating Warc For " +folder_name + '-' + file_name)
@@ -183,13 +184,14 @@ def create_warc_files_for_time_interval(
                     warc_str += curr_str
                     num_of_records_in_interval += 1
                 else:
+                    lost_records += 1
                     print('Docno: '  + doc['Docno'] + " Problematic")
             if not os.path.exists(os.path.join(destination_folder, time_interval, folder_name)):
                 os.mkdir(os.path.join(destination_folder, time_interval, folder_name))
             with open(os.path.join(destination_folder, time_interval, folder_name, file_name + '.warc'), 'w') as f:
                 f.write(warc_str)
 
-    return num_of_records_in_interval
+    return num_of_records_in_interval, lost_records
 
 if __name__ == '__main__':
     work_year = '2008'
@@ -200,19 +202,19 @@ if __name__ == '__main__':
     destination_folder = "/mnt/bi-strg3/v/zivvasilisky/data/2008/"
     data_folder ="/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2008/"
 
-    summary_df = pd.DataFrame(columns = ['Interval', 'NumOfDocs'])
+    summary_df = pd.DataFrame(columns = ['Interval', 'NumOfDocs', 'LostRecords'])
     next_index = 0
     for interval in interval_list:
         print ("Curr interval: " + str(interval))
         if not os.path.exists(os.path.join(destination_folder, interval)):
             os.mkdir(os.path.join(destination_folder, interval))
 
-        num_records = create_warc_files_for_time_interval(
+        num_records, lost_records = create_warc_files_for_time_interval(
             destination_folder=destination_folder,
             time_interval=interval,
             data_folder=data_folder)
 
-        summary_df.loc[next_index] = [interval, num_records]
+        summary_df.loc[next_index] = [interval, num_records, lost_records]
         next_index += 1
 
     summary_df.to_csv(os.path.join(data_folder, 'Summry_warcer.tsv'), sep = '\t', index = False)
