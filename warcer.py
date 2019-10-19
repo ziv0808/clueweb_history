@@ -55,7 +55,7 @@ def parse_timestamp(timestamp_str):
     return date_parsed
 
 def find_html_content_type(html):
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html, "html.parser")
     meta = soup.find('meta', attrs={'http-equiv' : 'Content-Type'})
     if meta is not None:
         return_str = str(meta['content'])
