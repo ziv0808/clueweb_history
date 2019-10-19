@@ -119,27 +119,34 @@ def create_warc_record(
                      "Content-Length: " + str(len((html)) + 1) + "\n\n" + html + "\n\n"
 
         record_str += str(len((next_str)) + 1) + "\n\n" + next_str
-    # except Exception as e:
-    #     try:
-    #         next_str = "HTTP/1.1 200 OK" + "\n" + \
-    #                "Content-Type: text/html" + "\n" + \
-    #                "Date: " + parse_timestamp(timstamp) + "\n" + \
-    #                "Pragma: no-cache" + "\n" + \
-    #                "Cache-Control: no-cache, must-revalidate" + "\n" + \
-    #                "X-Powered-By: PHP/4.4.8" + "\n" + \
-    #                "Server: WebServerX" + "\n" + \
-    #                "Connection: close" + "\n" + \
-    #                "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
-    #                "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
-    #                "Content-Length: " + str(len((html).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + html.decode('windows-1252').encode('utf-8') + '\n\n'
-    #
-    #         record_str += str(len((next_str).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + next_str
+
     except Exception as e:
         print("Warcer Prob - Docno:" + docno)
         print(e)
-        with open('Prob.txt' ,'w') as f:
-            f.write(html)
-        record_str = ''
+        try:
+            html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
+                encoding='UTF-8', errors='strict')
+            next_str = "HTTP/1.1 200 OK" + "\n" + \
+                       "Content-Type: text/html" + "\n" + \
+                       "Date: " + parse_timestamp(timstamp) + "\n" + \
+                       "Pragma: no-cache" + "\n" + \
+                       "Cache-Control: no-cache, must-revalidate" + "\n" + \
+                       "X-Powered-By: PHP/4.4.8" + "\n" + \
+                       "Server: WebServerX" + "\n" + \
+                       "Connection: close" + "\n" + \
+                       "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
+                       "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
+                       "Content-Length: " + str(len((html)) + 1) + "\n\n" + html + "\n\n"
+
+            record_str += str(len((next_str)) + 1) + "\n\n" + next_str
+
+        except Exception as e:
+            print("Warcer Prob - Docno:" + docno)
+            print(e)
+            with open('Prob.txt', 'w') as f:
+                f.write(html)
+            record_str = ''
+
 
     return record_str
 
