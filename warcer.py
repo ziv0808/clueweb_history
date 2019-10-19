@@ -62,6 +62,7 @@ def find_html_content_type(html):
         if return_str == "None":
             return "text/html"
         else:
+            print(return_str)
             return return_str
     else:
         return "text/html"
@@ -94,7 +95,7 @@ def create_warc_record(
         normalize = False):
     # normalize unicode form
     if normalize == True:
-        html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(encoding='UTF-8',errors='strict')
+        html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(encoding='UTF-8',     errors='strict')
 
     record_str = "WARC/0.18\n" +\
                  "WARC-Type: response\n" +\
