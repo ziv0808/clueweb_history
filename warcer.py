@@ -94,6 +94,11 @@ def create_warc_record(
         warc_date,
         normalize = False):
 
+    if normalize == True:
+        # normalize unicode form
+        print("Normalizing ... ")
+        html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
+            encoding='UTF-8', errors='strict').decode('utf-8')
 
     record_str = "WARC/0.18\n" +\
                  "WARC-Type: response\n" +\
@@ -121,10 +126,6 @@ def create_warc_record(
             next_str += "Content-Length: " + str(len((html)) + 1) + "\n\n" + html + "\n\n"
             record_str += str(len((next_str)) + 1) + "\n\n" + next_str
         else:
-            # normalize unicode form
-            print("Normalizing ... ")
-            html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
-                encoding='UTF-8', errors='strict').decode('utf-8')
             next_str += "Content-Length: " + str(len((html)) + 1) + "\n\n" + html + "\n\n"
             record_str += str(len((next_str)) + 1) + "\n\n" + next_str
 
