@@ -134,6 +134,7 @@ def create_warc_record(
     #         record_str += str(len((next_str).decode('windows-1252').encode('utf-8')) + 1) + "\n\n" + next_str
     except Exception as e:
         print("Warcer Prob - Docno:" + docno)
+        print(e)
         with open('Prob.txt' ,'w') as f:
             f.write(html)
         record_str = ''
