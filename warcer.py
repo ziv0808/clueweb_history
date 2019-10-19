@@ -204,6 +204,8 @@ def create_warc_files_for_time_interval(
                         warc_info_id=warc_info_id,
                         normalize=True)
                     if curr_str != '':
+                        print(type(warc_str))
+                        print(type(curr_str))
                         warc_str += curr_str
                         num_of_records_in_interval += 1
                     else:
