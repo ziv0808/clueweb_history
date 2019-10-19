@@ -93,10 +93,7 @@ def create_warc_record(
         warc_info_id,
         warc_date,
         normalize = False):
-    # normalize unicode form
-    if normalize == True:
-        print("Normalizing ... ")
-        html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(encoding='UTF-8',     errors='strict')
+
 
     record_str = "WARC/0.18\n" +\
                  "WARC-Type: response\n" +\
@@ -124,6 +121,10 @@ def create_warc_record(
             next_str += "Content-Length: " + str(len((html)) + 1) + "\n\n" + html + "\n\n"
             record_str += str(len((next_str)) + 1) + "\n\n" + next_str
         else:
+            # normalize unicode form
+            print("Normalizing ... ")
+            html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
+                encoding='UTF-8', errors='strict')
             next_str += "Content-Length: " + str(len((html.encode('utf-8'))) + 1) + "\n\n" + html + "\n\n"
             record_str += str(len((next_str.encode('utf-8'))) + 1) + "\n\n" + next_str
 
@@ -202,10 +203,7 @@ def create_warc_files_for_time_interval(
                         warc_info_id=warc_info_id,
                         normalize=True)
                     if curr_str != '':
-                        try:
-                            warc_str += curr_str
-                        except Exception as e:
-                            print (curr_str[36450:36470])
+                        warc_str += curr_str
                         num_of_records_in_interval += 1
                     else:
                         lost_records += 1
