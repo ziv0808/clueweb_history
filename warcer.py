@@ -202,7 +202,10 @@ def create_warc_files_for_time_interval(
                         warc_info_id=warc_info_id,
                         normalize=True)
                     if curr_str != '':
-                        warc_str += curr_str
+                        try:
+                            warc_str += curr_str
+                        except Exception as e:
+                            print (curr_str[36450:36470])
                         num_of_records_in_interval += 1
                     else:
                         lost_records += 1
