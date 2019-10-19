@@ -77,8 +77,7 @@ def create_warc_record(
         url,
         html,
         warc_info_id,
-        warc_date,
-        is_last):
+        warc_date):
     # normalize unicode form
 
     html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(encoding='UTF-8',errors='strict')
@@ -105,8 +104,6 @@ def create_warc_record(
                      "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
                      "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
                      "Content-Length: " + str(len((html).encode('utf-8')) + 1) + "\n\n" + html + "\n\n"
-        if is_last == True:
-            next_str = next_str[:-1]
 
         record_str += str(len((next_str).encode('utf-8')) + 1) + "\n\n" + next_str
     # except Exception as e:
@@ -176,27 +173,24 @@ def create_warc_files_for_time_interval(
             warc_str += create_warc_head(
                     warc_date=warc_date,
                     warc_info_id=warc_info_id)
-            cur_docs = 0
             for doc in folder_files_hirarcy_dict[folder_name][file_name]:
-                cur_docs += 1
-                if cur_docs == len(folder_files_hirarcy_dict[folder_name][file_name]):
-                    is_last = True
-                else:
-                    is_last = False
                 curr_str = create_warc_record(
                     docno=doc['Docno'],
                     url=doc['Url'],
                     timstamp=doc['TimeStamp'],
                     html=doc['HTML'],
                     warc_date=warc_date,
-                    warc_info_id=warc_info_id,
-                    is_last=is_last)
+                    warc_info_id=warc_info_id)
                 if curr_str != '':
                     warc_str += curr_str
                     num_of_records_in_interval += 1
                 else:
                     lost_records += 1
                     print('Docno: '  + doc['Docno'] + " Problematic")
+                    raise Exception('Docno: '  + doc['Docno'] + " Problematic")
+
+            warc_str += curr_str
+
             if not os.path.exists(os.path.join(destination_folder, time_interval, folder_name)):
                 os.mkdir(os.path.join(destination_folder, time_interval, folder_name))
             with open(os.path.join(destination_folder, time_interval, folder_name, file_name + '.warc'), 'w') as f:
@@ -243,8 +237,7 @@ if __name__ == '__main__':
             url = 'http://00000-nrt-realestate.homepagestartup.com/',
             html=html,
             warc_info_id ='993d3969-9643-4934-b1c6-68d4dbe55b83',
-            warc_date='2009-03-65T08:43:19-0800',
-            is_last = True))
+            warc_date='2009-03-65T08:43:19-0800'))
 
         # print (create_warc_head(warc_date="2009-03-65T08:43:19-0800",
         #                         warc_info_id='993d3969-9643-4934-b1c6-68d4dbe55b83'))
