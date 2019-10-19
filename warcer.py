@@ -58,9 +58,11 @@ def find_html_content_type(html):
     soup = BeautifulSoup(html)
     meta = soup.find('meta', attrs={'http-equiv' : 'Content-Type'})
     if meta is not None:
-        return_str =  str(meta['content'])
+        return_str = str(meta['content'])
         if return_str == "None":
             return "text/html"
+        else:
+            return return_str
     else:
         return "text/html"
 
