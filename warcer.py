@@ -3,6 +3,7 @@ import ast
 import uuid
 import unicodedata
 import pandas as pd
+from bs4 import BeautifulSoup
 
 import sys
 # reload(sys)
@@ -53,6 +54,16 @@ def parse_timestamp(timestamp_str):
                     date_splitted[0] + " " + timestamp_str.split(' ')[1] + ' GMT'
     return date_parsed
 
+def find_html_content_type(html):
+    soup = BeautifulSoup(html)
+    meta = soup.find('meta', attrs={'http-equiv' : 'Content-Type'})
+    if meta is not None:
+        return_str =  str(meta['content'])
+        if return_str == "None":
+            return "text/html"
+    else:
+        return "text/html"
+
 
 def create_warc_head(
         warc_date,
@@ -80,7 +91,7 @@ def create_warc_record(
         warc_date):
     # normalize unicode form
 
-    html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(encoding='UTF-8',errors='strict')
+    # html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(encoding='UTF-8',errors='strict')
 
     record_str = "WARC/0.18\n" +\
                  "WARC-Type: response\n" +\
@@ -94,7 +105,7 @@ def create_warc_record(
                  "Content-Length: "
     try:
         next_str   = "HTTP/1.1 200 OK" + "\n" + \
-                     "Content-Type: text/html" + "\n" + \
+                     "Content-Type: " + find_html_content_type(html) + "\n" + \
                      "Date: " + parse_timestamp(timstamp) + "\n" + \
                      "Pragma: no-cache"+ "\n" + \
                      "Cache-Control: no-cache, must-revalidate" + "\n" + \
@@ -103,9 +114,9 @@ def create_warc_record(
                      "Connection: close" + "\n" + \
                      "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
                      "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
-                     "Content-Length: " + str(len((html).encode('utf-8')) + 1) + "\n\n" + html + "\n\n"
+                     "Content-Length: " + str(len((html)) + 1) + "\n\n" + html + "\n\n"
 
-        record_str += str(len((next_str).encode('utf-8')) + 1) + "\n\n" + next_str
+        record_str += str(len((next_str)) + 1) + "\n\n" + next_str
     # except Exception as e:
     #     try:
     #         next_str = "HTTP/1.1 200 OK" + "\n" + \
@@ -188,7 +199,7 @@ def create_warc_files_for_time_interval(
                     lost_records += 1
                     print('Docno: '  + doc['Docno'] + " Problematic")
                     raise Exception('Docno: '  + doc['Docno'] + " Problematic")
-
+            # add last record double time because last record does not get indexed by indri
             warc_str += curr_str
 
             if not os.path.exists(os.path.join(destination_folder, time_interval, folder_name)):
