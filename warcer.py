@@ -90,10 +90,11 @@ def create_warc_record(
         url,
         html,
         warc_info_id,
-        warc_date):
+        warc_date,
+        normalize = False):
     # normalize unicode form
-
-    # html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(encoding='UTF-8',errors='strict')
+    if normalize == True:
+        html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(encoding='UTF-8',errors='strict')
 
     record_str = "WARC/0.18\n" +\
                  "WARC-Type: response\n" +\
@@ -123,29 +124,9 @@ def create_warc_record(
     except Exception as e:
         print("Warcer Prob - Docno:" + docno)
         print(e)
-        try:
-            html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
-                encoding='UTF-8', errors='strict')
-            next_str = "HTTP/1.1 200 OK" + "\n" + \
-                       "Content-Type: text/html" + "\n" + \
-                       "Date: " + parse_timestamp(timstamp) + "\n" + \
-                       "Pragma: no-cache" + "\n" + \
-                       "Cache-Control: no-cache, must-revalidate" + "\n" + \
-                       "X-Powered-By: PHP/4.4.8" + "\n" + \
-                       "Server: WebServerX" + "\n" + \
-                       "Connection: close" + "\n" + \
-                       "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
-                       "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n" + \
-                       "Content-Length: " + str(len((html)) + 1) + "\n\n" + html + "\n\n"
-
-            record_str += str(len((next_str)) + 1) + "\n\n" + next_str
-
-        except Exception as e:
-            print("Warcer Prob - Docno:" + docno)
-            print(e)
-            with open('Prob.txt', 'w') as f:
-                f.write(html)
-            record_str = ''
+        with open('Prob.txt', 'w') as f:
+            f.write(html)
+        record_str = ''
 
 
     return record_str
@@ -206,9 +187,21 @@ def create_warc_files_for_time_interval(
                     warc_str += curr_str
                     num_of_records_in_interval += 1
                 else:
-                    lost_records += 1
-                    print('Docno: '  + doc['Docno'] + " Problematic")
-                    raise Exception('Docno: '  + doc['Docno'] + " Problematic")
+                    curr_str = create_warc_record(
+                        docno=doc['Docno'],
+                        url=doc['Url'],
+                        timstamp=doc['TimeStamp'],
+                        html=doc['HTML'],
+                        warc_date=warc_date,
+                        warc_info_id=warc_info_id,
+                        normalize=True)
+                    if curr_str != '':
+                        warc_str += curr_str
+                        num_of_records_in_interval += 1
+                    else:
+                        lost_records += 1
+                        print('Docno: '  + doc['Docno'] + " Problematic")
+                        raise Exception('Docno: '  + doc['Docno'] + " Problematic")
             # add last record double time because last record does not get indexed by indri
             warc_str += curr_str
 
