@@ -192,8 +192,24 @@ def create_warc_files_for_time_interval(
                     warc_date=warc_date,
                     warc_info_id=warc_info_id)
                 if curr_str != '':
-                    warc_str += curr_str
-                    num_of_records_in_interval += 1
+                    try:
+                        warc_str += curr_str
+                    except Exception as e:
+                        curr_str = create_warc_record(
+                            docno=doc['Docno'],
+                            url=doc['Url'],
+                            timstamp=doc['TimeStamp'],
+                            html=doc['HTML'],
+                            warc_date=warc_date,
+                            warc_info_id=warc_info_id,
+                            normalize=True)
+                        if curr_str != '':
+                            warc_str += curr_str.encode('utf-8')
+                            num_of_records_in_interval += 1
+                        else:
+                            lost_records += 1
+                            print('Docno: ' + doc['Docno'] + " Problematic")
+                            raise Exception('Docno: ' + doc['Docno'] + " Problematic")
                 else:
                     curr_str = create_warc_record(
                         docno=doc['Docno'],
@@ -204,8 +220,6 @@ def create_warc_files_for_time_interval(
                         warc_info_id=warc_info_id,
                         normalize=True)
                     if curr_str != '':
-                        print(type(warc_str))
-                        print(type(curr_str))
                         warc_str += curr_str.encode('utf-8')
                         num_of_records_in_interval += 1
                     else:
