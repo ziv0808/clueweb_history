@@ -124,9 +124,9 @@ def create_warc_record(
             # normalize unicode form
             print("Normalizing ... ")
             html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
-                encoding='UTF-8', errors='strict')
-            next_str += "Content-Length: " + str(len((html.encode('utf-8'))) + 1) + "\n\n" + html + "\n\n"
-            record_str += str(len((next_str.encode('utf-8'))) + 1) + "\n\n" + next_str
+                encoding='UTF-8', errors='strict').decode('utf-8')
+            next_str += "Content-Length: " + str(len((html)) + 1) + "\n\n" + html + "\n\n"
+            record_str += str(len((next_str)) + 1) + "\n\n" + next_str
 
     except Exception as e:
         print("Warcer Prob - Docno:" + docno)
@@ -203,9 +203,7 @@ def create_warc_files_for_time_interval(
                         warc_info_id=warc_info_id,
                         normalize=True)
                     if curr_str != '':
-                        print (type(warc_str))
-                        print(type(curr_str))
-                        warc_str += str(curr_str)
+                        warc_str += curr_str
                         num_of_records_in_interval += 1
                     else:
                         lost_records += 1
