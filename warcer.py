@@ -3,7 +3,7 @@ import ast
 import uuid
 import unicodedata
 import pandas as pd
-# from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
 
 import sys
 # reload(sys)
@@ -54,18 +54,18 @@ def parse_timestamp(timestamp_str):
                     date_splitted[0] + " " + timestamp_str.split(' ')[1] + ' GMT'
     return date_parsed
 
-# def find_html_content_type(html):
-#     soup = BeautifulSoup(html)
-#     meta = soup.find('meta', attrs={'http-equiv' : 'Content-Type'})
-#     if meta is not None:
-#         return_str = str(meta['content'])
-#         if return_str == "None":
-#             return "text/html"
-#         else:
-#             # print(return_str)
-#             return return_str.encode('utf-8')
-#     else:
-#         return "text/html"
+def find_html_content_type(html):
+    soup = BeautifulSoup(html)
+    meta = soup.find('meta', attrs={'http-equiv' : 'Content-Type'})
+    if meta is not None:
+        return_str = str(meta['content'])
+        if return_str == "None":
+            return "text/html"
+        else:
+            # print(return_str)
+            return return_str
+    else:
+        return "text/html"
 
 
 def create_warc_head(
@@ -95,6 +95,7 @@ def create_warc_record(
         normalize = False):
     # normalize unicode form
     if normalize == True:
+        print("Normalizing ... ")
         html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(encoding='UTF-8',     errors='strict')
 
     record_str = "WARC/0.18\n" +\
@@ -109,7 +110,7 @@ def create_warc_record(
                  "Content-Length: "
     try:
         next_str   = "HTTP/1.1 200 OK" + "\n" + \
-                     "Content-Type: text/html" + "\n" + \
+                     "Content-Type: " + find_html_content_type(html) + "\n" + \
                      "Date: " + parse_timestamp(timstamp) + "\n" + \
                      "Pragma: no-cache"+ "\n" + \
                      "Cache-Control: no-cache, must-revalidate" + "\n" + \
