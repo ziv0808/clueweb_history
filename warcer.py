@@ -203,7 +203,8 @@ def create_warc_files_for_time_interval(
                         warc_info_id=warc_info_id,
                         normalize=True)
                     if curr_str != '':
-                        warc_str += curr_str.decode('utf-8')
+                        print (type(warc_str))
+                        warc_str += curr_str
                         num_of_records_in_interval += 1
                     else:
                         lost_records += 1
