@@ -98,7 +98,7 @@ def create_warc_record(
         # normalize unicode form
         print("Normalizing ... ")
         html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
-            encoding='UTF-8', errors='strict').decode('utf-8')
+            encoding='UTF-8', errors='strict')
 
     record_str = "WARC/0.18\n" +\
                  "WARC-Type: response\n" +\
