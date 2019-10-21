@@ -100,8 +100,9 @@ def create_warc_record(
     if normalize == True:
         # normalize unicode form
         print("Normalizing ... ")
-        html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
-            encoding='UTF-8', errors='strict')
+        html = html.encode('utf-8')
+        # html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
+        #     encoding='UTF-8', errors='strict')
 
     record_str = "WARC/0.18\n" +\
                  "WARC-Type: response\n" +\
@@ -125,12 +126,12 @@ def create_warc_record(
                      "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
                      "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n"
 
-        if normalize == False:
-            next_str += "Content-Length: " + str(len((html)) + 1) + "\n\n" + html + "\n\n"
-            record_str += str(len((next_str)) + 1) + "\n\n" + next_str
-        else:
-            next_str += "Content-Length: " + str(len((html)) + 1) + "\n\n" + html + "\n\n"
-            record_str += str(len((next_str)) + 1) + "\n\n" + next_str
+        # if normalize == False:
+        #     next_str += "Content-Length: " + str(len((html))) + "\n\n" + html + "\n\n"
+        #     record_str += str(len((next_str))) + "\n\n" + next_str
+        # else:
+        next_str += "Content-Length: " + str(len((html))) + "\n\n" + html + "\n\n"
+        record_str += str(len((next_str))) + "\n\n" + next_str
 
     except Exception as e:
         print("Warcer Prob - Docno:" + docno)
@@ -232,7 +233,7 @@ def create_warc_files_for_time_interval(
                         print('Docno: '  + doc['Docno'] + " Problematic")
                         raise Exception('Docno: '  + doc['Docno'] + " Problematic")
             # add last record double time because last record does not get indexed by indri
-            warc_str += curr_str
+            # warc_str += curr_str
 
             if not os.path.exists(os.path.join(destination_folder, time_interval, folder_name)):
                 os.mkdir(os.path.join(destination_folder, time_interval, folder_name))
