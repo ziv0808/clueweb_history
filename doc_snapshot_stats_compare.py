@@ -179,7 +179,7 @@ if __name__=='__main__':
                     if (pd.to_datetime(interval.replace('ClueWeb09', '2009-01-01')) - pd.to_datetime(prev_interval)).days <= 31:
                         sim_to_close_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
                 curr_document_stem_set = set(doc_json[interval]['StemList'])
-                clueweb_document_stem_set = set(doc_json[interval]['ClueWeb09'])
+                clueweb_document_stem_set = set(doc_json['ClueWeb09']['StemList'])
                 document_from_clueweb_stem_diff = list(curr_document_stem_set - clueweb_document_stem_set)
                 clueweb_from_document_stem_diff = list(clueweb_document_stem_set - curr_document_stem_set)
                 found_related_query = False
