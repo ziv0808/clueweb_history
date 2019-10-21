@@ -154,7 +154,8 @@ if __name__=='__main__':
     stopword_list.remove('')
 
     summary_df = pd.DataFrame(columns = ['Docno', 'Interval', 'PrevValidInterval', 'QueryNum','TextLen', '#Stopword', 'QueryWords',
-                                         'Entropy', 'SimToClueWeb', 'SimToPrev', 'SimToClosePrev'])
+                                         'Entropy', 'SimToClueWeb', 'SimToPrev', 'SimToClosePrev',
+                                         'StemDiffCluWeb', 'CluWebStemDiff'])
     next_index = 0
     interval_ordered_list = build_interval_list(work_year, '2W')
     interval_ordered_list.append('ClueWeb09')
@@ -177,6 +178,10 @@ if __name__=='__main__':
                     sim_to_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
                     if (pd.to_datetime(interval.replace('ClueWeb09', '2009-01-01')) - pd.to_datetime(prev_interval)).days <= 31:
                         sim_to_close_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
+                curr_document_stem_set = set(doc_json[interval]['StemList'])
+                clueweb_document_stem_set = set(doc_json[interval]['ClueWeb09'])
+                document_from_clueweb_stem_diff = list(curr_document_stem_set - clueweb_document_stem_set)
+                clueweb_from_document_stem_diff = list(clueweb_document_stem_set - curr_document_stem_set)
                 found_related_query = False
                 for query_num in query_to_docno_mapping:
                     if file_name in query_to_docno_mapping[query_num]:
@@ -188,7 +193,8 @@ if __name__=='__main__':
 
                         summary_df.loc[next_index] = [file_name, interval, prev_interval, query_num,
                                                       txt_len, num_stop_words, query_word_num, entropy,
-                                                      sim_to_clueweb, sim_to_prev, sim_to_close_prev]
+                                                      sim_to_clueweb, sim_to_prev, sim_to_close_prev, str(document_from_clueweb_stem_diff),
+                                                      str(clueweb_from_document_stem_diff)]
                         next_index += 1
 
                 if found_related_query == False:
@@ -198,7 +204,9 @@ if __name__=='__main__':
                 f.write(str(doc_json))
 
     summary_df.to_csv('Summay_snapshot_stats.tsv', sep ='\t', index= False)
-    # create_doc_json('','clueweb09-enwp03-26-02724')
+    # doc_json = create_doc_json('','clueweb09-en0000-68-11648')
+    # with open('test.txt', 'w') as f:
+    #     f.write(doc_json)
 
 
 
