@@ -1,4 +1,5 @@
 import os
+import re
 import ast
 import uuid
 import unicodedata
@@ -100,7 +101,7 @@ def create_warc_record(
     if normalize == True:
         # normalize unicode form
         print("Normalizing ... ")
-        html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('utf-8')
+        html =  re.sub(r'[^\x00-\x7F]+',' ', html)
         # html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
         #     encoding='UTF-8', errors='strict')
 
