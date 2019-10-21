@@ -100,7 +100,7 @@ def create_warc_record(
     if normalize == True:
         # normalize unicode form
         print("Normalizing ... ")
-        html = html.encode('utf-8')
+        html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('utf-8')
         # html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
         #     encoding='UTF-8', errors='strict')
 
