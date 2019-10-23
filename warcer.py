@@ -95,13 +95,10 @@ def create_warc_record(
         url,
         html,
         warc_info_id,
-        warc_date,
-        normalize = False):
+        warc_date):
 
-    if normalize == True:
-        # normalize unicode form
-        print("Normalizing ... ")
-        html =  re.sub(r'[^\x00-\x7F]+',' ', html)
+
+    html =  re.sub(r'[^\x00-\x7F]+',' ', html)
         # html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
         #     encoding='UTF-8', errors='strict')
 
@@ -127,10 +124,6 @@ def create_warc_record(
                      "Last-Modified: " + parse_timestamp(timstamp) + "\n" + \
                      "Expires: Mon, 20 Dec 1998 01:00:00 GMT" + "\n"
 
-        # if normalize == False:
-        #     next_str += "Content-Length: " + str(len((html))) + "\n\n" + html + "\n\n"
-        #     record_str += str(len((next_str))) + "\n\n" + next_str
-        # else:
         next_str += "Content-Length: " + str(len((html))) + "\n\n" + html + "\n\n"
         record_str += str(len((next_str))) + "\n\n" + next_str
 
@@ -197,44 +190,12 @@ def create_warc_files_for_time_interval(
                     warc_date=warc_date,
                     warc_info_id=warc_info_id)
                 if curr_str != '':
-                    try:
-                        warc_str += curr_str
-                    except Exception as e:
-                        curr_str = create_warc_record(
-                            docno=doc['Docno'],
-                            url=doc['Url'],
-                            timstamp=doc['TimeStamp'],
-                            html=doc['HTML'],
-                            warc_date=warc_date,
-                            warc_info_id=warc_info_id,
-                            normalize=True)
-                        if curr_str != '':
-                            curr_str = curr_str.encode('utf-8')
-                            warc_str += curr_str
-                            num_of_records_in_interval += 1
-                        else:
-                            lost_records += 1
-                            print('Docno: ' + doc['Docno'] + " Problematic")
-                            raise Exception('Docno: ' + doc['Docno'] + " Problematic")
+                    warc_str += curr_str
+                    num_of_records_in_interval += 1
                 else:
-                    curr_str = create_warc_record(
-                        docno=doc['Docno'],
-                        url=doc['Url'],
-                        timstamp=doc['TimeStamp'],
-                        html=doc['HTML'],
-                        warc_date=warc_date,
-                        warc_info_id=warc_info_id,
-                        normalize=True)
-                    if curr_str != '':
-                        curr_str = curr_str.encode('utf-8')
-                        warc_str += curr_str
-                        num_of_records_in_interval += 1
-                    else:
-                        lost_records += 1
-                        print('Docno: '  + doc['Docno'] + " Problematic")
-                        raise Exception('Docno: '  + doc['Docno'] + " Problematic")
-            # add last record double time because last record does not get indexed by indri
-            # warc_str += curr_str
+                    lost_records += 1
+                    print('Docno: '  + doc['Docno'] + " Problematic")
+                    raise Exception('Docno: '  + doc['Docno'] + " Problematic")
 
             if not os.path.exists(os.path.join(destination_folder, time_interval, folder_name)):
                 os.mkdir(os.path.join(destination_folder, time_interval, folder_name))
