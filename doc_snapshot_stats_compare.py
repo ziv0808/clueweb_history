@@ -125,9 +125,9 @@ def build_interval_list(
 
 if __name__=='__main__':
     work_year = '2008'
-    doc_vector_folder = '/lv_local/home/zivvasilisky/ziv/data/document_vectors/'
+    doc_vector_folder = '/lv_local/home/zivvasilisky/ziv/data/2008/document_vectors/'
     stop_word_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Stop_Words'
-    save_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors'
+    save_folder = '/lv_local/home/zivvasilisky/ziv/data/2008/processed_document_vectors'
     query_stem_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Query_Words'
     query_to_doc_file = '/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'
 
