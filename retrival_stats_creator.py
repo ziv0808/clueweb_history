@@ -206,6 +206,7 @@ if __name__=="__main__":
                 for line in evel_str.split('\n'):
                     splitted_line = line.split(' ')
                     splitted_line = list(filter(None, splitted_line))
+                    print (splitted_line )
                     if int(splitted_line[1]) == query_num:
                         if splitted_line[0] == 'map':
                             map = float(splitted_line[2])
