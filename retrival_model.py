@@ -93,17 +93,17 @@ def get_scored_df_for_query(
             if interval_lookup_method == "Forward":
                 addition = 1
                 while doc_interval_dict is None:
-                    doc_interval_dict = interval_list[interval_idx + addition]
+                    doc_interval_dict = doc_dict[interval_list[interval_idx + addition]]
                     addition += 1
             elif interval_lookup_method == "Backward":
                 addition = 1
                 while (doc_interval_dict is None) and ((interval_idx - addition) >= 0):
-                    doc_interval_dict = interval_list[interval_idx - addition]
+                    doc_interval_dict = doc_dict[interval_list[interval_idx - addition]]
                     addition += 1
                 if doc_interval_dict is None:
                     addition = 1
                     while doc_interval_dict is None:
-                        doc_interval_dict = interval_list[interval_idx + addition]
+                        doc_interval_dict = doc_dict[[interval_list[interval_idx + addition]]
                         addition += 1
         print(doc_interval_dict)
         doc_score = score_doc_for_query(
