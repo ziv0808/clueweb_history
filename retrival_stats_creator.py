@@ -99,7 +99,7 @@ def rbo(list1, list2, p):
     if not 0 <= p <= 1:
         raise ValueError("The ``p`` parameter must be between 0 and 1.")
     args = (list1, list2, p)
-    return dict(min=rbo_min(*args), res=rbo_res(*args), ext=rbo_ext(*args))
+    return {'min': rbo_min(*args), 'res': rbo_res(*args), 'ext': rbo_ext(*args)}
 
 
 def sort_dict(dct):
