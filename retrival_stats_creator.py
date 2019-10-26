@@ -149,8 +149,9 @@ def convert_trec_to_ranked_list(trec_str):
     docno_ordered_list = []
     splitted_trec = trec_str.split('\n')
     for line in splitted_trec:
-        docno = line.split(' ')[2]
-        docno_ordered_list.append(docno)
+        if line != '':
+            docno = line.split(' ')[2]
+            docno_ordered_list.append(docno)
     return docno_ordered_list
 
 
@@ -167,7 +168,7 @@ if __name__=="__main__":
     for interval in interval_list:
         eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]), interval + '_' + interval_lookup_method + '_Results_evaluation.txt')
         if not os.path.exists(eval_file_path):
-            bashCommand = '.' + trec_eval_path + ' -q ' + qrels_file_path + ' ' + \
+            bashCommand = trec_eval_path + ' -q ' + qrels_file_path + ' ' + \
                           eval_file_path.replace('_evaluation', '') + ' > ' + eval_file_path
             output = subprocess.check_output(['bash', '-c', bashCommand])
 
@@ -267,7 +268,7 @@ if __name__=="__main__":
             next_index += 1
             prev_interval = interval
 
-    summary_df.to_csv(os.path.join(os.path.dirname(query_retrn_files_path[:-1]),interval_lookup_method + '_Per_query_stats.tsv', sep = '\t', index = False)
+    summary_df.to_csv(os.path.join(os.path.dirname(query_retrn_files_path[:-1]),interval_lookup_method + '_Per_query_stats.tsv'), sep = '\t', index = False)
 
 
 
