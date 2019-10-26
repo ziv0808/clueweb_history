@@ -105,6 +105,7 @@ def get_scored_df_for_query(
                     while doc_interval_dict is None:
                         doc_interval_dict = interval_list[interval_idx + addition]
                         addition += 1
+        print(doc_interval_dict)
         doc_score = score_doc_for_query(
             query_stem_dict=query_dict,
             cc_dict=cc_dict,
@@ -150,9 +151,11 @@ if __name__=='__main__':
     big_df = pd.DataFrame({})
     for index, row in stemmed_queries_df.iterrows():
         query_num = int(row['QueryNum'])
+        print("Query: " + str(query_num))
         query_txt = row['QueryStems']
         relevant_df = query_to_doc_mapping_df[query_to_doc_mapping_df['QueryNum'] == query_num].copy()
         for j in range(len(interval_list)):
+            print("Interval: " + str(interval_list[j]))
             res_df = get_scored_df_for_query(
                 query_num=query_num,
                 query=query_txt,
