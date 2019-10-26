@@ -71,7 +71,7 @@ def score_doc_for_query(
             collection_len=cc_dict['ALL_TERMS_COUNT'],
             mue=mue)
 
-        kl_score += stem_q_prob*(math.log((stem_q_prob/stem_d_proba), 2))
+        kl_score += (-1)*stem_q_prob*(math.log((stem_q_prob/stem_d_proba)))
 
     return kl_score
 
@@ -145,7 +145,7 @@ def convert_df_to_trec(
         trec_str += str(row['Query_ID']) + " " + row['Iteration'] + " " + \
                     row['Docno'] + " " + str(row['Rank']) + " " + str(row['Score']) +\
                     " " + row['Method'] + '\n'
-    return trec_str[:-1]
+    return trec_str
 
 if __name__=='__main__':
     query_to_doc_mapping_file = '/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'
