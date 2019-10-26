@@ -32,6 +32,7 @@ def create_doc_json(
             doc_json[splitted_data[0]]['StemList'][len(doc_json[splitted_data[0]]['StemList']) - 1] = doc_json[splitted_data[0]]['StemList'][len(doc_json[splitted_data[0]]['StemList']) - 1].replace(']', '')
             doc_json[splitted_data[0]]['IndexList'] = ast.literal_eval(splitted_data[2])
             doc_json[splitted_data[0]]['DfList']    = ast.literal_eval(splitted_data[3])
+            doc_json[splitted_data[0]]['CCList'] = ast.literal_eval(splitted_data[4])
             fulltext, tf_list, num_of_words, num_stopwords = build_text_and_tf(
                 doc_json[splitted_data[0]]['StemList'],
                 doc_json[splitted_data[0]]['IndexList'],
