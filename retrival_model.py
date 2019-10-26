@@ -108,7 +108,7 @@ def get_scored_df_for_query(
         # find the interval to look for
         doc_interval_dict = doc_dict[interval_list[interval_idx]]
         if doc_interval_dict is None:
-            if interval == "ClueWeb09":
+            if interval_list[interval_idx] == "ClueWeb09":
                 raise Exception("ClueWeb09 needs lookup..")
             if interval_lookup_method == "Forward":
                 addition = 1
