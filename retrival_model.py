@@ -1,7 +1,7 @@
 import os
 import ast
+import math
 import pandas as pd
-from math import log2
 
 def build_interval_list(
         work_year,
@@ -52,7 +52,7 @@ def score_doc_for_query(
             collection_len=cc_dict['ALL_TERMS_COUNT'],
             mue=mue)
 
-        kl_score += stem_q_prob*log2((stem_q_prob/stem_d_proba))
+        kl_score += stem_q_prob*math.log((stem_q_prob/stem_d_proba), 2)
 
     return kl_score
 
