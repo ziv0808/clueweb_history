@@ -71,7 +71,7 @@ def score_doc_for_query(
             collection_len=cc_dict['ALL_TERMS_COUNT'],
             mue=mue)
 
-        kl_score += (-1)*stem_q_prob*(math.log((stem_q_prob/stem_d_proba)))
+        kl_score += (-1)*stem_q_prob*(math.log((stem_q_prob/stem_d_proba) , 2))
 
     return kl_score
 
