@@ -204,7 +204,7 @@ if __name__=="__main__":
                     evel_str = f.read()
 
                 for line in evel_str.split('\n'):
-                    splitted_line = line.split(' ')
+                    splitted_line = line.split('\t')
                     splitted_line = list(filter(None, splitted_line))
                     print (splitted_line )
                     if int(splitted_line[1]) == query_num:
