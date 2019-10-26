@@ -35,19 +35,28 @@ def score_doc_for_query(
 
     kl_score = 0.0
     for stem in list(set(list(query_stem_dict.keys()) + doc_dict['StemList'][1:])):
+        doc_stem_tf = 0
+        for i in range(len(doc_dict['StemList'])):
+            if doc_dict['StemList'][i] == stem:
+                doc_stem_tf = doc_dict['TfList'][i]
+                stem_cc = doc_dict['CCList'][i]
+
+        if stem not in cc_dict:
+            cc_dict[stem] = stem_cc
+
+        if cc_dict[stem] == 0:
+            continue
+
         query_tf = 0
         if stem in query_stem_dict:
             query_tf = query_stem_dict[stem]
+
         stem_q_prob = get_word_diriclet_smoothed_probability(
             tf_in_doc = query_tf,
             doc_len = sum(list(query_stem_dict.values())),
             collection_count_for_word=cc_dict[stem],
             collection_len=cc_dict['ALL_TERMS_COUNT'],
             mue=mue)
-        doc_stem_tf = 0
-        for i in range(len(doc_dict['StemList'])):
-            if doc_dict['StemList'][i] == stem:
-                doc_stem_tf = doc_dict['TfList'][i]
 
         stem_d_proba = get_word_diriclet_smoothed_probability(
             tf_in_doc = doc_stem_tf,
