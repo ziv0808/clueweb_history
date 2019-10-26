@@ -1,6 +1,7 @@
 import os
 import ast
 import math
+import subprocess
 import pandas as pd
 
 def build_interval_list(
@@ -168,3 +169,13 @@ if __name__=='__main__':
 
             with open(os.path.join(save_folder, str(query_num) + "_" + str(interval_list[j] + "_" + interval_lookup_method + "_Results.txt")), 'w') as f:
                 f.write(convert_df_to_trec(res_df))
+            if interval_list[j] == 'ClueWeb09':
+                grep_term = ""
+                for docno in res_df['Docno']:
+                    grep_term += docno + "\|"
+                bashCommand = 'cat /ziv/env/indri/query/query_res/query_' + "0"*(3 - len(str(query_num)))+ str(query_num) +\
+                              '_res.txt | grep "' + grep_term + '"'
+                output = subprocess.check_output(['bash', '-c', bashCommand])
+                with open(os.path.join(save_folder, str(query_num) + "_" + str(interval_list[j] + "_Indri_Out.txt")),
+                          'w') as f:
+                    f.write(output)
