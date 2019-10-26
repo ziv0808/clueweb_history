@@ -67,7 +67,7 @@ def score_doc_for_query(
             collection_len=cc_dict['ALL_TERMS_COUNT'],
             mue=mue)
 
-        kl_score += stem_q_prob*math.log((stem_q_prob/stem_d_proba), 2)
+        kl_score += stem_q_prob*math.log((stem_q_prob/stem_d_proba))
 
     return kl_score
 
@@ -104,6 +104,7 @@ def get_scored_df_for_query(
         # find the interval to look for
         doc_interval_dict = doc_dict[interval_list[interval_idx]]
         if doc_interval_dict is None:
+            print('Interval lookup for ' + docno)
             if interval_lookup_method == "Forward":
                 addition = 1
                 while doc_interval_dict is None:
