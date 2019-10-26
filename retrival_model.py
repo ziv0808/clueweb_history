@@ -103,9 +103,9 @@ def get_scored_df_for_query(
                 if doc_interval_dict is None:
                     addition = 1
                     while doc_interval_dict is None:
-                        doc_interval_dict = doc_dict[[interval_list[interval_idx + addition]]
+                        doc_interval_dict = doc_dict[interval_list[interval_idx + addition]]
                         addition += 1
-        print(doc_interval_dict)
+        # print(doc_interval_dict)
         doc_score = score_doc_for_query(
             query_stem_dict=query_dict,
             cc_dict=cc_dict,
