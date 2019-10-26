@@ -36,7 +36,10 @@ def score_doc_for_query(
         mue):
 
     kl_score = 0.0
-    for stem in list(set(list(query_stem_dict.keys()) + doc_dict['StemList'][1:])):
+    work_stem_list = list(query_stem_dict.keys())
+    if ALL_WORDS == True:
+        work_stem_list = list(set(list(query_stem_dict.keys()) + doc_dict['StemList'][1:]))
+    for stem in work_stem_list:
         doc_stem_tf = 0
         for i in range(len(doc_dict['StemList'])):
             if doc_dict['StemList'][i] == stem:
@@ -53,12 +56,13 @@ def score_doc_for_query(
         if stem in query_stem_dict:
             query_tf = query_stem_dict[stem]
 
-        stem_q_prob = get_word_diriclet_smoothed_probability(
-            tf_in_doc = query_tf,
-            doc_len = sum(list(query_stem_dict.values())),
-            collection_count_for_word=cc_dict[stem],
-            collection_len=cc_dict['ALL_TERMS_COUNT'],
-            mue=mue)
+        # stem_q_prob = get_word_diriclet_smoothed_probability(
+        #     tf_in_doc = query_tf,
+        #     doc_len = sum(list(query_stem_dict.values())),
+        #     collection_count_for_word=cc_dict[stem],
+        #     collection_len=cc_dict['ALL_TERMS_COUNT'],
+        #     mue=mue)
+        stem_q_prob = float(query_tf)/sum(list(query_stem_dict.values()))
 
         stem_d_proba = get_word_diriclet_smoothed_probability(
             tf_in_doc = doc_stem_tf,
@@ -67,7 +71,7 @@ def score_doc_for_query(
             collection_len=cc_dict['ALL_TERMS_COUNT'],
             mue=mue)
 
-        kl_score += stem_q_prob*math.log((stem_q_prob/stem_d_proba))
+        kl_score += stem_q_prob*(math.log((stem_q_prob/stem_d_proba), 2))
 
     return kl_score
 
