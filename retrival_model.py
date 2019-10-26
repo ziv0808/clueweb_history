@@ -108,7 +108,8 @@ def get_scored_df_for_query(
         # find the interval to look for
         doc_interval_dict = doc_dict[interval_list[interval_idx]]
         if doc_interval_dict is None:
-            print('Interval lookup for ' + docno)
+            if interval == "ClueWeb09":
+                raise Exception("ClueWeb09 needs lookup..")
             if interval_lookup_method == "Forward":
                 addition = 1
                 while doc_interval_dict is None:
@@ -167,7 +168,8 @@ if __name__=='__main__':
     for index, row in query_stems_cc_df.iterrows():
         cc_dict[row['Stem']] = float(row['CollectionCount'])
 
-    big_df = pd.DataFrame({})
+    big_df_dict = {}
+    full_bench = ""
     for index, row in stemmed_queries_df.iterrows():
         query_num = int(row['QueryNum'])
         print("Query: " + str(query_num))
@@ -188,6 +190,11 @@ if __name__=='__main__':
 
             with open(os.path.join(save_folder, str(query_num) + "_" + str(interval_list[j] + "_" + interval_lookup_method + "_Results.txt")), 'w') as f:
                 f.write(convert_df_to_trec(res_df))
+            if interval_list[j] in big_df_dict:
+                big_df_dict[interval_list[j]] = big_df_dict[interval_list[j]].append(res_df, ignore_index=True)
+            else:
+                big_df_dict[interval_list[j]] = res_df
+
             if interval_list[j] == 'ClueWeb09':
                 grep_term = ""
                 for docno in res_df['Docno']:
@@ -195,6 +202,13 @@ if __name__=='__main__':
                 bashCommand = 'cat ~/ziv/env/indri/query/query_res/query_' + "0"*(3 - len(str(query_num)))+ str(query_num) +\
                               '_res.txt | grep "' + grep_term[:-2] + '"'
                 output = subprocess.check_output(['bash', '-c', bashCommand])
+                full_bench += output + '\n'
                 with open(os.path.join(save_folder, str(query_num) + "_" + str(interval_list[j] + "_Indri_Out.txt")),
                           'w') as f:
                     f.write(output)
+
+    with open(os.path.join(os.path.dirname(save_folder[:-1]), "ClueWeb09_Indri_Out.txt"),'w') as f:
+        f.write(full_bench)
+    for interval in interval_list:
+        with open(os.path.join(os.path.dirname(save_folder[:-1]), interval +  "_" + interval_lookup_method + "_Results.txt"), 'w') as f:
+            f.write(convert_df_to_trec(big_df_dict[interval]))
