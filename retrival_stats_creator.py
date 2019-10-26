@@ -207,7 +207,7 @@ if __name__=="__main__":
                     splitted_line = line.split('\t')
                     splitted_line = list(filter(None, splitted_line))
                     print (splitted_line )
-                    if int(splitted_line[1].strip()) == query_num:
+                    if int(splitted_line[1].replace(' ' ,'')) == query_num:
                         if splitted_line[0] == 'map':
                             map = float(splitted_line[2])
                         elif splitted_line[0] == 'P_5':
