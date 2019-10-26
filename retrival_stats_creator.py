@@ -72,7 +72,7 @@ def rbo_res(list1, list2, p):
     s, l = len(S), len(L)
     x_l = overlap(list1, list2, l)
     # since overlap(...) can be fractional in the general case of ties and f
-    f = math.ceil(l + s - x_l)
+    f = int(math.ceil(l + s - x_l))
     # upper bound of range() is non-inclusive, therefore + 1 is needed
     term1 = s * sum(p ** d / d for d in range(s + 1, f + 1))
     term2 = l * sum(p ** d / d for d in range(l + 1, f + 1))
