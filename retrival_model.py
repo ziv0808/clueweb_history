@@ -34,9 +34,12 @@ def score_doc_for_query(
         mue):
 
     kl_score = 0.0
-    for stem in query_stem_dict:
+    for stem in list(set(list(query_stem_dict.keys()) + doc_dict['StemList'][1:])):
+        query_tf = 0
+        if stem in query_stem_dict:
+            query_tf = query_stem_dict[stem]
         stem_q_prob = get_word_diriclet_smoothed_probability(
-            tf_in_doc = query_stem_dict[stem],
+            tf_in_doc = query_tf,
             doc_len = sum(list(query_stem_dict.values())),
             collection_count_for_word=cc_dict[stem],
             collection_len=cc_dict['ALL_TERMS_COUNT'],
