@@ -159,7 +159,7 @@ if __name__=="__main__":
     query_retrn_files_path = '/lv_local/home/zivvasilisky/ziv/results/ranked_docs/'
     trec_eval_path = "/lv_local/home/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
     qrels_file_path = "/lv_local/home/zivvasilisky/ziv/results/qrels/qrels.adhoc"
-    interval_lookup_method = 'Backward'
+    interval_lookup_method = 'Forward'
 
     interval_list = build_interval_list('2008', '2W')
     interval_list.append('ClueWeb09')
