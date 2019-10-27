@@ -191,12 +191,13 @@ if __name__=="__main__":
             with open(os.path.join(query_retrn_files_path, str(query_num) + '_' + interval + '_' + interval_lookup_method + '_Results.txt'), 'r') as f:
                 trec_str = f.read()
             ranked_list_dict[interval] = convert_trec_to_ranked_list(trec_str)
-        eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]),
-                                      interval + '_' + interval_lookup_method + '_Results_evaluation.txt')
+            print (ranked_list_dict[interval] )
 
 
         prev_interval = None
         for interval in interval_list:
+            eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]),
+                                          interval + '_' + interval_lookup_method + '_Results_evaluation.txt')
             print('interval: ' + str(interval))
             insert_row = [query_num, interval]
             if query_num not in [100,95]:
