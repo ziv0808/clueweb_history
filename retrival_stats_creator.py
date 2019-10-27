@@ -191,7 +191,7 @@ if __name__=="__main__":
             with open(os.path.join(query_retrn_files_path, str(query_num) + '_' + interval + '_' + interval_lookup_method + '_Results.txt'), 'r') as f:
                 trec_str = f.read()
             ranked_list_dict[interval] = convert_trec_to_ranked_list(trec_str)
-            print (ranked_list_dict[interval] )
+            # print (ranked_list_dict[interval] )
 
 
         prev_interval = None
