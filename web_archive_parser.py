@@ -37,8 +37,8 @@ def get_history_links_for_url_web_api(
 
 
 if __name__=='__main__':
-    RUN_YEAR = 2008
-    LOAD_FILE = "/lv_local/home/zivvasilisky/ziv/data/bkup/history_snapshots_2008.json"
+    RUN_YEAR = 2009
+    LOAD_FILE = "/lv_local/home/zivvasilisky/ziv/data/bkup/history_snapshots_2009.json"
     save_path = "/lv_local/home/zivvasilisky/ziv/data/"
 
     work_df = pd.read_csv('/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv', sep = '\t', index_col = False)
