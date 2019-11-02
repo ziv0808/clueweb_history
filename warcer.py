@@ -207,13 +207,13 @@ def create_warc_files_for_time_interval(
 if __name__ == '__main__':
     test = False
     if test != True:
-        work_year = '2008'
+        work_year = '2009'
         interval_list = build_interval_list(
             work_year=work_year,
             frequency='2W')
 
-        destination_folder = "/mnt/bi-strg3/v/zivvasilisky/data/2008/"
-        data_folder ="/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2008/"
+        destination_folder = "/mnt/bi-strg3/v/zivvasilisky/data/2009/"
+        data_folder ="/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2009/"
 
         summary_df = pd.DataFrame(columns = ['Interval', 'NumOfDocs', 'LostRecords'])
         next_index = 0
