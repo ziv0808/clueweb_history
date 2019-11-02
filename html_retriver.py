@@ -109,15 +109,15 @@ def handle_docno_retrival(
 
 if __name__=='__main__':
 
-    work_year = '2008'
+    work_year = '2009'
     files_exists = True # if res files alredy exists and only delta need to run
     interval_dict = build_interval_dict(
         work_year=work_year,
         frequency='2W')
 
-    save_folder = "/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2008/"
+    save_folder = "/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2009/"
     resource_path = "/lv_local/home/zivvasilisky/ziv/data"
-    filename = os.path.join(resource_path, "history_snapshots_2008.json")
+    filename = os.path.join(resource_path, "history_snapshots_2009.json")
     reference_filename = None#os.path.join(resource_path, "history_snapshots_2008_with_html_with_html.json")
 
     summary_df = pd.DataFrame(columns=['Docno', 'NumOfCoveredIntervals'])
