@@ -27,13 +27,13 @@ def gzip_all_folder(
                 res = subprocess.check_call(['gzip', os.path.join(os.path.join(folder_name, inner_folder), file_name)])
 
 if __name__=='__main__':
-    work_year = '2008'
+    work_year = '2009'
     interval_list = build_interval_list(
         work_year=work_year,
         frequency='2W')
 
-    destination_folder = "/mnt/bi-strg3/v/zivvasilisky/index/2008/"
-    data_folder = "/mnt/bi-strg3/v/zivvasilisky/data/2008/"
+    destination_folder = "/mnt/bi-strg3/v/zivvasilisky/index/2009/"
+    data_folder = "/mnt/bi-strg3/v/zivvasilisky/data/2009/"
 
     for interval in interval_list:
         print("Curr interval: " + str(interval))
