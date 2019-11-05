@@ -133,7 +133,7 @@ def build_interval_list(
 
 if __name__=='__main__':
     work_year = '2008'
-    interval_freq = '1M'
+    interval_freq = '2M'
     doc_vector_folder = '/lv_local/home/zivvasilisky/ziv/data/document_vectors/' + work_year + '/'
     stop_word_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Stop_Words'
     save_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/' + interval_freq +'/'
@@ -228,7 +228,7 @@ if __name__=='__main__':
                 prev_interval = interval
             for interval_ in doc_json:
                 if interval_ not in interval_ordered_list:
-                    doc_json[interval_] = None
+                    del doc_json[interval_]
             with open(os.path.join(save_folder, file_name + '.json'), 'w') as f:
                 f.write(str(doc_json))
 
