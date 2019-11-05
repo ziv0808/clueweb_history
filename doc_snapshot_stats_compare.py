@@ -181,7 +181,7 @@ if __name__=='__main__':
                     elif interval_freq in ['1M', '2M']:
                         optional_ref_list = [interval[:8] + '16']
                         if interval_freq == '2M':
-                            curr_month = int(interval_freq[5:7])
+                            curr_month = int(interval[5:7])
                             next_month = curr_month + 1
                             optional_ref_list.extend([interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-01',
                                                       interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-16'])
