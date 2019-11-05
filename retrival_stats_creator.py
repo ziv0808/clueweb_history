@@ -219,6 +219,11 @@ if __name__=="__main__":
                     splitted_line = line.split('\t')
                     splitted_line = list(filter(None, splitted_line))
                     # print (splitted_line )
+                    if splitted_line[1] == 'all':
+                        map = None
+                        p_5 = None
+                        p_10 = None
+                        break
                     if int(splitted_line[1]) == query_num:
                         if splitted_line[0].replace(' ' ,'') == 'map':
                             map = float(splitted_line[2])
