@@ -159,7 +159,7 @@ def convert_df_to_trec(
     return trec_str
 
 if __name__=='__main__':
-    frequency = '2M'
+    frequency = '1M'
     query_to_doc_mapping_file = '/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'
     stemmed_query_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Query_Words'
     stemmed_query_collection_counts = '/lv_local/home/zivvasilisky/ziv/data/StemsCollectionCounts.tsv'
