@@ -196,12 +196,15 @@ if __name__=="__main__":
                                          'RBO_0.99_Ext_Last'])
     next_index = 0
     for query_num in range(1,201):
+        no_res_list = []
         print('Query: ' + str(query_num))
         ranked_list_dict = {}
         for interval in interval_list:
             with open(os.path.join(query_retrn_files_path, str(query_num) + '_' + interval_freq + '_' + interval + '_' + interval_lookup_method + '_Results.txt'), 'r') as f:
                 trec_str = f.read()
             ranked_list_dict[interval] = convert_trec_to_ranked_list(trec_str)
+            if len(ranked_list_dict[interval]) == 0:
+                no_res_list.append(interval)
             # print (ranked_list_dict[interval] )
 
 
@@ -211,6 +214,9 @@ if __name__=="__main__":
                                           interval + '_' + interval_freq + '_' +interval_lookup_method + '_Results_evaluation.txt')
             print('interval: ' + str(interval))
             insert_row = [query_num, interval]
+            if interval in no_res_list:
+                print("No Results to analys")
+                continue
             if query_num not in [100,95]:
                 with open(eval_file_path, 'r') as f:
                     evel_str = f.read()
@@ -219,12 +225,11 @@ if __name__=="__main__":
                     splitted_line = line.split('\t')
                     splitted_line = list(filter(None, splitted_line))
                     # print (splitted_line )
-                    if splitted_line[1] == 'all':
-                        map = None
-                        p_5 = None
-                        p_10 = None
-                        print (ranked_list_dict[interval])
-                        break
+                    # if splitted_line[1] == 'all':
+                    #     map = None
+                    #     p_5 = None
+                    #     p_10 = None
+                    #     break
                     if int(splitted_line[1]) == query_num:
                         if splitted_line[0].replace(' ' ,'') == 'map':
                             map = float(splitted_line[2])
