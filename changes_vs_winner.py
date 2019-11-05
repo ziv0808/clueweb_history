@@ -93,7 +93,7 @@ if __name__=="__main__":
                 continue
 
             curr_interval_df = relevant_to_query_df[relevant_to_query_df['Interval'] == interval].copy()
-            curr_interval_docnos = list(curr_interval_df['Docno'].drop_duplicats())
+            curr_interval_docnos = list(curr_interval_df['Docno'].drop_duplicates())
             for i in range(len(ranked_list_dict[interval])):
                 docno = ranked_list_dict[interval][i]
                 rank = i + 1
