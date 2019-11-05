@@ -118,6 +118,13 @@ def build_interval_list(
             interval_list.extend(
                 [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
                  work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
+        if frequency == '1M':
+            interval_list.extend(
+                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
+        if frequency == '2M':
+            if i % 2 == 1:
+                interval_list.extend(
+                    [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
         else:
             raise Exception('build_interval_dict: Unknoen frequency...')
 
@@ -125,10 +132,11 @@ def build_interval_list(
 
 
 if __name__=='__main__':
-    work_year = '2009'
-    doc_vector_folder = '/lv_local/home/zivvasilisky/ziv/data/document_vectors/2009/'
+    work_year = '2008'
+    interval_freq = '1M'
+    doc_vector_folder = '/lv_local/home/zivvasilisky/ziv/data/document_vectors/' + work_year + '/'
     stop_word_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Stop_Words'
-    save_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/2009/'
+    save_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/' + interval_freq +'/'
     query_stem_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Query_Words'
     query_to_doc_file = '/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'
 
@@ -158,7 +166,7 @@ if __name__=='__main__':
                                          'Entropy', 'SimToClueWeb', 'SimToPrev', 'SimToClosePrev',
                                          'StemDiffCluWeb', 'CluWebStemDiff'])
     next_index = 0
-    interval_ordered_list = build_interval_list(work_year, '2W')
+    interval_ordered_list = build_interval_list(work_year, interval_freq)
     interval_ordered_list.append('ClueWeb09')
     print(stopword_list, len(stopword_list))
     for file_name in os.listdir(doc_vector_folder):
@@ -167,19 +175,36 @@ if __name__=='__main__':
             doc_json = create_doc_json(doc_vector_folder, file_name, stopword_list)
             prev_interval = None
             for interval in interval_ordered_list:
-                if doc_json[interval] is None:
-                    continue
-                txt_len             = doc_json[interval]['NumWords']
-                num_stop_words      = doc_json[interval]['NumStopWords']
-                entropy             = doc_json[interval]['Entropy']
-                sim_to_clueweb      = calc_cosine(doc_json[interval]['TfIdf'], doc_json['ClueWeb09']['TfIdf'])
+                ref_interval = interval
+                if doc_json[ref_interval] is None:
+                    if interval_freq == '2W':
+                        continue
+                    elif interval_freq in ['1M', '2M']:
+                        optional_ref_list = [interval[:8] + '16']
+                        if interval_freq == '2M':
+                            curr_month = int(interval_freq[5:7])
+                            next_month = curr_month + 1
+                            optional_ref_list.extend([interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-01',
+                                                      interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-16'])
+
+                        for potential_ref in optional_ref_list:
+                            ref_interval = potential_ref
+                            if doc_json[ref_interval] is not None:
+                                break
+                        if doc_json[ref_interval] is None:
+                            continue
+
+                txt_len             = doc_json[ref_interval]['NumWords']
+                num_stop_words      = doc_json[ref_interval]['NumStopWords']
+                entropy             = doc_json[ref_interval]['Entropy']
+                sim_to_clueweb      = calc_cosine(doc_json[ref_interval]['TfIdf'], doc_json['ClueWeb09']['TfIdf'])
                 sim_to_prev         = None
                 sim_to_close_prev   = None
                 if prev_interval is not None:
-                    sim_to_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
+                    sim_to_prev = calc_cosine(doc_json[ref_interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
                     if (pd.to_datetime(interval.replace('ClueWeb09', '2009-01-01')) - pd.to_datetime(prev_interval)).days <= 31:
-                        sim_to_close_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
-                curr_document_stem_set = set(doc_json[interval]['StemList'])
+                        sim_to_close_prev = calc_cosine(doc_json[ref_interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
+                curr_document_stem_set = set(doc_json[ref_interval]['StemList'])
                 clueweb_document_stem_set = set(doc_json['ClueWeb09']['StemList'])
                 document_from_clueweb_stem_diff = list(curr_document_stem_set - clueweb_document_stem_set)
                 clueweb_from_document_stem_diff = list(clueweb_document_stem_set - curr_document_stem_set)
@@ -188,9 +213,9 @@ if __name__=='__main__':
                     if file_name in query_to_docno_mapping[query_num]:
                         found_related_query = True
                         query_word_num = 0
-                        for j in range(len(doc_json[interval]['StemList'])):
-                            if doc_json[interval]['StemList'][j] in query_to_stem_mapping[query_num]:
-                                query_word_num += doc_json[interval]['TfList'][j]
+                        for j in range(len(doc_json[ref_interval]['StemList'])):
+                            if doc_json[ref_interval]['StemList'][j] in query_to_stem_mapping[query_num]:
+                                query_word_num += doc_json[ref_interval]['TfList'][j]
 
                         summary_df.loc[next_index] = [file_name, interval, prev_interval, query_num,
                                                       txt_len, num_stop_words, query_word_num, entropy,
@@ -204,7 +229,7 @@ if __name__=='__main__':
             with open(os.path.join(save_folder, file_name + '.json'), 'w') as f:
                 f.write(str(doc_json))
 
-    summary_df.to_csv('Summay_snapshot_stats.tsv', sep ='\t', index= False)
+    summary_df.to_csv('Summay_snapshot_stats_' + interval_freq + '.tsv', sep ='\t', index= False)
     # doc_json = create_doc_json('','clueweb09-en0000-68-11648')
     # with open('test.txt', 'w') as f:
     #     f.write(doc_json)
