@@ -1,4 +1,5 @@
 import os
+import sys
 import math
 import subprocess
 import pandas as pd
@@ -140,6 +141,13 @@ def build_interval_list(
             interval_list.extend(
                 [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
                  work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
+        elif frequency == '1M':
+            interval_list.extend(
+                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
+        elif frequency == '2M':
+            if i % 2 == 1:
+                interval_list.extend(
+                    [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
         else:
             raise Exception('build_interval_dict: Unknoen frequency...')
 
@@ -159,14 +167,17 @@ if __name__=="__main__":
     query_retrn_files_path = '/lv_local/home/zivvasilisky/ziv/results/ranked_docs/'
     trec_eval_path = "/lv_local/home/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
     qrels_file_path = "/lv_local/home/zivvasilisky/ziv/results/qrels/qrels.adhoc"
-    interval_lookup_method = 'Forward'
+    interval_freq = sys.argv[0]
+    interval_lookup_method = sys.argv[0]
+    print('Interval Feaq: ' + interval_freq)
+    print('Lookup method: ' + interval_lookup_method)
 
-    interval_list = build_interval_list('2008', '2W')
+    interval_list = build_interval_list('2008', interval_freq)
     interval_list.append('ClueWeb09')
 
     last_not_clueweb_interval = interval_list[len(interval_list) - 2]
     for interval in interval_list:
-        eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]), interval + '_' + interval_lookup_method + '_Results_evaluation.txt')
+        eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]), interval + '_' + interval_freq + '_' + interval_lookup_method + '_Results_evaluation.txt')
         if not os.path.exists(eval_file_path):
             bashCommand = trec_eval_path + ' -q ' + qrels_file_path + ' ' + \
                           eval_file_path.replace('_evaluation', '') + ' > ' + eval_file_path
@@ -188,7 +199,7 @@ if __name__=="__main__":
         print('Query: ' + str(query_num))
         ranked_list_dict = {}
         for interval in interval_list:
-            with open(os.path.join(query_retrn_files_path, str(query_num) + '_' + interval + '_' + interval_lookup_method + '_Results.txt'), 'r') as f:
+            with open(os.path.join(query_retrn_files_path, str(query_num) + '_' + interval + '_' + interval_freq + '_' + interval_lookup_method + '_Results.txt'), 'r') as f:
                 trec_str = f.read()
             ranked_list_dict[interval] = convert_trec_to_ranked_list(trec_str)
             # print (ranked_list_dict[interval] )
@@ -197,7 +208,7 @@ if __name__=="__main__":
         prev_interval = None
         for interval in interval_list:
             eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]),
-                                          interval + '_' + interval_lookup_method + '_Results_evaluation.txt')
+                                          interval + '_' + interval_freq + '_' +interval_lookup_method + '_Results_evaluation.txt')
             print('interval: ' + str(interval))
             insert_row = [query_num, interval]
             if query_num not in [100,95]:
@@ -271,7 +282,7 @@ if __name__=="__main__":
             next_index += 1
             prev_interval = interval
 
-    summary_df.to_csv(os.path.join(os.path.dirname(query_retrn_files_path[:-1]),interval_lookup_method + '_Per_query_stats.tsv'), sep = '\t', index = False)
+    summary_df.to_csv(os.path.join(os.path.dirname(query_retrn_files_path[:-1]),interval_freq + '_' + interval_lookup_method + '_Per_query_stats.tsv'), sep = '\t', index = False)
 
 
 
