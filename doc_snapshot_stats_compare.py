@@ -226,7 +226,7 @@ if __name__=='__main__':
                 if found_related_query == False:
                     raise Exception("found_related_query is false for " + file_name)
                 prev_interval = interval
-            for interval_ in doc_json:
+            for interval_ in list(doc_json.keys()):
                 if interval_ not in interval_ordered_list:
                     del doc_json[interval_]
             with open(os.path.join(save_folder, file_name + '.json'), 'w') as f:
