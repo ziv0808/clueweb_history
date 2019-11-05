@@ -16,6 +16,13 @@ def build_interval_list(
             interval_list.extend(
                 [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
                  work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
+        elif frequency == '1M':
+            interval_list.extend(
+                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
+        elif frequency == '2M':
+            if i%2 == 1:
+                interval_list.extend(
+                    [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
         else:
             raise Exception('build_interval_dict: Unknoen frequency...')
 
@@ -125,6 +132,9 @@ def get_scored_df_for_query(
                     while doc_interval_dict is None:
                         doc_interval_dict = doc_dict[interval_list[interval_idx + addition]]
                         addition += 1
+            elif interval_lookup_method == "NoLookup":
+                continue
+
         # print(doc_interval_dict)
         doc_score = score_doc_for_query(
             query_stem_dict=query_dict,
@@ -149,15 +159,16 @@ def convert_df_to_trec(
     return trec_str
 
 if __name__=='__main__':
+    frequency = '1M'
     query_to_doc_mapping_file = '/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'
     stemmed_query_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Query_Words'
     stemmed_query_collection_counts = '/lv_local/home/zivvasilisky/ziv/data/StemsCollectionCounts.tsv'
-    processed_docs_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+    processed_docs_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
     save_folder = '/lv_local/home/zivvasilisky/ziv/results/ranked_docs/'
 
     mue = 1000.0
-    interval_lookup_method = 'Backward'
-    interval_list = build_interval_list('2008', '2W')
+    interval_lookup_method = 'NoLookup'
+    interval_list = build_interval_list('2008', frequency)
     interval_list.append('ClueWeb09')
     # retrieve necessary dataframes
     query_to_doc_mapping_df = pd.read_csv(query_to_doc_mapping_file, sep = '\t', index_col = False)
@@ -188,7 +199,7 @@ if __name__=='__main__':
                 cc_dict=cc_dict,
                 mue=mue)
 
-            with open(os.path.join(save_folder, str(query_num) + "_" + str(interval_list[j] + "_" + interval_lookup_method + "_Results.txt")), 'w') as f:
+            with open(os.path.join(save_folder, str(query_num) + "_" + frequency + '_' + str(interval_list[j] + "_" + interval_lookup_method + "_Results.txt")), 'w') as f:
                 f.write(convert_df_to_trec(res_df))
             if interval_list[j] in big_df_dict:
                 big_df_dict[interval_list[j]] = big_df_dict[interval_list[j]].append(res_df, ignore_index=True)
@@ -210,5 +221,5 @@ if __name__=='__main__':
     with open(os.path.join(os.path.dirname(save_folder[:-1]), "ClueWeb09_Indri_Out.txt"),'w') as f:
         f.write(full_bench)
     for interval in interval_list:
-        with open(os.path.join(os.path.dirname(save_folder[:-1]), interval +  "_" + interval_lookup_method + "_Results.txt"), 'w') as f:
+        with open(os.path.join(os.path.dirname(save_folder[:-1]), interval +  "_" + frequency + '_' + interval_lookup_method + "_Results.txt"), 'w') as f:
             f.write(convert_df_to_trec(big_df_dict[interval]))
