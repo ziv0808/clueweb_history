@@ -199,7 +199,7 @@ if __name__=="__main__":
         print('Query: ' + str(query_num))
         ranked_list_dict = {}
         for interval in interval_list:
-            with open(os.path.join(query_retrn_files_path, str(query_num) + '_' + interval + '_' + interval_freq + '_' + interval_lookup_method + '_Results.txt'), 'r') as f:
+            with open(os.path.join(query_retrn_files_path, str(query_num) + '_' + interval_freq + '_' + interval + '_' + interval_lookup_method + '_Results.txt'), 'r') as f:
                 trec_str = f.read()
             ranked_list_dict[interval] = convert_trec_to_ranked_list(trec_str)
             # print (ranked_list_dict[interval] )
