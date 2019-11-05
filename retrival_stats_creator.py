@@ -167,8 +167,8 @@ if __name__=="__main__":
     query_retrn_files_path = '/lv_local/home/zivvasilisky/ziv/results/ranked_docs/'
     trec_eval_path = "/lv_local/home/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
     qrels_file_path = "/lv_local/home/zivvasilisky/ziv/results/qrels/qrels.adhoc"
-    interval_freq = sys.argv[0]
-    interval_lookup_method = sys.argv[0]
+    interval_freq = sys.argv[1]
+    interval_lookup_method = sys.argv[2]
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
 
