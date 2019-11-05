@@ -67,7 +67,7 @@ if __name__=="__main__":
     stats_file_path = '/lv_local/home/zivvasilisky/ziv/clueweb_history/'
 
     snapshot_stats_df = pd.read_csv(os.path.join(stats_file_path, 'Summay_snapshot_stats_' + interval_freq + '.tsv'), sep = '\t', index_col = False)
-    interval_list = build_interval_list(work_year)
+    interval_list = build_interval_list(work_year, interval_freq)
     interval_list.append('ClueWeb09')
 
     summary_df = pd.DataFrame(columns = ['QueryNum', 'Interval', 'Docno','Rank','SimClueWeb','QueryTermsRatio', 'StopwordsRatio', 'Entropy','Sim_PW'])
@@ -144,7 +144,7 @@ if __name__=="__main__":
                 if rank == 1:
                     prev_winner_dict = doc_dict
 
-                insert_row.extend([simcluweb, queryword_ratio, stopword_ratio, entropy,sim_to_pw])
+                insert_row.extend([simcluweb, queryword_ratio, stopword_ratio, entropy, sim_to_pw])
                 summary_df.loc[next_index] = insert_row
                 next_index += 1
 
