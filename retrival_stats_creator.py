@@ -223,8 +223,8 @@ if __name__=="__main__":
                         map = None
                         p_5 = None
                         p_10 = None
-                        break
                         print (ranked_list_dict[interval])
+                        break
                     if int(splitted_line[1]) == query_num:
                         if splitted_line[0].replace(' ' ,'') == 'map':
                             map = float(splitted_line[2])
