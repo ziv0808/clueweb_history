@@ -118,10 +118,10 @@ def build_interval_list(
             interval_list.extend(
                 [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
                  work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
-        if frequency == '1M':
+        elif frequency == '1M':
             interval_list.extend(
                 [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        if frequency == '2M':
+        elif frequency == '2M':
             if i % 2 == 1:
                 interval_list.extend(
                     [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
