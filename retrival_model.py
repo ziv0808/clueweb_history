@@ -167,7 +167,7 @@ if __name__=='__main__':
     save_folder = '/lv_local/home/zivvasilisky/ziv/results/ranked_docs/'
 
     mue = 1000.0
-    interval_lookup_method = 'NoLookup'
+    interval_lookup_method = 'BackWard'
     interval_list = build_interval_list('2008', frequency)
     interval_list.append('ClueWeb09')
     # retrieve necessary dataframes
