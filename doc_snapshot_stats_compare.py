@@ -175,8 +175,7 @@ if __name__=='__main__':
             doc_json = create_doc_json(doc_vector_folder, file_name, stopword_list)
             prev_interval = None
             for interval in interval_ordered_list:
-                ref_interval = interval
-                if doc_json[ref_interval] is None:
+                if doc_json[interval] is None:
                     if interval_freq == '2W':
                         continue
                     elif interval_freq in ['1M', '2M']:
@@ -188,23 +187,24 @@ if __name__=='__main__':
                                                       interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-16'])
 
                         for potential_ref in optional_ref_list:
-                            ref_interval = potential_ref
-                            if doc_json[ref_interval] is not None:
+                            if doc_json[potential_ref] is not None:
+                                doc_json[interval] = doc_json[potential_ref]
                                 break
-                        if doc_json[ref_interval] is None:
+
+                        if doc_json[interval] is None:
                             continue
 
-                txt_len             = doc_json[ref_interval]['NumWords']
-                num_stop_words      = doc_json[ref_interval]['NumStopWords']
-                entropy             = doc_json[ref_interval]['Entropy']
-                sim_to_clueweb      = calc_cosine(doc_json[ref_interval]['TfIdf'], doc_json['ClueWeb09']['TfIdf'])
+                txt_len             = doc_json[interval]['NumWords']
+                num_stop_words      = doc_json[interval]['NumStopWords']
+                entropy             = doc_json[interval]['Entropy']
+                sim_to_clueweb      = calc_cosine(doc_json[interval]['TfIdf'], doc_json['ClueWeb09']['TfIdf'])
                 sim_to_prev         = None
                 sim_to_close_prev   = None
                 if prev_interval is not None:
-                    sim_to_prev = calc_cosine(doc_json[ref_interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
+                    sim_to_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
                     if (pd.to_datetime(interval.replace('ClueWeb09', '2009-01-01')) - pd.to_datetime(prev_interval)).days <= 31:
-                        sim_to_close_prev = calc_cosine(doc_json[ref_interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
-                curr_document_stem_set = set(doc_json[ref_interval]['StemList'])
+                        sim_to_close_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
+                curr_document_stem_set = set(doc_json[interval]['StemList'])
                 clueweb_document_stem_set = set(doc_json['ClueWeb09']['StemList'])
                 document_from_clueweb_stem_diff = list(curr_document_stem_set - clueweb_document_stem_set)
                 clueweb_from_document_stem_diff = list(clueweb_document_stem_set - curr_document_stem_set)
@@ -213,9 +213,9 @@ if __name__=='__main__':
                     if file_name in query_to_docno_mapping[query_num]:
                         found_related_query = True
                         query_word_num = 0
-                        for j in range(len(doc_json[ref_interval]['StemList'])):
-                            if doc_json[ref_interval]['StemList'][j] in query_to_stem_mapping[query_num]:
-                                query_word_num += doc_json[ref_interval]['TfList'][j]
+                        for j in range(len(doc_json[interval]['StemList'])):
+                            if doc_json[interval]['StemList'][j] in query_to_stem_mapping[query_num]:
+                                query_word_num += doc_json[interval]['TfList'][j]
 
                         summary_df.loc[next_index] = [file_name, interval, prev_interval, query_num,
                                                       txt_len, num_stop_words, query_word_num, entropy,
@@ -226,6 +226,9 @@ if __name__=='__main__':
                 if found_related_query == False:
                     raise Exception("found_related_query is false for " + file_name)
                 prev_interval = interval
+            for interval_ in doc_json:
+                if interval_ not in interval_ordered_list:
+                    doc_json[interval_] = None
             with open(os.path.join(save_folder, file_name + '.json'), 'w') as f:
                 f.write(str(doc_json))
 
