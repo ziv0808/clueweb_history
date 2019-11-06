@@ -408,7 +408,6 @@ def plot_stats_vs_winner(
     summary_df.to_csv('Summay_vs_winner_processed_' + interval_freq + '_'+ lookup_method +'_' +
                       str(round(spearman_corr_df.corr().loc['Sim_PD_Rank']['Rank'], 6))  + '.tsv', sep ='\t', index=False)
 
-def
 
 
 
