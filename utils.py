@@ -379,7 +379,7 @@ def plot_stats_vs_winner(
     all_queries   = list(work_df['QueryNum'].drop_duplicates())
     all_intervals = sorted(list(work_df['Interval'].drop_duplicates()))
 
-    summary_df = pd.DataFrame(columns = ['QueryNum','Interval','Docno','Round','Winner','SimClueWeb','QueryTermsRatio','StopwordsRatio','Entropy'])
+    summary_df = pd.DataFrame(columns = ['QueryNum','Interval','Docno','Round','Winner','SimClueWeb','QueryTermsRatio','StopwordsRatio','Entropy','Trend'])
     next_index = 0
     spearman_corr_df = pd.DataFrame({})
     for query_num in all_queries:
@@ -397,9 +397,20 @@ def plot_stats_vs_winner(
                 while (interval_idx - addition) >= 0:
                     temp_interval    = all_intervals[interval_idx - addition]
                     temp_interval_df = query_df[query_df['Interval'] == temp_interval].copy()
+                    temp_interval_df = pd.merge(
+                        temp_interval_df,
+                        query_interval_df[['Rank', 'Docno']].rename(columns = {'Rank' : 'CurrRank'}),
+                        on=['Docno'],
+                        how='inner')
                     for index, row  in temp_interval_df.iterrows():
+                        trend = '='
+                        if row['Rank'] > row['CurrRank']:
+                            trend = 'W'
+                        elif row['Rank'] < row['CurrRank']:
+                            trend = 'L'
                         insert_row = [query_num, interval, row['Docno'],(-1)*addition, row['Rank'] == 1, row['SimClueWeb'],
-                                      row['QueryTermsRatio'],row['StopwordsRatio'],row['Entropy']]
+                                      row['QueryTermsRatio'],row['StopwordsRatio'],row['Entropy'], trend]
+
                         summary_df.loc[next_index] = insert_row
                         next_index += 1
                     addition += 1
@@ -410,8 +421,49 @@ def plot_stats_vs_winner(
 
 
 
+def plot_stats_vs_winner_plots(
+        comp_queries_list,
+        file_name,
+        interval_freq = '1M',
+        lookup_method = 'Backward'):
 
+    work_df = pd.read_csv(file_name, sep = '\t', index_col=False)
+    winner_df = work_df[work_df['Winner'] == True]
+    non_winner_df = work_df[work_df['Winner'] == False]
 
+    work_df['IsCompQuery'] = work_df['QueryNum'].apply(lambda x: 1 if x in comp_queries_list else 0)
+    comp_df = work_df[work_df['IsCompQuery'] == 1]
+    comp_winner_df = comp_df[comp_df['Winner'] == True]
+    comp_non_winner_df = comp_df[comp_df['Winner'] == False]
+
+    n_plots = 2
+    f, axarr = plt.subplots(n_plots,n_plots)
+    idx_r = 0
+    idx_c = 0
+    for measure in ['SimClueWeb','QueryTermsRatio','StopwordsRatio','Entropy']:
+        plot_df = winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color = 'b', label = 'ALL_Winner')
+        plot_df = non_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='b',linestyle='--', label='ALL_Loser')
+        plot_df = comp_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='r', label='Comp_Winner')
+        plot_df = comp_non_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='r', linestyle='--', label='Comp_Loser')
+        axarr[idx_r, idx_c].set_title(measure)
+
+        if idx_r == (n_plots - 1):
+            idx_r = 0
+            idx_c += 1
+            continue
+
+        idx_r += 1
+    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.subplots_adjust(right=0.75)
+    plt.savefig(file_name.replace('.tsv', '.png'), dpi =300)
 
 comp_queries_list = [195,193,188,180,177,161,144,59,51,45,36,34,32,29,11,10,
                      9,2,78,4,167,69,166,33,164,18,182,17,98,124,48]
@@ -434,3 +486,4 @@ comp_queries_list = [195,193,188,180,177,161,144,59,51,45,36,34,32,29,11,10,
 # plot_retrival_stats(lookup_method = 'Backward',interval_freq='1M', comp_queries_list=comp_queries_list)
 # create_per_query_stats()
 plot_stats_vs_winner()
+# plot_stats_vs_winner_plots(comp_queries_list, 'Summay_vs_winner_processed_1M_Backward_0.235749.tsv')
