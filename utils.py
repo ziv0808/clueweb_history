@@ -1,6 +1,6 @@
 import os
 import ast
-import tikzplotlib
+# import tikzplotlib
 import pandas as pd
 import matplotlib
 matplotlib.use('agg')
