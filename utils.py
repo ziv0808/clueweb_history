@@ -1,5 +1,6 @@
 import os
 import ast
+import tikzplotlib
 import pandas as pd
 import matplotlib
 matplotlib.use('agg')
@@ -9,8 +10,8 @@ import matplotlib.pyplot as plt
 
 plt.style.use('seaborn-whitegrid')
 def plot_retrival_stats(
-        file_name  = "all_urls_exrtacted_2008.tsv",
-        merge_file = "history_snapshots_2008_Html_retrival_summary.tsv"):
+        file_name  = "all_urls_exrtacted_2009.tsv",
+        merge_file =None):
 
     work_df = pd.read_csv(file_name, sep = '\t', index_col = False)
     if merge_file is not None:
@@ -160,7 +161,277 @@ def create_lost_snapshot_stats(
     plt.ylabel('#Losts Snapshots')
     plt.savefig("lost_snapshots_per_doc.png", dpi=300)
 
-create_lost_snapshot_stats()
+def create_snapshot_changes_stats(
+        filename = 'Summay_snapshot_stats_1M.tsv',
+        comp_queries_list = [195,193,188,180,177,161,144,59,51,45,36,34,32,29,11,10,
+                     9,2,78,4,167,69,166,33,164,18,182,17,98,124,48]):
+    filename_for_save = filename.replace('.tsv', '').replace('Summay_snapshot_stats_', '')
+    work_df = pd.read_csv(filename, sep = '\t', index_col = False)
+    # calc ratio measures
+    work_df['QueryTermsRatio'] = work_df.apply(lambda row: row['QueryWords'] / (row['TextLen'] - row['QueryWords']),axis =1)
+    work_df['StopwordsRatio'] = work_df.apply(lambda row: row['#Stopword'] / (row['TextLen'] - row['#Stopword']),axis=1)
+    no_clueweb_df = work_df[work_df['Interval'] != 'ClueWeb09'].copy()
+    clueweb_df    = work_df[work_df['Interval'] == 'ClueWeb09'].copy()
+    print("Mean ClueWeb09 SimToPrev:")
+    print(clueweb_df[clueweb_df['SimToPrev'].notnull()]['SimToPrev'].mean())
+    print("Mean ClueWeb09 SimToClosePrev:")
+    print(clueweb_df[clueweb_df['SimToClosePrev'].notnull()]['SimToClosePrev'].mean())
+    print("Med ClueWeb09 SimToPrev:")
+    print(clueweb_df[clueweb_df['SimToPrev'].notnull()]['SimToPrev'].median())
+    print("Med ClueWeb09 SimToClosePrev:")
+    print(clueweb_df[clueweb_df['SimToClosePrev'].notnull()]['SimToClosePrev'].median())
+    print("Mean all SimToPrev:")
+    print(work_df[work_df['SimToPrev'].notnull()]['SimToClosePrev'].mean())
+    print("Med all SimToPrev:")
+    print(work_df[work_df['SimToPrev'].notnull()]['SimToPrev'].median())
+    print("Mean not ClueWeb09 SimToClueWeb:")
+    print(no_clueweb_df['SimToClueWeb'].mean())
+    print("Med not ClueWeb09 SimToClueWeb:")
+    print(no_clueweb_df['SimToClueWeb'].median())
 
+    all_docno_and_queries_df = work_df[['Docno', 'QueryNum']].drop_duplicates()
+    only_clueweb_num = 0
+
+    summary_df = pd.DataFrame(columns = ['Interval', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb', 'QueryNum'])
+    next_index = 0
+    exact_mathchs = 0
+    # exact_mathch_df = pd.DataFrame(columns = ['Docno'])
+    # exact_mathch_index = 0
+    for index, row_ in all_docno_and_queries_df.iterrows():
+        doc_df = work_df[work_df['Docno'] == row_['Docno']].copy()
+        doc_df = doc_df[doc_df['QueryNum'] == row_['QueryNum']].copy()
+        if len(doc_df) == 1:
+            only_clueweb_num += 1
+            continue
+        bench_df = doc_df[doc_df['Interval'] == 'ClueWeb09']
+        bench_query_term_ratio = list(bench_df['QueryTermsRatio'])[0]
+        bench_stopword_ratio   = list(bench_df['StopwordsRatio'])[0]
+        bench_entropy_ratio    = list(bench_df['Entropy'])[0]
+        if bench_stopword_ratio  == 0:
+            bench_stopword_ratio = 1.0
+        if bench_query_term_ratio == 0:
+            bench_query_term_ratio = 1.0
+        for index, row in doc_df.iterrows():
+            if row['Interval'] != 'ClueWeb09':
+                interval         = row['Interval']
+                query_term_ratio = (row['QueryTermsRatio'] - bench_query_term_ratio)/float(bench_query_term_ratio)
+                stopword_ratio   = (row['StopwordsRatio'] - bench_stopword_ratio) / float(bench_stopword_ratio)
+                entropy_ratio    = (row['Entropy'] - bench_entropy_ratio) / float(bench_entropy_ratio)
+                sim_cluweb       = row['SimToClueWeb']
+                summary_df.loc[next_index] = [interval, query_term_ratio,stopword_ratio, entropy_ratio, sim_cluweb, int(row_['QueryNum'])]
+                next_index += 1
+            else:
+                if row['SimToPrev'] == 1.0:
+                    exact_mathchs += 1
+                    # exact_mathch_df.loc[exact_mathch_index] = [row_['Docno']]
+                    # exact_mathch_index += 1
+    exact_mathch_df = work_df[work_df['Interval'] != 'ClueWeb09'].copy()
+    exact_mathch_df = exact_mathch_df[exact_mathch_df['SimToClueWeb'] == 1.0][['Docno']].drop_duplicates()
+    exact_mathch_df.to_csv(filename.replace('.tsv', '_Exact_matched_docnos.tsv') , sep = '\t', index= False)
+    print("Num of one snapshot:")
+    print(only_clueweb_num)
+    print("Num of Exact Match:")
+    print(len(exact_mathch_df))
+    summary_df['ExactMatchs'] = summary_df['SimClueWeb'].apply(lambda x: 1 if x == 1.0 else 0)
+    plot_df = summary_df[['Interval', 'ExactMatchs']].groupby(['Interval']).sum()
+    plt.cla()
+    plt.clf()
+    plot_df.plot(kind='bar', color='c', legend= False)
+    plt.xlabel('Interval')
+    plt.tick_params(axis='x', labelsize=5)
+    plt.xticks(rotation=45)
+    plt.ylabel("#Exact Matches")
+    plt.title("#Exact Matches Per Interval")
+    plt.savefig( filename_for_save + "_Exact_Matches_per_interval.png", dpi=300)
+    summary_df['IsCompQuery'] = summary_df['QueryNum'].apply(lambda x: 1 if x in comp_queries_list else 0)
+    interval_quantity_df = summary_df[['Interval', 'QueryNum']].groupby(['Interval']).count()
+    plt.cla()
+    plt.clf()
+    interval_quantity_df.plot(kind='bar', color='r', legend= False)
+    plt.xlabel('Interval')
+    plt.tick_params(axis='x', labelsize=5)
+    plt.xticks(rotation=45)
+    plt.ylabel("#Snapshots")
+    plt.title("#Snapshots Per Interval")
+    plt.savefig(filename_for_save + "_Snapshots_per_interval.png", dpi=300)
+    for measure in ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb']:
+        plt.cla()
+        plt.clf()
+        plot_df = summary_df[['Interval', measure]].groupby(['Interval']).mean()
+        plot_df.rename(columns = {measure : 'ALL'}, inplace =True)
+        plot_df_ = summary_df[summary_df['IsCompQuery'] == 1][['Interval', measure]].groupby(['Interval']).mean()
+        plot_df_.rename(columns={measure: 'Comp Queries'}, inplace=True)
+        plot_df = pd.merge(
+            plot_df,
+            plot_df_,
+            left_index=True,
+            right_index=True)
+        plot_df_ = summary_df[summary_df['IsCompQuery'] == 0][['Interval', measure]].groupby(['Interval']).mean()
+        plot_df_.rename(columns={measure: 'Non Comp'}, inplace=True)
+        plot_df = pd.merge(
+            plot_df,
+            plot_df_,
+            left_index=True,
+            right_index=True)
+
+        plot_df.plot(kind='bar')
+        plt.xlabel('Interval')
+        plt.tick_params(axis='x', labelsize=6)
+        plt.xticks(rotation=45)
+        plt.legend(loc="center left", bbox_to_anchor=(1,0.5))
+        plt.subplots_adjust(right=0.75, bottom=0.15)
+        if measure != 'SimClueWeb':
+            plt.ylabel("%" + measure)
+            plt.title("Mean " + measure + " Precentage Difference from ClueWeb09")
+        else:
+            plt.ylabel(measure)
+            plt.title("Mean " + measure)
+
+        plt.savefig(measure + filename + "_Precentage_Difference_per_interval.png", dpi=300)
+        plot_df.to_csv(os.path.join( 'plot_df', filename_for_save + '_' + measure + '.tsv'), sep='\t')
+        # tikzplotlib.save(measure + "Precentage_Difference_per_interval.tex")
+        # plt.cla()
+        # plt.clf()
+        # plot_df = summary_df[['Interval', measure]].groupby(['Interval']).median()
+        # plot_df.plot(legend=False, kind='bar', color='r')
+        # plt.xlabel('Interval')
+        # plt.tick_params(axis='x', labelsize=5)
+        # plt.xticks(rotation=45)
+        # if measure != 'SimClueWeb':
+        #     plt.ylabel("%" + measure)
+        #     plt.title("Median " + measure + " Precentage Difference from ClueWeb09")
+        # else:
+        #     plt.ylabel(measure)
+        #     plt.title("Median " + measure)
+        #
+        # plt.savefig(measure + "Median_Precentage_Difference_per_interval.png", dpi=300)
+
+def plot_retrival_stats(
+        lookup_method,
+        interval_freq,
+        comp_queries_list):
+    work_df = pd.read_csv(interval_freq + '_' + lookup_method + '_Per_query_stats.tsv' , sep = '\t', index_col=False)
+    work_df['IsCompQuery'] = work_df['Query_Num'].apply(lambda x: 1 if x in comp_queries_list else 0)
+
+    save_df = pd.DataFrame({})
+    for measure in ['Map', 'P@5', 'P@10', 'Overlap@5_ClueWeb','Overlap@5_Last','RBO_0.95_Ext_ClueWeb', 'RBO_0.975_Ext_ClueWeb','RBO_0.99_Ext_ClueWeb','RBO_0.95_Ext_Last', 'RBO_0.975_Ext_Last','RBO_0.99_Ext_Last']:
+        plt.cla()
+        plt.clf()
+        plot_df = work_df[['Interval', measure]].groupby(['Interval']).mean()
+        plot_df.rename(columns={measure: 'ALL'}, inplace=True)
+        plot_df_ = work_df[work_df['IsCompQuery'] == 1][['Interval', measure]].groupby(['Interval']).mean()
+        plot_df_.rename(columns={measure: 'Comp Queries'}, inplace=True)
+        plot_df = pd.merge(
+            plot_df,
+            plot_df_,
+            left_index=True,
+            right_index=True)
+        plot_df_ = work_df[work_df['IsCompQuery'] == 0][['Interval', measure]].groupby(['Interval']).mean()
+        plot_df_.rename(columns={measure: 'Non Comp'}, inplace=True)
+        plot_df = pd.merge(
+            plot_df,
+            plot_df_,
+            left_index=True,
+            right_index=True)
+        measure = measure.replace('Ext_', '')
+
+        plot_df.plot(kind='bar')
+        plt.xlabel('Interval')
+        plt.tick_params(axis='x', labelsize=6)
+        plt.xticks(rotation=45)
+        plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        plt.subplots_adjust(right=0.75, bottom=0.15)
+
+        plt.ylabel(measure)
+        plt.title(lookup_method + " Mean " + measure)
+
+        plt.savefig(interval_freq + '_' + lookup_method + "_" + measure + "_per_interval.png", dpi=300)
+        for col in list(plot_df.columns):
+            plot_df.rename(columns = {col : measure + ' ' + col }, inplace=True)
+        if save_df.empty == True:
+            save_df = plot_df
+        else:
+            save_df = pd.merge(
+                save_df,
+                plot_df,
+                left_index=True,
+                right_index=True)
+    save_df.to_csv(os.path.join('plot_df', interval_freq + '_' +  lookup_method + '_Retrival_Stats.tsv'), sep='\t')
+
+
+def create_per_query_stats(filename = 'Summay_snapshot_stats.tsv'):
+    work_df = pd.read_csv(filename, sep = '\t', index_col = False)
+    work_df = work_df[work_df['Interval'] != 'ClueWeb09'].copy()
+
+    plot_df = work_df[['QueryNum', 'SimToClueWeb']].groupby(['QueryNum']).mean()
+    plot_df = plot_df.sort_values('SimToClueWeb', ascending=False)
+    plot_df.plot(legend=False, kind='bar', color='c')
+    plt.xlabel('Query')
+    plt.xticks(visible=False)
+    plt.ylabel('Mean SimToClueWeb')
+    plt.savefig("Mean_SimToClueWeb_per_query.png", dpi=300)
+
+def plot_stats_vs_winner(
+        interval_freq = '1M',
+        lookup_method = 'Backward'):
+
+    work_df = pd.read_csv('Summay_vs_winner_' + interval_freq + '_'+ lookup_method+'.csv', index_col=False)
+    all_queries   = list(work_df['QueryNum'].drop_duplicates())
+    all_intervals = sorted(list(work_df['Interval'].drop_duplicates()))
+
+    summary_df = pd.DataFrame(columns = ['QueryNum','Interval','Docno','Round','Winner','SimClueWeb','QueryTermsRatio','StopwordsRatio','Entropy'])
+    next_index = 0
+    spearman_corr_df = pd.DataFrame({})
+    for query_num in all_queries:
+        print (query_num )
+        query_df = work_df[work_df['QueryNum'] == query_num].copy()
+        interval_winners_df_dict = {}
+        for interval_idx in range(len(all_intervals)):
+            interval = all_intervals[interval_idx]
+            query_interval_df = query_df[query_df['Interval'] == interval]
+            query_interval_df['Sim_PD_Rank'] = query_interval_df['Sim_PW'].rank(ascending= False)
+            # interval_winners_df_dict[interval] = query_interval_df[query_interval_df['Rank'] == 1]
+            if interval != '2008-01-01':
+                spearman_corr_df = spearman_corr_df.append(query_interval_df[['Sim_PD_Rank', 'Rank']])
+                addition = 0
+                while (interval_idx - addition) >= 0:
+                    temp_interval    = all_intervals[interval_idx - addition]
+                    temp_interval_df = query_df[query_df['Interval'] == temp_interval].copy()
+                    for index, row  in temp_interval_df.iterrows():
+                        insert_row = [query_num, interval, row['Docno'],(-1)*addition, row['Rank'] == 1, row['SimClueWeb'],
+                                      row['QueryTermsRatio'],row['StopwordsRatio'],row['Entropy']]
+                        summary_df.loc[next_index] = insert_row
+                        next_index += 1
+                    addition += 1
+
+    print('Spearman corr: ' +str(spearman_corr_df.corr().loc['Sim_PD_Rank']['Rank']))
+    summary_df.to_csv('Summay_vs_winner_processed_' + interval_freq + '_'+ lookup_method +'_' +
+                      str(round(spearman_corr_df.corr().loc['Sim_PD_Rank']['Rank'], 6))  + '.tsv', sep ='\t', index=False)
+
+def
+
+
+
+
+
+comp_queries_list = [195,193,188,180,177,161,144,59,51,45,36,34,32,29,11,10,
+                     9,2,78,4,167,69,166,33,164,18,182,17,98,124,48]
+
+# df_1 = pd.read_csv('Summay_snapshot_stats.tsv', sep = '\t', index_col = False)
+# df_2 = pd.read_csv('Summay_snapshot_stats_old.tsv', sep = '\t', index_col = False)
+#
+# merged = pd.merge(
+#     df_1,
+#     df_2,
+#     on = ['Docno','Interval'],
+#     how = 'inner')
+# pass
+# create_snapshot_changes_stats()
+# create_lost_snapshot_stats()
+#
 # plot_retrival_stats()
 # create_interval_coverage_plot()
+
+# plot_retrival_stats(lookup_method = 'Backward',interval_freq='1M', comp_queries_list=comp_queries_list)
+# create_per_query_stats()
+plot_stats_vs_winner()
