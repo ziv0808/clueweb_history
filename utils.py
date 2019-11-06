@@ -379,7 +379,7 @@ def plot_stats_vs_winner(
     all_queries   = list(work_df['QueryNum'].drop_duplicates())
     all_intervals = sorted(list(work_df['Interval'].drop_duplicates()))
 
-    summary_df = pd.DataFrame(columns = ['QueryNum','Interval','Docno','Round','Winner','SimClueWeb','QueryTermsRatio','StopwordsRatio','Entropy','Trend'])
+    summary_df = pd.DataFrame(columns = ['QueryNum','Interval','Docno','Round','Winner','Sim_PW','QueryTermsRatio','StopwordsRatio','Entropy','Trend'])
     next_index = 0
     spearman_corr_df = pd.DataFrame({})
     for query_num in all_queries:
@@ -408,7 +408,7 @@ def plot_stats_vs_winner(
                             trend = 'W'
                         elif row['Rank'] < row['CurrRank']:
                             trend = 'L'
-                        insert_row = [query_num, interval, row['Docno'],(-1)*addition, row['Rank'] == 1, row['SimClueWeb'],
+                        insert_row = [query_num, interval, row['Docno'],(-1)*addition, row['Rank'] == 1, row['Sim_PW'],
                                       row['QueryTermsRatio'],row['StopwordsRatio'],row['Entropy'], trend]
 
                         summary_df.loc[next_index] = insert_row
@@ -465,6 +465,54 @@ def plot_stats_vs_winner_plots(
     plt.subplots_adjust(right=0.75)
     plt.savefig(file_name.replace('.tsv', '.png'), dpi =300)
 
+    plt.cla()
+    plt.clf()
+
+
+    winner_df_ = work_df[work_df['Trend'] == 'W']
+    non_winner_df = work_df[work_df['Trend'] == 'L']
+
+    comp_winner_df_ = comp_df[comp_df['Trend'] == 'W']
+    comp_non_winner_df = comp_df[comp_df['Trend'] == 'L']
+
+    n_plots = 2
+    f, axarr = plt.subplots(n_plots, n_plots)
+    idx_r = 0
+    idx_c = 0
+    for measure in ['SimClueWeb', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy']:
+        plot_df = winner_df_[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='b', label='ALL_Up')
+        plot_df = non_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='b', linestyle='--', label='ALL_Down')
+        plot_df = winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='b', linestyle=':', label='ALL_Winner', alpha =0.7)
+
+        plot_df = comp_winner_df_[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='r', label='Comp_Up')
+        plot_df = comp_non_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='r', linestyle='--', label='Comp_Down')
+        plot_df = comp_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='r', linestyle=':', label='Comp_Winner',
+                                 alpha=0.7)
+        axarr[idx_r, idx_c].set_title(measure)
+
+
+        if idx_r == (n_plots - 1):
+            idx_r = 0
+            idx_c += 1
+            continue
+
+        idx_r += 1
+    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.subplots_adjust(right=0.75)
+    plt.savefig(file_name.replace('.tsv', '_WL.png'), dpi=300)
+
 comp_queries_list = [195,193,188,180,177,161,144,59,51,45,36,34,32,29,11,10,
                      9,2,78,4,167,69,166,33,164,18,182,17,98,124,48]
 
@@ -486,4 +534,4 @@ comp_queries_list = [195,193,188,180,177,161,144,59,51,45,36,34,32,29,11,10,
 # plot_retrival_stats(lookup_method = 'Backward',interval_freq='1M', comp_queries_list=comp_queries_list)
 # create_per_query_stats()
 plot_stats_vs_winner()
-# plot_stats_vs_winner_plots(comp_queries_list, 'Summay_vs_winner_processed_1M_Backward_0.235749.tsv')
+# plot_stats_vs_winner_plots(comp_queries_list, 'Summay_vs_winner_processed_2M_NoLookup_0.562329.tsv')
