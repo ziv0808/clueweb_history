@@ -16,7 +16,9 @@ class Benchmark:
             self,
             interval_lookup_method,
             work_year,
-            interval_freq):
+            interval_freq,
+            save_all_doc_dict = True,
+            get_all_doc_dict_from_file = False):
         # create interval list
         self.interval_list = build_interval_list(
             work_year=work_year,
@@ -29,10 +31,25 @@ class Benchmark:
         self.stemmed_queries_df      = create_stemmed_queries_df()
         # preprocess all_docs
         processed_docs_path = os.path.join(os.path.join(PROCESSED_DOCS_MAIN_FOLDER, work_year), interval_freq)
-        self.all_docs_dict = self.preprocess_docs(
-                processed_docs_path=processed_docs_path,
-                interval_list = self.interval_list,
-                interval_lookup_method=self.interval_lookup_method)
+        if get_all_doc_dict_from_file == False:
+            self.all_docs_dict = self.preprocess_docs(
+                    processed_docs_path=processed_docs_path,
+                    interval_list = self.interval_list,
+                    interval_lookup_method=self.interval_lookup_method)
+        else:
+            main_dirname = os.path.join(os.path.dirname(PROCESSED_DOCS_MAIN_FOLDER), 'benchmark')
+            save_dirname = os.path.join(main_dirname, work_year + '_' + interval_freq + '_' + interval_lookup_method)
+            with open(os.path.join(save_dirname, 'all_docs_dict.json'), 'r') as f:
+                self.all_docs_dict = ast.literal_eval(f.read())
+
+        if save_all_doc_dict == True:
+            main_dirname = os.path.join(os.path.dirname(PROCESSED_DOCS_MAIN_FOLDER), 'benchmark')
+            save_dirname = os.path.join(main_dirname, work_year + '_' + interval_freq + '_' + interval_lookup_method)
+            if not os.path.exists(save_dirname):
+                os.mkdir(save_dirname)
+            with open(os.path.join(save_dirname, 'all_docs_dict.json'), 'w') as f:
+                f.write(str(self.all_docs_dict))
+
 
     def preprocess_docs(
             self,
@@ -40,6 +57,7 @@ class Benchmark:
             interval_list,
             interval_lookup_method):
 
+        doc_count = 0
         all_docs_dict = {}
         for filename in os.listdir(processed_docs_path):
             if filename.endswith('.json'):
@@ -50,7 +68,11 @@ class Benchmark:
                     interval_list=interval_list,
                     interval_lookup_method=interval_lookup_method,
                     doc_dict=doc_dict)
+                doc_count += 1
+            if doc_count % 50 == 0:
+                print("Docs Processed : " + str(doc_count))
 
+        print("Docs Processed : " + str(doc_count))
         return all_docs_dict
 
     def process_doc_for_S_M_L_groups(
@@ -199,7 +221,9 @@ class Benchmark:
                       os.path.join(output_folder, 'curr_run_results_' + cur_time + 'txt')
 
         output = subprocess.check_output(['bash', '-c', bashCommand])
+        print (output)
         output_lines = output.split('\n')
+        print(output_lines)
         for line in output_lines:
             splitted_line = line.split('\t')
             splitted_line = list(filter(None, splitted_line))
@@ -226,10 +250,13 @@ if __name__=="__main__":
     hyper_param_dict = {'S' : {'Mue' : 1500, 'Lambda' : 0.45},
                         'M' : {'Mue' : 1500, 'Lambda' : 0.45},
                         'L' : {'Mue' : 5, 'Lambda' : 0.1}}
+    print('Time: ' + str(time.time()))
     benchmark_obj = Benchmark(
             interval_lookup_method=interval_lookup_method,
             work_year=work_year,
             interval_freq=interval_freq)
     print("Obj Created!")
+    print('Time: ' + str(time.time()))
     query_list = list(range(1,201))
     print(benchmark_obj.score_queries(query_list=query_list, output_folder=output_folder,hyper_param_dict=hyper_param_dict))
+    print('Time: ' + str(time.time()))
