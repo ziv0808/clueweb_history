@@ -220,11 +220,11 @@ class Benchmark:
 
         results_trec_str = convert_df_to_trec(big_df)
         cur_time = str(datetime.datetime.now())
-        with open(os.path.join(output_folder, 'curr_run_results_'  + cur_time + '.txt'), 'w') as f:
+        with open(os.path.join(output_folder, 'curr_run_results_'  + cur_time.replace(' ', '') + '.txt'), 'w') as f:
             f.write(results_trec_str)
 
         bashCommand = TREC_EVAL_PATH + ' ' + QRELS_FILE_PATH + ' ' + \
-                      os.path.join(output_folder, 'curr_run_results_' + cur_time + 'txt')
+                      os.path.join(output_folder, 'curr_run_results_' + cur_time.replace(' ', '') + 'txt')
 
         output = subprocess.check_output(['bash', '-c', bashCommand])
         output_lines = output.split('\n')
@@ -256,7 +256,7 @@ class Benchmark:
             query_list_cp = query_list[:]
             for left_out_query_num in query_list[i*left_out_chunk_size:(i+1)*left_out_chunk_size]:
                 query_list_cp.remove(left_out_query_num)
-            print('K:' + str(i) + ' ' + str(query_list_cp))
+            # print('K:' + str(i) + ' ' + str(query_list_cp))
             curr_result_dict = self.score_queries(
                     query_list=query_list_cp,
                     output_folder=output_folder,
