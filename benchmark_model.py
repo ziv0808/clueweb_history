@@ -220,11 +220,11 @@ class Benchmark:
 
         results_trec_str = convert_df_to_trec(big_df)
         cur_time = str(datetime.datetime.now())
-        with open(os.path.join(output_folder, 'curr_run_results_'  + cur_time.replace(' ', '') + '.txt'), 'w') as f:
+        with open(os.path.join(output_folder, 'curr_run_results_'  + cur_time.replace(' ', '_') + '.txt'), 'w') as f:
             f.write(results_trec_str)
 
         bashCommand = TREC_EVAL_PATH + ' ' + QRELS_FILE_PATH + ' ' + \
-                      os.path.join(output_folder, 'curr_run_results_' + cur_time.replace(' ', '') + 'txt')
+                      os.path.join(output_folder, 'curr_run_results_' + cur_time.replace(' ', '_') + '.txt')
 
         output = subprocess.check_output(['bash', '-c', bashCommand])
         output_lines = output.split('\n')
