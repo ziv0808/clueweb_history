@@ -17,8 +17,8 @@ class Benchmark:
             interval_lookup_method,
             work_year,
             interval_freq,
-            save_all_doc_dict = True,
-            get_all_doc_dict_from_file = False):
+            save_all_doc_dict = False,
+            get_all_doc_dict_from_file = True):
         # create interval list
         self.interval_list = build_interval_list(
             work_year=work_year,
@@ -69,7 +69,7 @@ class Benchmark:
                     interval_lookup_method=interval_lookup_method,
                     doc_dict=doc_dict)
                 doc_count += 1
-            if doc_count % 50 == 0:
+            if doc_count % 100 == 0:
                 print("Docs Processed : " + str(doc_count))
 
         print("Docs Processed : " + str(doc_count))
@@ -224,7 +224,7 @@ class Benchmark:
         print (output)
         output_lines = output.split('\n')
         print(output_lines)
-        for line in output_lines:
+        for line in output_lines[:-1]:
             splitted_line = line.split('\t')
             splitted_line = list(filter(None, splitted_line))
             if splitted_line[1] == 'all':
