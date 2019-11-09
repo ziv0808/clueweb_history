@@ -254,7 +254,7 @@ class Benchmark:
         k_results_dict = {'Map' : 0.0, 'P_5' : 0.0, 'P_10' : 0.0}
         for i in (range(k)):
             query_list_cp = query_list[:]
-            for left_out_query_num in query_list[i*left_out_chunk_size, (i+1)*left_out_chunk_size]:
+            for left_out_query_num in query_list[i*left_out_chunk_size:(i+1)*left_out_chunk_size]:
                 query_list_cp.remove(left_out_query_num)
 
             curr_result_dict = self.score_queries(
