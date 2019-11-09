@@ -277,7 +277,7 @@ if __name__=="__main__":
     work_year = '2008'
     interval_freq = sys.argv[1]
     interval_lookup_method = sys.argv[2]
-    k = 10
+    k = 5
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
     output_folder = '/lv_local/home/zivvasilisky/ziv/results/benchmark'
@@ -295,8 +295,8 @@ if __name__=="__main__":
     hyper_param_dict = {'S': {'Mue': 1500, 'Lambda': 0.45},
                         'M': {'Mue': 1500, 'Lambda': 0.45},
                         'L': {'Mue': 5, 'Lambda': 0.1}}
-    optional_mue_list = [10, 50, 100, 300, 500, 800, 1000, 1200, 1500, 1800]
-    optional_lambda_list = [0.1, 0.2, 0.5, 0.8, 0.9]
+    optional_mue_list = [10, 100, 500, 800, 1000, 1200, 1500]
+    optional_lambda_list = [0.1, 0.2]
     for s_mue in optional_mue_list:
         for m_mue in optional_mue_list:
             for l_mue in optional_mue_list:
