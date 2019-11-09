@@ -2,6 +2,7 @@ import os
 import ast
 import sys
 import time
+import datetime
 import subprocess
 import pandas as pd
 
@@ -24,6 +25,8 @@ class Benchmark:
             work_year=work_year,
             frequency=interval_freq,
             add_clueweb=True)
+
+        self.interval_freq = interval_freq
         self.interval_lookup_method = interval_lookup_method
         # init usefull dfs and dicts
         self.cc_dict                 = create_cc_dict()
@@ -36,20 +39,23 @@ class Benchmark:
                     processed_docs_path=processed_docs_path,
                     interval_list = self.interval_list,
                     interval_lookup_method=self.interval_lookup_method)
+        main_dirname = os.path.join(os.path.dirname(PROCESSED_DOCS_MAIN_FOLDER), 'benchmark')
+        self.save_dirname = os.path.join(main_dirname, work_year + '_' + interval_freq + '_' + interval_lookup_method)
+        if not os.path.exists(self.save_dirname):
+            os.mkdir(self.save_dirname)
         else:
-            main_dirname = os.path.join(os.path.dirname(PROCESSED_DOCS_MAIN_FOLDER), 'benchmark')
-            save_dirname = os.path.join(main_dirname, work_year + '_' + interval_freq + '_' + interval_lookup_method)
-            with open(os.path.join(save_dirname, 'all_docs_dict.json'), 'r') as f:
+            with open(os.path.join(self.save_dirname, 'all_docs_dict.json'), 'r') as f:
                 self.all_docs_dict = ast.literal_eval(f.read())
 
         if save_all_doc_dict == True:
-            main_dirname = os.path.join(os.path.dirname(PROCESSED_DOCS_MAIN_FOLDER), 'benchmark')
-            save_dirname = os.path.join(main_dirname, work_year + '_' + interval_freq + '_' + interval_lookup_method)
-            if not os.path.exists(save_dirname):
-                os.mkdir(save_dirname)
-            with open(os.path.join(save_dirname, 'all_docs_dict.json'), 'w') as f:
+            with open(os.path.join(self.save_dirname, 'all_docs_dict.json'), 'w') as f:
                 f.write(str(self.all_docs_dict))
 
+        self.run_log = ""
+
+    def save_log(self):
+        with open(os.path.join(self.save_dirname, 'grid_search_results'), 'w') as f:
+            f.write(str(self.run_log))
 
     def preprocess_docs(
             self,
@@ -213,7 +219,7 @@ class Benchmark:
                 big_df = big_df.append(res_query_df, ignore_index=True)
 
         results_trec_str = convert_df_to_trec(big_df)
-        cur_time = str(time.time())
+        cur_time = str(datetime.datetime.now())
         with open(os.path.join(output_folder, 'curr_run_results_'  + cur_time + 'txt'), 'w') as f:
             f.write(results_trec_str)
 
@@ -221,9 +227,7 @@ class Benchmark:
                       os.path.join(output_folder, 'curr_run_results_' + cur_time + 'txt')
 
         output = subprocess.check_output(['bash', '-c', bashCommand])
-        print (output)
         output_lines = output.split('\n')
-        print(output_lines)
         for line in output_lines[:-1]:
             splitted_line = line.split('\t')
             splitted_line = list(filter(None, splitted_line))
@@ -236,27 +240,76 @@ class Benchmark:
                     p_10 = float(splitted_line[2])
 
         results_dict = {'TimeStamp' : cur_time, 'Map' : map, 'P_5' : p_5, 'P_10' : p_10}
+        # self.run_log += str(hyper_param_dict) + '\n' + str(results_dict) + '\n'
+
         return results_dict
 
+    def score_queries_cv(
+            self,
+            query_list,
+            output_folder,
+            hyper_param_dict,
+            k):
+        left_out_chunk_size = len(query_list)/int(k)
+        k_results_dict = {'Map' : 0.0, 'P_5' : 0.0, 'P_10' : 0.0}
+        for i in (range(k)):
+            query_list_cp = query_list[:]
+            for left_out_query_num in query_list[i*left_out_chunk_size, (i+1)*left_out_chunk_size]:
+                query_list_cp.remove(left_out_query_num)
+
+            curr_result_dict = self.score_queries(
+                    query_list=query_list_cp,
+                    output_folder=output_folder,
+                    hyper_param_dict=hyper_param_dict)
+
+            for measure in k_results_dict:
+                k_results_dict[measure] += curr_result_dict[measure]
+
+        for measure in k_results_dict:
+            k_results_dict[measure] = k_results_dict[measure]/float(k)
+
+        cur_time = str(datetime.datetime.now())
+        self.run_log += str(cur_time) + '\n' + str(hyper_param_dict) + '\n' + str(k_results_dict) + '\n'
+
+        return k_results_dict
 
 if __name__=="__main__":
     work_year = '2008'
     interval_freq = sys.argv[1]
     interval_lookup_method = sys.argv[2]
+    k = 10
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
     output_folder = '/lv_local/home/zivvasilisky/ziv/results/benchmark'
 
-    hyper_param_dict = {'S' : {'Mue' : 1500, 'Lambda' : 0.45},
-                        'M' : {'Mue' : 1500, 'Lambda' : 0.45},
-                        'L' : {'Mue' : 5, 'Lambda' : 0.1}}
-    print('Time: ' + str(time.time()))
+
+    print('Time: ' + str(datetime.datetime.now()))
+
     benchmark_obj = Benchmark(
             interval_lookup_method=interval_lookup_method,
             work_year=work_year,
             interval_freq=interval_freq)
     print("Obj Created!")
-    print('Time: ' + str(time.time()))
+    print('Time: ' + str(datetime.datetime.now()))
     query_list = list(range(1,201))
-    print(benchmark_obj.score_queries(query_list=query_list, output_folder=output_folder,hyper_param_dict=hyper_param_dict))
-    print('Time: ' + str(time.time()))
+    hyper_param_dict = {'S': {'Mue': 1500, 'Lambda': 0.45},
+                        'M': {'Mue': 1500, 'Lambda': 0.45},
+                        'L': {'Mue': 5, 'Lambda': 0.1}}
+    optional_mue_list = [10, 50, 100, 300, 500, 800, 1000, 1200, 1500, 1800]
+    optional_lambda_list = [0.1, 0.2, 0.5, 0.8, 0.9]
+    for s_mue in optional_mue_list:
+        for m_mue in optional_mue_list:
+            for l_mue in optional_mue_list:
+                for l_labmda in optional_lambda_list:
+                    hyper_param_dict = {'S': {'Mue': s_mue, 'Lambda': (1-l_labmda)/2.0},
+                                        'M': {'Mue': m_mue, 'Lambda': (1-l_labmda)/2.0},
+                                        'L': {'Mue': l_mue, 'Lambda': l_labmda}}
+
+                    print(hyper_param_dict)
+                    print(benchmark_obj.score_queries_cv(query_list=query_list,
+                                                         output_folder=output_folder,
+                                                         hyper_param_dict=hyper_param_dict,
+                                                         k=k))
+                    print(str(datetime.datetime.now()))
+    benchmark_obj.save_log()
+
