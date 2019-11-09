@@ -206,7 +206,7 @@ class Benchmark:
         big_df = pd.DataFrame({})
         for index, row in self.stemmed_queries_df.iterrows():
             query_num = int(row['QueryNum'])
-            if query_num in query_list:
+            if (query_num in query_list) and (query_num not in [100, 95]):
                 query_txt   = row['QueryStems']
                 relevant_df = self.query_to_doc_mapping_df[self.query_to_doc_mapping_df['QueryNum'] == query_num].copy()
                 res_query_df = self.get_scored_df_for_query(
@@ -220,7 +220,7 @@ class Benchmark:
 
         results_trec_str = convert_df_to_trec(big_df)
         cur_time = str(datetime.datetime.now())
-        with open(os.path.join(output_folder, 'curr_run_results_'  + cur_time + 'txt'), 'w') as f:
+        with open(os.path.join(output_folder, 'curr_run_results_'  + cur_time + '.txt'), 'w') as f:
             f.write(results_trec_str)
 
         bashCommand = TREC_EVAL_PATH + ' ' + QRELS_FILE_PATH + ' ' + \
@@ -256,7 +256,7 @@ class Benchmark:
             query_list_cp = query_list[:]
             for left_out_query_num in query_list[i*left_out_chunk_size:(i+1)*left_out_chunk_size]:
                 query_list_cp.remove(left_out_query_num)
-
+            print('K:' + str(i) + ' ' + str(query_list_cp))
             curr_result_dict = self.score_queries(
                     query_list=query_list_cp,
                     output_folder=output_folder,
