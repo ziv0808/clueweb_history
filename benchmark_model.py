@@ -280,8 +280,8 @@ if __name__=="__main__":
     work_year = '2008'
     interval_freq = sys.argv[1]
     interval_lookup_method = sys.argv[2]
-    save_all_doc_dict = bool(sys.argv[3])
-    get_all_doc_dict_from_file = bool(sys.argv[4])
+    save_all_doc_dict = convert_str_to_bool(sys.argv[3])
+    get_all_doc_dict_from_file = convert_str_to_bool(sys.argv[4])
 
     k = 5
     print('Interval Feaq: ' + interval_freq)

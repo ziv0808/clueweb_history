@@ -155,3 +155,11 @@ def create_stemmed_queries_df(
 def create_query_to_doc_mapping_df(
         query_to_doc_mapping_file='/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'):
     return pd.read_csv(query_to_doc_mapping_file, sep = '\t', index_col = False)
+
+def convert_str_to_bool(strng):
+    if strng == 'False':
+        return False
+    elif strng == 'True':
+        return True
+    else:
+        raise Exception("convert_str_to_bool: Not supported string")
