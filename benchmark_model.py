@@ -57,6 +57,9 @@ class Benchmark:
         with open(os.path.join(self.save_dirname, 'grid_search_results'), 'w') as f:
             f.write(str(self.run_log))
 
+    def add_to_log(self, strng):
+        self.run_log += strng + '\n'
+
     def preprocess_docs(
             self,
             processed_docs_path,
@@ -277,6 +280,9 @@ if __name__=="__main__":
     work_year = '2008'
     interval_freq = sys.argv[1]
     interval_lookup_method = sys.argv[2]
+    save_all_doc_dict = sys.argv[3]
+    get_all_doc_dict_from_file = sys.argv[4]
+
     k = 5
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
@@ -288,15 +294,19 @@ if __name__=="__main__":
     benchmark_obj = Benchmark(
             interval_lookup_method=interval_lookup_method,
             work_year=work_year,
-            interval_freq=interval_freq)
+            interval_freq=interval_freq,
+            save_all_doc_dict=save_all_doc_dict,
+            get_all_doc_dict_from_file=get_all_doc_dict_from_file)
     print("Obj Created!")
     print('Time: ' + str(datetime.datetime.now()))
     query_list = list(range(1,201))
     hyper_param_dict = {'S': {'Mue': 1500, 'Lambda': 0.45},
                         'M': {'Mue': 1500, 'Lambda': 0.45},
                         'L': {'Mue': 5, 'Lambda': 0.1}}
-    optional_mue_list = [10, 100, 500, 800, 1000, 1200, 1500]
+    optional_mue_list = [5, 10, 100, 500, 800, 1000, 1200, 1500, 1800]
     optional_lambda_list = [0.1, 0.2]
+    max_map = 0.0
+    best_config = None
     for s_mue in optional_mue_list:
         for m_mue in optional_mue_list:
             for l_mue in optional_mue_list:
@@ -306,10 +316,16 @@ if __name__=="__main__":
                                         'L': {'Mue': l_mue, 'Lambda': l_labmda}}
 
                     print(hyper_param_dict)
-                    print(benchmark_obj.score_queries_cv(query_list=query_list,
+                    res_dict = benchmark_obj.score_queries_cv(query_list=query_list,
                                                          output_folder=output_folder,
                                                          hyper_param_dict=hyper_param_dict,
-                                                         k=k))
+                                                         k=k)
+                    print(res_dict)
+                    if res_dict['Map'] > max_map:
+                        max_map = res_dict['Map']
+                        best_config = hyper_param_dict
                     print(str(datetime.datetime.now()))
+    print("Best Config: " + str(best_config) + " Map : " + str(max_map))
+    benchmark_obj.add_to_log("Best Config: " + str(best_config) + " Map : " + str(max_map))
     benchmark_obj.save_log()
 
