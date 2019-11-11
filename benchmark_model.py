@@ -32,6 +32,9 @@ class Benchmark:
         self.cc_dict                 = create_cc_dict()
         self.query_to_doc_mapping_df = create_query_to_doc_mapping_df()
         self.stemmed_queries_df      = create_stemmed_queries_df()
+        self.query_num_to_tf_dict    = {}
+        for index, row in self.stemmed_queries_df.iterrows():
+            self.query_num_to_tf_dict[int(row['QueryNum'])] = convert_query_to_tf_dict(row['QueryStems'])
         # preprocess all_docs
         processed_docs_path = os.path.join(os.path.join(PROCESSED_DOCS_MAIN_FOLDER, work_year), interval_freq)
         if get_all_doc_dict_from_file == False:
@@ -178,14 +181,13 @@ class Benchmark:
     def get_scored_df_for_query(
             self,
             query_num,
-            query,
             query_doc_df,
             cc_dict,
             hyper_param_dict):
 
         res_df = pd.DataFrame(columns=['Query_ID', 'Iteration', 'Docno', 'Rank', 'Score', 'Method'])
         next_index = 0
-        query_dict = convert_query_to_tf_dict(query)
+        query_dict = self.query_num_to_tf_dict[query_num]
         for index, row in query_doc_df.iterrows():
             docno = row['Docno']
             doc_dict = self.all_docs_dict[docno]
@@ -211,11 +213,9 @@ class Benchmark:
         for index, row in self.stemmed_queries_df.iterrows():
             query_num = int(row['QueryNum'])
             if (query_num in query_list) and (query_num not in [100, 95]):
-                query_txt   = row['QueryStems']
                 relevant_df = self.query_to_doc_mapping_df[self.query_to_doc_mapping_df['QueryNum'] == query_num].copy()
                 res_query_df = self.get_scored_df_for_query(
                     query_num=query_num,
-                    query=query_txt,
                     query_doc_df=relevant_df,
                     cc_dict=self.cc_dict,
                     hyper_param_dict=hyper_param_dict)
