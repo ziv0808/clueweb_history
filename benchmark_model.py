@@ -43,7 +43,8 @@ class Benchmark:
         self.save_dirname = os.path.join(main_dirname, work_year + '_' + interval_freq + '_' + interval_lookup_method)
         if not os.path.exists(self.save_dirname):
             os.mkdir(self.save_dirname)
-        else:
+
+        if get_all_doc_dict_from_file == True:
             with open(os.path.join(self.save_dirname, 'all_docs_dict.json'), 'r') as f:
                 self.all_docs_dict = ast.literal_eval(f.read())
 
