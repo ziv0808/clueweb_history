@@ -284,6 +284,7 @@ if __name__=="__main__":
     save_all_doc_dict = convert_str_to_bool(sys.argv[3])
     get_all_doc_dict_from_file = convert_str_to_bool(sys.argv[4])
 
+
     k = 5
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
@@ -302,32 +303,46 @@ if __name__=="__main__":
     print("Obj Created!")
     print('Time: ' + str(datetime.datetime.now()))
     query_list = list(range(1,201))
-    hyper_param_dict = {'S': {'Mue': 1500, 'Lambda': 0.45},
-                        'M': {'Mue': 1500, 'Lambda': 0.45},
-                        'L': {'Mue': 5, 'Lambda': 0.1}}
-    optional_mue_list = [5, 10, 100, 500, 800, 1000, 1200, 1500, 1800]
-    optional_lambda_list = [0.1, 0.2]
-    max_map = 0.0
-    best_config = None
-    for s_mue in optional_mue_list:
-        for m_mue in optional_mue_list:
-            for l_mue in optional_mue_list:
-                for l_labmda in optional_lambda_list:
-                    hyper_param_dict = {'S': {'Mue': s_mue, 'Lambda': (1-l_labmda)/2.0},
-                                        'M': {'Mue': m_mue, 'Lambda': (1-l_labmda)/2.0},
-                                        'L': {'Mue': l_mue, 'Lambda': l_labmda}}
+    if len(sys.argv) > 5:
+        test_best = convert_str_to_bool(sys.argv[5])
+        print ('Testing best config:')
+        if test_best == True:
+            with open(os.path.join(benchmark_obj.save_dirname , 'grid_search_results'), 'r' ) as f:
+                all_grid_res = f.read()
+            for line in all_grid_res.split('\n'):
+                if 'Best Config:' in line:
+                    hyper_param_dict = ast.literal_eval(line.split('Best Config: ')[1].split(' Map :')[0])
+            res_dict = benchmark_obj.score_queries(query_list=query_list,
+                                              output_folder=output_folder,
+                                              hyper_param_dict=hyper_param_dict)
+            print(res_dict)
+    else:
+        hyper_param_dict = {'S': {'Mue': 1500, 'Lambda': 0.45},
+                            'M': {'Mue': 1500, 'Lambda': 0.45},
+                            'L': {'Mue': 5, 'Lambda': 0.1}}
+        optional_mue_list = [5, 10, 100, 500, 800, 1000, 1200, 1500, 1800]
+        optional_lambda_list = [0.1, 0.2]
+        max_map = 0.0
+        best_config = None
+        for s_mue in optional_mue_list:
+            for m_mue in optional_mue_list:
+                for l_mue in optional_mue_list:
+                    for l_labmda in optional_lambda_list:
+                        hyper_param_dict = {'S': {'Mue': s_mue, 'Lambda': (1-l_labmda)/2.0},
+                                            'M': {'Mue': m_mue, 'Lambda': (1-l_labmda)/2.0},
+                                            'L': {'Mue': l_mue, 'Lambda': l_labmda}}
 
-                    print(hyper_param_dict)
-                    res_dict = benchmark_obj.score_queries_cv(query_list=query_list,
-                                                         output_folder=output_folder,
-                                                         hyper_param_dict=hyper_param_dict,
-                                                         k=k)
-                    print(res_dict)
-                    if res_dict['Map'] > max_map:
-                        max_map = res_dict['Map']
-                        best_config = hyper_param_dict
-                    print(str(datetime.datetime.now()))
-    print("Best Config: " + str(best_config) + " Map : " + str(max_map))
-    benchmark_obj.add_to_log("Best Config: " + str(best_config) + " Map : " + str(max_map))
-    benchmark_obj.save_log()
+                        print(hyper_param_dict)
+                        res_dict = benchmark_obj.score_queries_cv(query_list=query_list,
+                                                             output_folder=output_folder,
+                                                             hyper_param_dict=hyper_param_dict,
+                                                             k=k)
+                        print(res_dict)
+                        if res_dict['Map'] > max_map:
+                            max_map = res_dict['Map']
+                            best_config = hyper_param_dict
+                        print(str(datetime.datetime.now()))
+        print("Best Config: " + str(best_config) + " Map : " + str(max_map))
+        benchmark_obj.add_to_log("Best Config: " + str(best_config) + " Map : " + str(max_map))
+        benchmark_obj.save_log()
 
