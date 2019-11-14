@@ -11,6 +11,8 @@ from utils import *
 PROCESSED_DOCS_MAIN_FOLDER = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors'
 TREC_EVAL_PATH = "/lv_local/home/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
 QRELS_FILE_PATH = "/lv_local/home/zivvasilisky/ziv/results/qrels/qrels.adhoc"
+COLLECTION_MODEL_BY_PAPER = True
+
 
 class Benchmark:
     def __init__(
@@ -54,6 +56,18 @@ class Benchmark:
         if save_all_doc_dict == True:
             with open(os.path.join(self.save_dirname, 'all_docs_dict.json'), 'w') as f:
                 f.write(str(self.all_docs_dict))
+
+        self.all_words_current_cc = {}
+        total_count = 0
+        for docno in self.all_docs_dict:
+            for stem in self.all_docs_dict[docno]:
+                if stem in self.all_words_current_cc:
+                    self.all_words_current_cc[stem] = self.all_docs_dict[docno][stem]['TF']
+                else:
+                    self.all_words_current_cc[stem] += self.all_docs_dict[docno][stem]['TF']
+                total_count += self.all_docs_dict[docno][stem]['TF']
+
+        self.all_words_current_cc['TOTAL_COUNT'] = total_count
 
         self.run_log = ""
 
@@ -167,12 +181,20 @@ class Benchmark:
 
             stem_q_prob = float(query_tf) / sum(list(query_stem_dict.values()))
 
-            stem_d_proba = get_word_diriclet_smoothed_probability(
-                tf_in_doc=doc_stem_tf,
-                doc_len=doc_len,
-                collection_count_for_word=cc_dict[stem],
-                collection_len=cc_dict['ALL_TERMS_COUNT'],
-                mue=hyper_param_dict[curr_group]['Mue'])
+            if COLLECTION_MODEL_BY_PAPER == False:
+                stem_d_proba = get_word_diriclet_smoothed_probability(
+                    tf_in_doc=doc_stem_tf,
+                    doc_len=doc_len,
+                    collection_count_for_word=cc_dict[stem],
+                    collection_len=cc_dict['ALL_TERMS_COUNT'],
+                    mue=hyper_param_dict[curr_group]['Mue'])
+            else:
+                stem_d_proba = get_word_diriclet_smoothed_probability(
+                    tf_in_doc=doc_stem_tf,
+                    doc_len=doc_len,
+                    collection_count_for_word=self.all_words_current_cc[stem],
+                    collection_len=self.all_words_current_cc['TOTAL_COUNT'],
+                    mue=hyper_param_dict[curr_group]['Mue'])
 
             kl_score += (hyper_param_dict[curr_group]['Lambda'])*(-1) * stem_q_prob * (math.log((stem_q_prob / stem_d_proba), 2))
 
@@ -321,7 +343,7 @@ if __name__=="__main__":
                             'M': {'Mue': 1500, 'Lambda': 0.45},
                             'L': {'Mue': 5, 'Lambda': 0.1}}
         optional_mue_list = [5, 10, 100, 500, 800, 1000, 1200, 1500, 1800]
-        optional_lambda_list = [0.1, 0.2]
+        optional_lambda_list = [0.1, 0.2, 0.5]
         max_map = 0.0
         best_config = None
         for s_mue in optional_mue_list:
