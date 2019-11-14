@@ -61,7 +61,7 @@ class Benchmark:
         total_count = 0
         for docno in self.all_docs_dict:
             for stem in self.all_docs_dict[docno]:
-                if stem in self.all_words_current_cc:
+                if stem not in self.all_words_current_cc:
                     self.all_words_current_cc[stem] = self.all_docs_dict[docno][stem]['TF']
                 else:
                     self.all_words_current_cc[stem] += self.all_docs_dict[docno][stem]['TF']
