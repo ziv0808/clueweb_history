@@ -61,6 +61,8 @@ class Benchmark:
         total_count = 0
         for docno in self.all_docs_dict:
             for stem in self.all_docs_dict[docno]:
+                if stem in ['GROUP_S_LENGH','GROUP_M_LENGH','GROUP_L_LENGH']:
+                    continue
                 if stem not in self.all_words_current_cc:
                     self.all_words_current_cc[stem] = self.all_docs_dict[docno][stem]['TF']
                 else:
