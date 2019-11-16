@@ -1,40 +1,13 @@
 import os
 import ast
+import sys
 import math
 import subprocess
 import pandas as pd
 
 ALL_WORDS = False
+from utils import *
 
-def build_interval_list(
-        work_year,
-        frequency):
-
-    interval_list = []
-    for i in range(1, 13):
-        if frequency == '2W':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
-                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
-        elif frequency == '1M':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        elif frequency == '2M':
-            if i%2 == 1:
-                interval_list.extend(
-                    [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        else:
-            raise Exception('build_interval_dict: Unknoen frequency...')
-
-    return interval_list
-
-def get_word_diriclet_smoothed_probability(
-        tf_in_doc,
-        doc_len,
-        collection_count_for_word,
-        collection_len,
-        mue):
-    return (tf_in_doc + mue*(float(collection_count_for_word)/collection_len))/(float(doc_len + mue))
 
 def score_doc_for_query(
         query_stem_dict,
@@ -44,14 +17,16 @@ def score_doc_for_query(
 
     kl_score = 0.0
     work_stem_list = list(query_stem_dict.keys())
-    if ALL_WORDS == True:
-        work_stem_list = list(set(list(query_stem_dict.keys()) + doc_dict['StemList'][1:]))
+
     for stem in work_stem_list:
         doc_stem_tf = 0
         for i in range(len(doc_dict['StemList'])):
             if doc_dict['StemList'][i] == stem:
                 doc_stem_tf = doc_dict['TfList'][i]
                 stem_cc = doc_dict['CCList'][i]
+
+        if doc_stem_tf == 0:
+            continue
 
         if stem not in cc_dict:
             cc_dict[stem] = stem_cc
@@ -63,12 +38,6 @@ def score_doc_for_query(
         if stem in query_stem_dict:
             query_tf = query_stem_dict[stem]
 
-        # stem_q_prob = get_word_diriclet_smoothed_probability(
-        #     tf_in_doc = query_tf,
-        #     doc_len = sum(list(query_stem_dict.values())),
-        #     collection_count_for_word=cc_dict[stem],
-        #     collection_len=cc_dict['ALL_TERMS_COUNT'],
-        #     mue=mue)
         stem_q_prob = float(query_tf)/sum(list(query_stem_dict.values()))
 
         stem_d_proba = get_word_diriclet_smoothed_probability(
@@ -81,17 +50,6 @@ def score_doc_for_query(
         kl_score += (-1)*stem_q_prob*(math.log((stem_q_prob/stem_d_proba) , 2))
 
     return kl_score
-
-def convert_query_to_tf_dict(
-        query):
-    query_dict = {}
-    splitted_query = query.split(' ')
-    for stem in splitted_query:
-        if stem in query_dict:
-            query_dict[stem] += 1
-        else:
-            query_dict[stem] = 1
-    return query_dict
 
 def get_scored_df_for_query(
         query_num,
@@ -113,27 +71,14 @@ def get_scored_df_for_query(
         with open(os.path.join(processed_docs_path, docno + '.json'), 'r') as f:
             doc_dict = ast.literal_eval(f.read())
         # find the interval to look for
-        doc_interval_dict = doc_dict[interval_list[interval_idx]]
+        doc_interval_dict = get_doc_snapshot_by_lookup_method(
+            doc_dict=doc_dict,
+            interval_list=interval_list,
+            interval_lookup_method=interval_lookup_method,
+            curr_interval_idx=interval_idx)
+
         if doc_interval_dict is None:
-            if interval_list[interval_idx] == "ClueWeb09":
-                raise Exception("ClueWeb09 needs lookup..")
-            if interval_lookup_method == "Forward":
-                addition = 1
-                while doc_interval_dict is None:
-                    doc_interval_dict = doc_dict[interval_list[interval_idx + addition]]
-                    addition += 1
-            elif interval_lookup_method == "Backward":
-                addition = 1
-                while (doc_interval_dict is None) and ((interval_idx - addition) >= 0):
-                    doc_interval_dict = doc_dict[interval_list[interval_idx - addition]]
-                    addition += 1
-                if doc_interval_dict is None:
-                    addition = 1
-                    while doc_interval_dict is None:
-                        doc_interval_dict = doc_dict[interval_list[interval_idx + addition]]
-                        addition += 1
-            elif interval_lookup_method == "NoLookup":
-                continue
+            continue
 
         # print(doc_interval_dict)
         doc_score = score_doc_for_query(
@@ -148,36 +93,20 @@ def get_scored_df_for_query(
     res_df['Rank'] = list(range(1, next_index + 1))
     return res_df
 
-def convert_df_to_trec(
-        df):
-
-    trec_str = ""
-    for index, row in df.iterrows():
-        trec_str += str(row['Query_ID']) + " " + row['Iteration'] + " " + \
-                    row['Docno'] + " " + str(row['Rank']) + " " + str(row['Score']) +\
-                    " " + row['Method'] + '\n'
-    return trec_str
 
 if __name__=='__main__':
-    frequency = '1M'
-    query_to_doc_mapping_file = '/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'
-    stemmed_query_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Query_Words'
-    stemmed_query_collection_counts = '/lv_local/home/zivvasilisky/ziv/data/StemsCollectionCounts.tsv'
+    frequency = sys.argv[1]
+    interval_lookup_method = sys.argv[2]
     processed_docs_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
     save_folder = '/lv_local/home/zivvasilisky/ziv/results/ranked_docs/'
 
     mue = 1000.0
-    interval_lookup_method = 'Backward'
-    interval_list = build_interval_list('2008', frequency)
-    interval_list.append('ClueWeb09')
+    interval_list = build_interval_list('2008', frequency, add_clueweb = True)
     # retrieve necessary dataframes
-    query_to_doc_mapping_df = pd.read_csv(query_to_doc_mapping_file, sep = '\t', index_col = False)
-    stemmed_queries_df = pd.read_csv(stemmed_query_file, sep = '\t', index_col = False)
-    query_stems_cc_df = pd.read_csv(stemmed_query_collection_counts, sep = '\t', index_col = False)
+    query_to_doc_mapping_df = create_query_to_doc_mapping_df()
+    stemmed_queries_df = create_stemmed_queries_df()
     # create easy to use index for cc
-    cc_dict = {}
-    for index, row in query_stems_cc_df.iterrows():
-        cc_dict[row['Stem']] = float(row['CollectionCount'])
+    cc_dict = create_cc_dict()
 
     big_df_dict = {}
     full_bench = ""
