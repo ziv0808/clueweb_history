@@ -5,6 +5,7 @@ import subprocess
 import pandas as pd
 from bisect import bisect_left
 
+from utils import *
 
 def _numtest(floatn):
     return "{:.3f}".format(floatn)
@@ -131,36 +132,6 @@ def rbo_dict(dict1, dict2, p):
     return rbo(list1, list2, p)
 
 
-def build_interval_list(
-        work_year,
-        frequency):
-
-    interval_list = []
-    for i in range(1, 13):
-        if frequency == '2W':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
-                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
-        elif frequency == '1M':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        elif frequency == '2M':
-            if i % 2 == 1:
-                interval_list.extend(
-                    [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        else:
-            raise Exception('build_interval_dict: Unknoen frequency...')
-
-    return interval_list
-
-def convert_trec_to_ranked_list(trec_str):
-    docno_ordered_list = []
-    splitted_trec = trec_str.split('\n')
-    for line in splitted_trec:
-        if line != '':
-            docno = line.split(' ')[2]
-            docno_ordered_list.append(docno)
-    return docno_ordered_list
 
 
 if __name__=="__main__":
@@ -172,8 +143,7 @@ if __name__=="__main__":
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
 
-    interval_list = build_interval_list('2008', interval_freq)
-    interval_list.append('ClueWeb09')
+    interval_list = build_interval_list('2008', interval_freq, add_clueweb=True)
 
     last_not_clueweb_interval = interval_list[len(interval_list) - 2]
     for interval in interval_list:

@@ -4,57 +4,7 @@ import ast
 import pandas as pd
 from scipy import spatial
 
-
-def build_interval_list(
-        work_year,
-        frequency):
-
-    interval_list = []
-    for i in range(1, 13):
-        if frequency == '2W':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
-                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
-        elif frequency == '1M':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        elif frequency == '2M':
-            if i % 2 == 1:
-                interval_list.extend(
-                    [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        else:
-            raise Exception('build_interval_dict: Unknoen frequency...')
-
-    return interval_list
-
-
-def calc_cosine(
-        dict_1,
-        dict_2):
-    list_1 = []
-    list_2 = []
-    for stem in dict_1:
-        if stem in dict_2:
-            list_1.append(dict_1[stem])
-            list_2.append(dict_2[stem])
-        else:
-            list_1.append(dict_1[stem])
-            list_2.append(0.0)
-    for stem in dict_2:
-        if stem not in dict_1:
-            list_1.append(0.0)
-            list_2.append(dict_2[stem])
-    return (1.0 - spatial.distance.cosine(list_1, list_2))
-
-def convert_trec_to_ranked_list(trec_str):
-    docno_ordered_list = []
-    splitted_trec = trec_str.split('\n')
-    for line in splitted_trec:
-        if line != '':
-            docno = line.split(' ')[2]
-            docno_ordered_list.append(docno)
-    return docno_ordered_list
-
+from utils import *
 if __name__=="__main__":
     work_year = '2008'
     interval_freq = sys.argv[1]
@@ -67,8 +17,7 @@ if __name__=="__main__":
     stats_file_path = '/lv_local/home/zivvasilisky/ziv/clueweb_history/'
 
     snapshot_stats_df = pd.read_csv(os.path.join(stats_file_path, 'Summay_snapshot_stats_' + interval_freq + '.tsv'), sep = '\t', index_col = False)
-    interval_list = build_interval_list(work_year, interval_freq)
-    interval_list.append('ClueWeb09')
+    interval_list = build_interval_list(work_year, interval_freq, add_clueweb=True)
 
     summary_df = pd.DataFrame(columns = ['QueryNum', 'Interval', 'Docno','Rank','SimClueWeb','QueryTermsRatio', 'StopwordsRatio', 'Entropy','Sim_PW'])
     next_index = 0
@@ -101,7 +50,7 @@ if __name__=="__main__":
                 if docno in curr_interval_docnos:
                     curr_docno_interval_df = curr_interval_df[curr_interval_df['Docno'] == docno].copy()
                 else:
-                    if interval_lookup_method == 'Backward':
+                    if 'Backward' in interval_lookup_method:
                         curr_docno_df = relevant_to_query_df[relevant_to_query_df['Docno'] == docno].copy()
                         covered_docno_intervals = (curr_docno_df['Interval'].drop_duplicates())
                         addition = 1
@@ -111,11 +60,12 @@ if __name__=="__main__":
                                 curr_docno_interval_df = curr_docno_df[curr_docno_df['Interval'] == interval_list[interval_idx - addition]]
                                 break
                             addition += 1
-                        if curr_docno_interval_df.empty == True:
-                            for addition in range(1, len(interval_list) - interval_idx):
-                                if interval_list[interval_idx + addition] in covered_docno_intervals:
-                                    curr_docno_interval_df = curr_docno_df[curr_docno_df['Interval'] == interval_list[interval_idx + addition]]
-                                    break
+                        if interval_lookup_method == 'Backward':
+                            if curr_docno_interval_df.empty == True:
+                                for addition in range(1, len(interval_list) - interval_idx):
+                                    if interval_list[interval_idx + addition] in covered_docno_intervals:
+                                        curr_docno_interval_df = curr_docno_df[curr_docno_df['Interval'] == interval_list[interval_idx + addition]]
+                                        break
 
                 if curr_docno_interval_df.empty == True:
                         continue
@@ -148,7 +98,7 @@ if __name__=="__main__":
                 summary_df.loc[next_index] = insert_row
                 next_index += 1
 
-    summary_df.to_csv('Summay_vs_winner_' + interval_freq + '_' + interval_lookup_method + '.tsv')
+    summary_df.to_csv('Summay_vs_winner_' + interval_freq + '_' + interval_lookup_method + '.tsv', sep = '\t', index=False)
 
 
 
