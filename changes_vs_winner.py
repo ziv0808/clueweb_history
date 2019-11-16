@@ -5,6 +5,59 @@ import pandas as pd
 from scipy import spatial
 
 from utils import *
+
+
+def plot_stats_vs_winner(
+        stats_file_path,
+        interval_freq,
+        lookup_method):
+
+    work_df = pd.read_csv(os.path.join(stats_file_path,'Summay_vs_winner_' + interval_freq + '_' + lookup_method + '.tsv'),sep = '\t' ,index_col=False)
+    all_queries = list(work_df['QueryNum'].drop_duplicates())
+    all_intervals = sorted(list(work_df['Interval'].drop_duplicates()))
+
+    summary_df = pd.DataFrame(
+        columns=['QueryNum', 'Interval', 'Docno', 'Round', 'Winner', 'Sim_PW', 'QueryTermsRatio', 'StopwordsRatio',
+                 'Entropy', 'Trend'])
+    next_index = 0
+    spearman_corr_df = pd.DataFrame({})
+    for query_num in all_queries:
+        print(query_num)
+        query_df = work_df[work_df['QueryNum'] == query_num].copy()
+        interval_winners_df_dict = {}
+        for interval_idx in range(len(all_intervals)):
+            interval = all_intervals[interval_idx]
+            query_interval_df = query_df[query_df['Interval'] == interval]
+            query_interval_df['Sim_PD_Rank'] = query_interval_df['Sim_PW'].rank(ascending=False)
+            # interval_winners_df_dict[interval] = query_interval_df[query_interval_df['Rank'] == 1]
+            if interval != '2008-01-01':
+                spearman_corr_df = spearman_corr_df.append(query_interval_df[['Sim_PD_Rank', 'Rank']])
+                addition = 0
+                while (interval_idx - addition) >= 0:
+                    temp_interval = all_intervals[interval_idx - addition]
+                    temp_interval_df = query_df[query_df['Interval'] == temp_interval].copy()
+                    temp_interval_df = pd.merge(
+                        temp_interval_df,
+                        query_interval_df[['Rank', 'Docno']].rename(columns={'Rank': 'CurrRank'}),
+                        on=['Docno'],
+                        how='inner')
+                    for index, row in temp_interval_df.iterrows():
+                        trend = '='
+                        if row['Rank'] > row['CurrRank']:
+                            trend = 'W'
+                        elif row['Rank'] < row['CurrRank']:
+                            trend = 'L'
+                        insert_row = [query_num, interval, row['Docno'], (-1) * addition, row['Rank'] == 1, row['Sim_PW'],
+                                      row['QueryTermsRatio'], row['StopwordsRatio'], row['Entropy'], trend]
+
+                        summary_df.loc[next_index] = insert_row
+                        next_index += 1
+                    addition += 1
+
+    print('Spearman corr: ' + str(spearman_corr_df.corr().loc['Sim_PD_Rank']['Rank']))
+    summary_df.to_csv('Summay_vs_winner_processed_' + interval_freq + '_' + lookup_method + '_' +
+                      str(round(spearman_corr_df.corr().loc['Sim_PD_Rank']['Rank'], 6)) + '.tsv', sep='\t', index=False)
+
 if __name__=="__main__":
     work_year = '2008'
     interval_freq = sys.argv[1]
@@ -98,7 +151,10 @@ if __name__=="__main__":
                 summary_df.loc[next_index] = insert_row
                 next_index += 1
 
-    summary_df.to_csv('Summay_vs_winner_' + interval_freq + '_' + interval_lookup_method + '.tsv', sep = '\t', index=False)
-
+    summary_df.to_csv(os.path.join(stats_file_path, 'Summay_vs_winner_' + interval_freq + '_' + interval_lookup_method + '.tsv'), sep = '\t', index=False)
+    plot_stats_vs_winner(
+        stats_file_path = stats_file_path,
+        interval_freq = interval_freq,
+        lookup_method = interval_lookup_method)
 
 
