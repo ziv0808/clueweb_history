@@ -177,6 +177,7 @@ class Benchmark:
         for stem in work_stem_list:
             if stem not in doc_dict:
                 # no meaning to group
+                doc_dict[stem] = {}
                 doc_dict[stem]['TF'] = 0.0
                 doc_dict[stem]['Group'] = 'S'
 
