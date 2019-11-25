@@ -21,13 +21,15 @@ class Benchmark:
             work_year,
             interval_freq,
             save_all_doc_dict = False,
-            get_all_doc_dict_from_file = True):
+            get_all_doc_dict_from_file = True,
+            retrieval_model = 'KL'):
         # create interval list
         self.interval_list = build_interval_list(
             work_year=work_year,
             frequency=interval_freq,
             add_clueweb=True)
 
+        self.retrieval_model = retrieval_model
         self.interval_freq = interval_freq
         self.interval_lookup_method = interval_lookup_method
         # init usefull dfs and dicts
@@ -74,7 +76,7 @@ class Benchmark:
         self.run_log = ""
 
     def save_log(self):
-        with open(os.path.join(self.save_dirname, 'grid_search_results'), 'w') as f:
+        with open(os.path.join(self.save_dirname, self.retrieval_model + '_grid_search_results.txt'), 'w') as f:
             f.write(str(self.run_log))
 
     def add_to_log(self, strng):
@@ -168,37 +170,43 @@ class Benchmark:
             hyper_param_dict):
 
         kl_score = 0.0
+        if self.retrieval_model == 'LM':
+            kl_score = 1.0
+
         work_stem_list = list(query_stem_dict.keys())
         for stem in work_stem_list:
             if stem not in doc_dict:
-                continue
+                # no meaning to group
+                doc_dict[stem]['TF'] = 0.0
+                doc_dict[stem]['Group'] = 'S'
 
-            doc_stem_tf = doc_dict[stem]['TF']
-            curr_group  = doc_dict[stem]['Group']
-            doc_len     = doc_dict['GROUP_' + curr_group + '_LENGH']
+            stem_d_proba = 0.0
+            for curr_group in ['S','M','L']:
+                if curr_group == doc_dict[stem]['Group']:
+                    stem_d_group_proba = get_word_diriclet_smoothed_probability(
+                            tf_in_doc=doc_dict[stem]['TF'],
+                            doc_len=doc_dict['GROUP_' + curr_group + '_LENGH'],
+                            collection_count_for_word=cc_dict[stem],
+                            collection_len=cc_dict['ALL_TERMS_COUNT'],
+                            mue=hyper_param_dict[curr_group]['Mue'])
+                else:
+                    stem_d_group_proba = get_word_diriclet_smoothed_probability(
+                            tf_in_doc=0.0,
+                            doc_len=doc_dict['GROUP_' + curr_group + '_LENGH'],
+                            collection_count_for_word=cc_dict[stem],
+                            collection_len=cc_dict['ALL_TERMS_COUNT'],
+                            mue=hyper_param_dict[curr_group]['Mue'])
+                stem_d_proba += (hyper_param_dict[curr_group]['Lambda']) * stem_d_group_proba
 
-            query_tf = 0
-            if stem in query_stem_dict:
+            if self.retrieval_model == 'KL':
                 query_tf = query_stem_dict[stem]
+                stem_q_prob = float(query_tf) / sum(list(query_stem_dict.values()))
+                kl_score += (-1) * stem_q_prob * (math.log((stem_q_prob / stem_d_proba), 2))
 
-            stem_q_prob = float(query_tf) / sum(list(query_stem_dict.values()))
-
-            if COLLECTION_MODEL_BY_PAPER == False:
-                stem_d_proba = get_word_diriclet_smoothed_probability(
-                    tf_in_doc=doc_stem_tf,
-                    doc_len=doc_len,
-                    collection_count_for_word=cc_dict[stem],
-                    collection_len=cc_dict['ALL_TERMS_COUNT'],
-                    mue=hyper_param_dict[curr_group]['Mue'])
+            elif self.retrieval_model == 'LM':
+                kl_score = kl_score * stem_d_proba
             else:
-                stem_d_proba = get_word_diriclet_smoothed_probability(
-                    tf_in_doc=doc_stem_tf,
-                    doc_len=doc_len,
-                    collection_count_for_word=self.all_words_current_cc[stem],
-                    collection_len=self.all_words_current_cc['TOTAL_COUNT'],
-                    mue=hyper_param_dict[curr_group]['Mue'])
-
-            kl_score += (hyper_param_dict[curr_group]['Lambda'])*(-1) * stem_q_prob * (math.log((stem_q_prob / stem_d_proba), 2))
+                raise Exception('Unknown retrival Model')
 
         return kl_score
 
@@ -307,7 +315,7 @@ if __name__=="__main__":
     interval_lookup_method = sys.argv[2]
     save_all_doc_dict = convert_str_to_bool(sys.argv[3])
     get_all_doc_dict_from_file = convert_str_to_bool(sys.argv[4])
-
+    retrieval_model = sys.argv[5]
 
     k = 5
     print('Interval Feaq: ' + interval_freq)
@@ -323,12 +331,13 @@ if __name__=="__main__":
             work_year=work_year,
             interval_freq=interval_freq,
             save_all_doc_dict=save_all_doc_dict,
-            get_all_doc_dict_from_file=get_all_doc_dict_from_file)
+            get_all_doc_dict_from_file=get_all_doc_dict_from_file,
+            retrieval_model=retrieval_model)
     print("Obj Created!")
     print('Time: ' + str(datetime.datetime.now()))
     query_list = list(range(1,201))
-    if len(sys.argv) > 5:
-        test_best = convert_str_to_bool(sys.argv[5])
+    if len(sys.argv) > 6:
+        test_best = convert_str_to_bool(sys.argv[6])
         print ('Testing best config:')
         if test_best == True:
             with open(os.path.join(benchmark_obj.save_dirname , 'grid_search_results'), 'r' ) as f:
@@ -345,7 +354,7 @@ if __name__=="__main__":
                             'M': {'Mue': 1500, 'Lambda': 0.45},
                             'L': {'Mue': 5, 'Lambda': 0.1}}
         optional_mue_list = [5, 10, 100, 500, 800, 1000, 1200, 1500, 1800]
-        optional_lambda_list = [0.1, 0.2, 0.5]
+        optional_lambda_list = [0.1]
         max_map = 0.0
         best_config = None
         for s_mue in optional_mue_list:
