@@ -320,6 +320,7 @@ if __name__=="__main__":
     k = 5
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
+    print('Retrivel Model: ' + retrieval_model)
 
     output_folder = '/lv_local/home/zivvasilisky/ziv/results/benchmark'
 
