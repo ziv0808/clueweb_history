@@ -49,9 +49,13 @@ if __name__=='__main__':
         print ("Running query retrieval...")
         for i in query_list:
             query_num = (3 - len(str(i))) * '0' + str(i)
-            if i in query_num_list:
+            if i not in query_num_list:
                 res = subprocess.check_call(['/lv_local/home/zivvasilisky/ziv/env/indri/query/url_retrival.sh', query_num])
                 query_num_list.append(query_num)
+    else:
+        for i in query_list:
+            query_num = (3 - len(str(i))) * '0' + str(i)
+            query_num_list.append(query_num)
 
     if run_create_spam_index == True:
         print("Creating spam score index...")
