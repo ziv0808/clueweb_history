@@ -78,6 +78,7 @@ if __name__=='__main__':
             with open(dir_path + filename, 'r') as f:
                 cur_file_txt = f.read()
             print("Working on :" + query_num)
+            sys.stdout.flush()
             all_lines = cur_file_txt.split('\n')
             good_docs = 0
             for line in all_lines:

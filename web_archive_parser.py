@@ -1,9 +1,10 @@
+import os
+import sys
 import time
 import json
 import random
 import requests
 import pandas as pd
-
 
 
 def get_history_links_for_url_web_api(
@@ -37,17 +38,23 @@ def get_history_links_for_url_web_api(
 
 
 if __name__=='__main__':
-    RUN_YEAR = 2009
-    LOAD_FILE = "/lv_local/home/zivvasilisky/ziv/data/bkup/history_snapshots_2009.json"
-    save_path = "/lv_local/home/zivvasilisky/ziv/data/"
+    init_query = int(sys.argv[1])
+    end_query = int(sys.argv[2])
+    RUN_YEAR = 2008
+    LOAD_FILE = "/lv_local/home/zivvasilisky/ziv/data/history_snapshots_2008.json"
+    save_path = "/lv_local/home/zivvasilisky/ziv/data/history_snapshots/" + str(RUN_YEAR) + "/"
+
 
     work_df = pd.read_csv('/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv', sep = '\t', index_col = False)
     if LOAD_FILE is not None:
         with open(LOAD_FILE, 'r') as f:
             ref_json = json.load(f)
 
-    res_json = {}
-
+    processed_json = {}
+    work_df['QueryInt'] = work_df['QueryNum'].apply(lambda x: int(x))
+    work_df = work_df[work_df['QueryInt'] >= init_query]
+    work_df = work_df[work_df['QueryInt'] <= end_query]
+    del work_df['QueryInt']
     work_df['#Snapshots'] = 0
     work_df['#Snapshots_without_redirect'] = 0
     work_df['Remark'] = None
@@ -59,45 +66,49 @@ if __name__=='__main__':
         if row['QueryNum'] != curr_q_num:
             curr_q_num = row['QueryNum']
             print ("Curr Query: "+ str(curr_q_num))
-        if (LOAD_FILE is not None) and (row['Docno'] in ref_json):
-            res_json[row['Docno']] = ref_json[row['Docno']]
 
-        if row['Docno'] not in res_json:
+        if (LOAD_FILE is not None) and (row['Docno'] in ref_json):
+            processed_json[row['Docno']] = True
+            if not os.path.isfile(os.path.join(save_path, row['Docno'] + '.json')):
+                with open(os.path.join(save_path, row['Docno'] + '.json', 'w')) as f:
+                    json.dump(ref_json[row['Docno']], f)
+
+        if os.path.isfile(os.path.join(save_path, row['Docno'] + '.json')):
+            print('Docno: ' + row['Docno'] + " already processed")
+            continue
+
+        if row['Docno'] not in processed_json:
             try:
                 num_new_processed += 1
-                res_json[row['Docno']] = get_history_links_for_url_web_api(row['Docno'] ,row['Url'])
+                curr_json = get_history_links_for_url_web_api(row['Docno'] ,row['Url'])
             except Exception as e:
                 try:
                     print(e)
-                    res_json[row['Docno']] = get_history_links_for_url_web_api(row['Docno'], row['Url'])
+                    curr_json = get_history_links_for_url_web_api(row['Docno'], row['Url'])
                 except Exception as e:
                     print('Url:' + str(row['Url']) + " Needs retry")
                     work_df.set_value(index, 'Remark', "Needs Retry")
                     continue
             time.sleep(3)
             if num_new_processed % 3 == 0:
-                time.sleep(random.randint(5, 15))
+                time.sleep(random.randint(5, 13))
 
-        work_df.set_value(index, '#Snapshots', len(res_json[row['Docno']].keys()))
+        if not os.path.isfile(os.path.join(save_path, row['Docno'] + '.json')):
+            with open(os.path.join(save_path, row['Docno'] + '.json', 'w')) as f:
+                json.dump(curr_json, f)
+            processed_json[row['Docno']] = True
+
+        work_df.set_value(index, '#Snapshots', len(curr_json.keys()))
         non_redirect_snapshots = 0
-        for snapshot in res_json[row['Docno']]:
-            if res_json[row['Docno']][snapshot]['ResponeCode'] == "200":
+        for snapshot in curr_json:
+            if curr_json[snapshot]['ResponeCode'] == "200":
                 non_redirect_snapshots += 1
         work_df.set_value(index, '#Snapshots_without_redirect', non_redirect_snapshots)
         num_processed += 1
         if num_processed % 3 == 0:
             print("Num Processed: " + str(num_processed))
-
-        if num_processed % 50 == 0:
-            work_df.to_csv(save_path + "all_urls_exrtacted_" + str(RUN_YEAR) + '.tsv', sep='\t', index=False)
-            with open(save_path + "history_snapshots_" + str(RUN_YEAR) + '.json', 'w') as f:
-                json.dump(res_json, f)
-
-
-    work_df.to_csv(save_path + "all_urls_exrtacted_" + str(RUN_YEAR) + '.tsv', sep = '\t', index= False)
-
-    with open(save_path + "history_snapshots_" + str(RUN_YEAR)+ '.json', 'w') as f:
-        json.dump(res_json, f)
+            sys.stdout.flush()
+    work_df.to_csv(save_path + "all_urls_exrtacted_" + str(RUN_YEAR) + '_' + str(init_query) + '_' + str(end_query) + '.tsv', sep = '\t', index= False)
 
 
 
