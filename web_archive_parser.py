@@ -10,7 +10,7 @@ import pandas as pd
 def get_history_links_for_url_web_api(
         docno,
         url):
-    web_archive_main_url = "http://web.archive.org/cdx/search/cdx?url=" + url + "*&output=txt&from=" + str(RUN_YEAR) + "&to=" + str(RUN_YEAR)
+    web_archive_main_url = "http://web.archive.org/cdx/search/cdx?url=" + url + "&output=txt&from=" + str(RUN_YEAR) + "&to=" + str(RUN_YEAR)
     for i in range(10):
         try:
             response = requests.get(web_archive_main_url)
@@ -29,7 +29,7 @@ def get_history_links_for_url_web_api(
             print("### URL: " + web_archive_main_url)
             break
         time_stamp = elem[1]
-        link = "https://web.archive.org/web/" + str(time_stamp) + "*/" + url
+        link = "https://web.archive.org/web/" + str(time_stamp) + "id_/" + url
         response_code = elem[4]
         res_dict[str(pd.to_datetime(time_stamp))] = {'Url': link,
                                                 'ResponeCode': response_code}
@@ -41,7 +41,7 @@ if __name__=='__main__':
     init_query = int(sys.argv[1])
     end_query = int(sys.argv[2])
     RUN_YEAR = 2008
-    LOAD_FILE = "/lv_local/home/zivvasilisky/ziv/data/history_snapshots_2008.json"
+    LOAD_FILE = None#"/lv_local/home/zivvasilisky/ziv/data/history_snapshots_2008.json"
     save_path = "/lv_local/home/zivvasilisky/ziv/data/history_snapshots/" + str(RUN_YEAR) + "/"
 
 
@@ -91,7 +91,7 @@ if __name__=='__main__':
                     continue
             time.sleep(3)
             if num_new_processed % 3 == 0:
-                time.sleep(random.randint(5, 13))
+                time.sleep(random.randint(5, 10))
 
         if not os.path.isfile(os.path.join(save_path, row['Docno'] + '.json')):
             with open(os.path.join(save_path, row['Docno'] + '.json', 'w')) as f:
