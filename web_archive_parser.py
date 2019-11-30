@@ -89,7 +89,7 @@ if __name__=='__main__':
                     print('Url:' + str(row['Url']) + " Needs retry")
                     work_df.set_value(index, 'Remark', "Needs Retry")
                     continue
-            time.sleep(1)
+            time.sleep(2)
             if num_new_processed % 3 == 0:
                 time.sleep(random.randint(5, 10))
 
