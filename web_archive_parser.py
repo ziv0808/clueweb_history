@@ -94,7 +94,7 @@ if __name__=='__main__':
                 time.sleep(random.randint(5, 10))
 
         if not os.path.isfile(os.path.join(save_path, row['Docno'] + '.json')):
-            with open(os.path.join(save_path, row['Docno'] + '.json', 'w')) as f:
+            with open(os.path.join(save_path, row['Docno'] + '.json'), 'w') as f:
                 json.dump(curr_json, f)
             processed_json[row['Docno']] = True
 
