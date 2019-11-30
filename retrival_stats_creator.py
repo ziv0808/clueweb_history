@@ -140,14 +140,18 @@ if __name__=="__main__":
     qrels_file_path = "/lv_local/home/zivvasilisky/ziv/results/qrels/qrels.adhoc"
     interval_freq = sys.argv[1]
     interval_lookup_method = sys.argv[2]
+    interval_start_month = int(sys.argv[3])
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
+    addition = ""
+    if interval_start_month != 1:
+        addition = "_" + str(interval_start_month) + "SM_"
 
-    interval_list = build_interval_list('2008', interval_freq, add_clueweb=True)
+    interval_list = build_interval_list('2008', interval_freq, add_clueweb=True, start_month=interval_start_month)
 
     last_not_clueweb_interval = interval_list[len(interval_list) - 2]
     for interval in interval_list:
-        eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]), interval + '_' + interval_freq + '_' + interval_lookup_method + '_Results_evaluation.txt')
+        eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]), interval + '_' + interval_freq + '_' + interval_lookup_method + addition +'_Results_evaluation.txt')
         if not os.path.exists(eval_file_path):
             bashCommand = trec_eval_path + ' -q ' + qrels_file_path + ' ' + \
                           eval_file_path.replace('_evaluation', '') + ' > ' + eval_file_path
@@ -181,7 +185,7 @@ if __name__=="__main__":
         prev_interval = None
         for interval in interval_list:
             eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]),
-                                          interval + '_' + interval_freq + '_' +interval_lookup_method + '_Results_evaluation.txt')
+                                          interval + '_' + interval_freq + '_' +interval_lookup_method + addition +'_Results_evaluation.txt')
             print('interval: ' + str(interval))
             insert_row = [query_num, interval]
             if interval in no_res_list:
@@ -263,7 +267,7 @@ if __name__=="__main__":
             next_index += 1
             prev_interval = interval
 
-    summary_df.to_csv(os.path.join(os.path.dirname(query_retrn_files_path[:-1]),interval_freq + '_' + interval_lookup_method + '_Per_query_stats.tsv'), sep = '\t', index = False)
+    summary_df.to_csv(os.path.join(os.path.dirname(query_retrn_files_path[:-1]),interval_freq + '_' + interval_lookup_method + addition +'_Per_query_stats.tsv'), sep = '\t', index = False)
 
 
 

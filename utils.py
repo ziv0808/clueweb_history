@@ -8,10 +8,11 @@ from scipy import spatial
 def build_interval_list(
         work_year,
         frequency,
-        add_clueweb = False):
+        add_clueweb = False,
+        start_month = 1):
     # create interval list for work year according to required frequency
     interval_list = []
-    for i in range(1, 13):
+    for i in range(start_month, 13):
         if frequency == '2W':
             interval_list.extend(
                 [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',

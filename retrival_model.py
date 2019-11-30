@@ -97,11 +97,12 @@ def get_scored_df_for_query(
 if __name__=='__main__':
     frequency = sys.argv[1]
     interval_lookup_method = sys.argv[2]
+    interval_start_month = int(sys.argv[3])
     processed_docs_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
     save_folder = '/lv_local/home/zivvasilisky/ziv/results/ranked_docs/'
 
     mue = 1000.0
-    interval_list = build_interval_list('2008', frequency, add_clueweb = True)
+    interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=interval_start_month)
     # retrieve necessary dataframes
     query_to_doc_mapping_df = create_query_to_doc_mapping_df()
     stemmed_queries_df = create_stemmed_queries_df()
@@ -146,9 +147,11 @@ if __name__=='__main__':
                 with open(os.path.join(save_folder, str(query_num) + "_" + str(interval_list[j] + "_Indri_Out.txt")),
                           'w') as f:
                     f.write(output)
-
+    addition = ""
+    if interval_start_month != 1:
+        addition = "_" + str(interval_start_month) + "SM_"
     with open(os.path.join(os.path.dirname(save_folder[:-1]), "ClueWeb09_Indri_Out.txt"),'w') as f:
         f.write(full_bench)
     for interval in interval_list:
-        with open(os.path.join(os.path.dirname(save_folder[:-1]), interval +  "_" + frequency + '_' + interval_lookup_method + "_Results.txt"), 'w') as f:
+        with open(os.path.join(os.path.dirname(save_folder[:-1]), interval +  "_" + frequency + '_' + interval_lookup_method + addition +"_Results.txt"), 'w') as f:
             f.write(convert_df_to_trec(big_df_dict[interval]))
