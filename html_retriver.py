@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import random
 import requests
@@ -8,13 +9,13 @@ import pandas as pd
 
 def get_html_for_url(
         url):
-    request_url = "http" + url[5:].replace('*/', 'id_/')
+    request_url = "http" + url[5:]
     for i in range(10):
         try:
             response_ = requests.get(request_url)
             break
         except Exception as e:
-            time.sleep(random.randint(3,10))
+            time.sleep(random.randint(2,9))
     decoded_content = response_.content
     response_code = response_.status_code
 
@@ -34,6 +35,12 @@ def build_interval_dict(
         if frequency == '2W':
             interval_dict[work_year + '-' + (2 - len(str(i)))*'0' + str(i)].extend([work_year + "-" + (2 - len(str(i)))*'0' + str(i) + '-01',
                                                                                     work_year + "-" + (2 - len(str(i)))*'0' + str(i) + '-16'])
+        elif frequency == '1W':
+            interval_dict[work_year + '-' + (2 - len(str(i))) * '0' + str(i)].extend(
+                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
+                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-08',
+                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16',
+                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-23'])
         else:
             raise Exception('build_interval_dict: Unknoen frequency...')
 
@@ -86,7 +93,7 @@ def handle_docno_retrival(
                 try:
                     html_response_code, html_str = get_html_for_url(docno_snapshots_json[snapshot]['Url'])
                 except Exception as e:
-                    print("Didnt work - " + work_json[docno][snapshot]['Url'])
+                    print("Didnt work - " + work_json[snapshot]['Url'])
                     continue
             if str(html_response_code) == '200':
                 res_json[snapshot] = {}
@@ -108,43 +115,41 @@ def handle_docno_retrival(
 
 
 if __name__=='__main__':
-
-    work_year = '2009'
+    init_query = int(sys.argv[1])
+    end_query = int(sys.argv[2])
+    work_year = '2008'
     files_exists = True # if res files alredy exists and only delta need to run
     interval_dict = build_interval_dict(
         work_year=work_year,
-        frequency='2W')
+        frequency='1W')
 
-    save_folder = "/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2009/"
+    save_folder = "/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/" + work_year + "/"
     resource_path = "/lv_local/home/zivvasilisky/ziv/data"
-    filename = os.path.join(resource_path, "history_snapshots_2009.json")
-    reference_filename = None#os.path.join(resource_path, "history_snapshots_2008_with_html_with_html.json")
+    filename = os.path.join(resource_path, "history_snapshots_" + work_year + ".json")
+    snapshot_files_path = "/lv_local/home/zivvasilisky/ziv/data/history_snapshots/" + str(work_year) + "/"
 
+    work_df = pd.read_csv('/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv', sep='\t',
+                          index_col=False)
+    work_df['QueryInt'] = work_df['QueryNum'].apply(lambda x: int(x))
+    work_df = work_df[work_df['QueryInt'] >= init_query]
+    work_df = work_df[work_df['QueryInt'] <= end_query]
+    del work_df['QueryInt']
     summary_df = pd.DataFrame(columns=['Docno', 'NumOfCoveredIntervals'])
     next_index = 0
-    # get all possible snapshots dict
-    with open(filename, 'r') as f:
-        work_json = f.read()
-        work_json = ast.literal_eval(work_json)
-    # get all reference html dict
-    if reference_filename is not None:
-        with open(reference_filename, 'r') as f:
-            ref_json = f.read()
-            ref_json = ast.literal_eval(ref_json)
-    else:
-        ref_json = None
+
 
     docnos_processed            = 0
     covered_intervals_processed = 0
-    for docno in work_json:
-        if (ref_json is None) or (docno not in ref_json):
-            curr_ref_json = None
-        else:
-            curr_ref_json = ref_json[docno]
+    for index, row in work_df.iterrows():
+        docno = row['Docno']
+        with open(os.path.join(snapshot_files_path, docno + '.json'), 'r') as f:
+            work_json = ast.literal_eval(f.read())
+        # legacy
+        curr_ref_json = None
         covered_intervals = handle_docno_retrival(
             dest_folder=save_folder,
             docno=docno,
-            docno_snapshots_json=work_json[docno],
+            docno_snapshots_json=work_json,
             interval_dict=interval_dict,
             docno_ref_json=curr_ref_json,
             file_exists=files_exists)
@@ -152,10 +157,11 @@ if __name__=='__main__':
         covered_intervals_processed += covered_intervals
         print("Docno : " + str(docno) + ' , Covered: ' + str(covered_intervals))
         print("Docnos Processed: " + str(docnos_processed))
+        sys.stdout.flush()
         if covered_intervals_processed % 10 == 0:
             print("HTMLs Processed: " + str(covered_intervals_processed))
 
         summary_df.loc[next_index] = [docno, covered_intervals]
         next_index += 1
 
-    summary_df.to_csv(os.path.join(save_folder, filename.replace('.json', '_Html_retrival_summary.tsv')), sep = '\t', index = False)
+    summary_df.to_csv(os.path.join(save_folder, filename.replace('.json', '_Html_retrival_summary_'+str(init_query)+'_'+str(end_query)+'.tsv')), sep = '\t', index = False)
