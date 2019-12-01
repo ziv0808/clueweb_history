@@ -142,8 +142,11 @@ if __name__=='__main__':
     covered_intervals_processed = 0
     for index, row in work_df.iterrows():
         docno = row['Docno']
-        with open(os.path.join(snapshot_files_path, docno + '.json'), 'r') as f:
-            work_json = ast.literal_eval(f.read())
+        if os.path.isfile(os.path.join(snapshot_files_path, docno + '.json')):
+            with open(os.path.join(snapshot_files_path, docno + '.json'), 'r') as f:
+                work_json = ast.literal_eval(f.read())
+        else:
+            print ("Docno " + docno + " Does not have snapshot file!")
         # legacy
         curr_ref_json = None
         covered_intervals = handle_docno_retrival(
