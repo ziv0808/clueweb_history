@@ -1,30 +1,13 @@
 import os
 import re
+import sys
 import ast
 import uuid
-import unicodedata
 import pandas as pd
 from bs4 import BeautifulSoup
-
-import sys
-# reload(sys)
-# sys.setdefaultencoding('utf-8')
+from utils import *
 
 
-def build_interval_list(
-        work_year,
-        frequency):
-
-    interval_list = []
-    for i in range(1, 13):
-        if frequency == '2W':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
-                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
-        else:
-            raise Exception('build_interval_dict: Unknoen frequency...')
-
-    return interval_list
 
 def parse_timestamp(timestamp_str):
     month_abrev_dict = {
@@ -205,47 +188,27 @@ def create_warc_files_for_time_interval(
     return num_of_records_in_interval, lost_records
 
 if __name__ == '__main__':
-    test = False
-    if test != True:
-        work_year = '2009'
-        interval_list = build_interval_list(
-            work_year=work_year,
-            frequency='2W')
+    work_year = sys.argv[1]
+    interval_list = build_interval_list(
+        work_year=work_year,
+        frequency='1W')
 
-        destination_folder = "/mnt/bi-strg3/v/zivvasilisky/data/2009/"
-        data_folder ="/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/2009/"
+    destination_folder = "/mnt/bi-strg3/v/zivvasilisky/data/" + work_year + "/"
+    data_folder ="/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/" + work_year + "/"
 
-        summary_df = pd.DataFrame(columns = ['Interval', 'NumOfDocs', 'LostRecords'])
-        next_index = 0
-        for interval in interval_list:
-            print ("Curr interval: " + str(interval))
-            if not os.path.exists(os.path.join(destination_folder, interval)):
-                os.mkdir(os.path.join(destination_folder, interval))
+    summary_df = pd.DataFrame(columns = ['Interval', 'NumOfDocs', 'LostRecords'])
+    next_index = 0
+    for interval in interval_list:
+        print ("Curr interval: " + str(interval))
+        if not os.path.exists(os.path.join(destination_folder, interval)):
+            os.mkdir(os.path.join(destination_folder, interval))
 
-            num_records, lost_records = create_warc_files_for_time_interval(
-                destination_folder=destination_folder,
-                time_interval=interval,
-                data_folder=data_folder)
+        num_records, lost_records = create_warc_files_for_time_interval(
+            destination_folder=destination_folder,
+            time_interval=interval,
+            data_folder=data_folder)
 
-            summary_df.loc[next_index] = [interval, num_records, lost_records]
-            next_index += 1
+        summary_df.loc[next_index] = [interval, num_records, lost_records]
+        next_index += 1
 
-        summary_df.to_csv(os.path.join(data_folder, 'Summry_warcer.tsv'), sep = '\t', index = False)
-
-    else:
-        docno = "clueweb09-en0000-52-32023"
-        with open(docno + ".txt", 'r') as f:
-            html = f.read()
-        # test ####
-        print (create_warc_record(
-            docno=docno,
-            timstamp="2009-01-13 18:05:10",
-            url = 'http://00000-nrt-realestate.homepagestartup.com/',
-            html=html,
-            warc_info_id ='993d3969-9643-4934-b1c6-68d4dbe55b83',
-            warc_date='2009-03-65T08:43:19-0800'))
-
-        # print (create_warc_head(warc_date="2009-03-65T08:43:19-0800",
-        #                         warc_info_id='993d3969-9643-4934-b1c6-68d4dbe55b83'))
-
-
+    summary_df.to_csv(os.path.join(data_folder, 'Summry_warcer.tsv'), sep = '\t', index = False)

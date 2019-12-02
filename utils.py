@@ -17,6 +17,12 @@ def build_interval_list(
             interval_list.extend(
                 [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
                  work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
+        elif frequency == '1W':
+            interval_list.extend(
+                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
+                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-08',
+                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16',
+                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-23'])
         elif frequency == '1M':
             interval_list.extend(
                 [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
