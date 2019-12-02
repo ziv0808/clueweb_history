@@ -117,10 +117,12 @@ if __name__=='__main__':
     for index, row in stemmed_queries_df.iterrows():
         query_num = int(row['QueryNum'])
         print("Query: " + str(query_num))
+        sys.stdout.flush()
         query_txt = row['QueryStems']
         relevant_df = query_to_doc_mapping_df[query_to_doc_mapping_df['QueryNum'] == query_num].copy()
         for j in range(len(interval_list)):
             print("Interval: " + str(interval_list[j]))
+            sys.stdout.flush()
             res_df = get_scored_df_for_query(
                 query_num=query_num,
                 query=query_txt,

@@ -172,6 +172,7 @@ if __name__=="__main__":
     for query_num in range(1,201):
         no_res_list = []
         print('Query: ' + str(query_num))
+        sys.stdout.flush()
         ranked_list_dict = {}
         for interval in interval_list:
             with open(os.path.join(query_retrn_files_path, str(query_num) + '_' + interval_freq + '_' + interval + '_' + interval_lookup_method + addition + '_Results.txt'), 'r') as f:
