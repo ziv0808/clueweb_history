@@ -82,8 +82,6 @@ def create_warc_record(
 
 
     html =  re.sub(r'[^\x00-\x7F]+',' ', html)
-        # html = unicodedata.normalize("NFKD", html.decode('utf-8', 'ignore')).encode('ascii', 'ignore').encode(
-        #     encoding='UTF-8', errors='strict')
 
     record_str = "WARC/0.18\n" +\
                  "WARC-Type: response\n" +\
@@ -143,10 +141,10 @@ def create_warc_files_for_time_interval(
                     if inner_file_name not in folder_files_hirarcy_dict[inner_folder_name]:
                         folder_files_hirarcy_dict[inner_folder_name][inner_file_name] = []
 
-                    if len(curr_json[snapshot]['Url'].split('*/')) > 2:
-                        raise Exception("create_warc_files_for_time_interval: Url has */ inside " +  str(curr_json[snapshot]['Url']))
+                    if len(curr_json[snapshot]['Url'].split('id_/')) > 2:
+                        raise Exception("create_warc_files_for_time_interval: Url has id_/ inside " +  str(curr_json[snapshot]['Url']))
                     else:
-                        curr_url = curr_json[snapshot]['Url'].split('*/')[1]
+                        curr_url = curr_json[snapshot]['Url'].split('id_/')[1]
                     curr_doc_representation = {'Docno'      : docno,
                                                'Url'        : curr_url,
                                                'TimeStamp'  : snapshot,
