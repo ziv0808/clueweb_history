@@ -115,9 +115,14 @@ def handle_docno_retrival(
 
 
 if __name__=='__main__':
-    init_query = int(sys.argv[1])
-    end_query = int(sys.argv[2])
-    work_year = '2008'
+    work_year = sys.argv[1]
+    init_query = int(sys.argv[2])
+    end_query = int(sys.argv[3])
+    print("Run Year: " + str(work_year))
+    print("From Query : " + str(init_query))
+    print("Till Query : " + str(end_query))
+    sys.stdout.flush()
+
     files_exists = True # if res files alredy exists and only delta need to run
     interval_dict = build_interval_dict(
         work_year=work_year,

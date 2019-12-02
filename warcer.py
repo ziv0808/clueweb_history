@@ -187,9 +187,17 @@ def create_warc_files_for_time_interval(
 
 if __name__ == '__main__':
     work_year = sys.argv[1]
+    init_interval_month = sys.argv[2]
+    end_interval_month = sys.argv[3]
+    print("Run Year: " + str(work_year))
+    print("From interval month: " + str(init_interval_month))
+    print("Till interval month: " + str(end_interval_month))
+    sys.stdout.flush()
     interval_list = build_interval_list(
         work_year=work_year,
-        frequency='1W')
+        frequency='1W',
+        start_month=int(init_interval_month),
+        end_month=int(end_interval_month))
 
     destination_folder = "/mnt/bi-strg3/v/zivvasilisky/data/" + work_year + "/"
     data_folder ="/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/" + work_year + "/"

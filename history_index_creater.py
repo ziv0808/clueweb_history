@@ -1,20 +1,7 @@
 import os
+import sys
 import subprocess
-
-def build_interval_list(
-        work_year,
-        frequency):
-
-    interval_list = []
-    for i in range(1, 13):
-        if frequency == '2W':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
-                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
-        else:
-            raise Exception('build_interval_dict: Unknoen frequency...')
-
-    return interval_list
+from utils import *
 
 def gzip_all_folder(
         folder_name):
@@ -27,18 +14,28 @@ def gzip_all_folder(
                 res = subprocess.check_call(['gzip', os.path.join(os.path.join(folder_name, inner_folder), file_name)])
 
 if __name__=='__main__':
-    work_year = '2009'
+    work_year = sys.argv[1]
+    init_interval_month = sys.argv[2]
+    end_interval_month = sys.argv[3]
+    print("Run Year: " + str(work_year))
+    print("From interval month: " + str(init_interval_month))
+    print("Till interval month: " + str(end_interval_month))
+    sys.stdout.flush()
     interval_list = build_interval_list(
         work_year=work_year,
-        frequency='2W')
+        frequency='1W',
+        start_month=int(init_interval_month),
+        end_month=int(end_interval_month))
 
-    destination_folder = "/mnt/bi-strg3/v/zivvasilisky/index/2009/"
-    data_folder = "/mnt/bi-strg3/v/zivvasilisky/data/2009/"
+    destination_folder = "/mnt/bi-strg3/v/zivvasilisky/index/" + work_year + "/"
+    data_folder = "/mnt/bi-strg3/v/zivvasilisky/data/" + work_year + "/"
 
     for interval in interval_list:
         print("Curr interval: " + str(interval))
+        sys.stdout.flush()
         gzip_all_folder(os.path.join(data_folder, interval))
         print('Gziped all...')
+        sys.stdout.flush()
         with open('/lv_local/home/zivvasilisky/ziv/clueweb_history/IndriBuildIndex.xml', 'r') as f:
             params_text = f.read()
 
@@ -46,7 +43,9 @@ if __name__=='__main__':
                   'w') as f:
             f.write(params_text.replace('###', str(os.path.join(destination_folder,interval))).replace('%%%', str(os.path.join(data_folder,interval))))
         print('Params fixed...')
+        sys.stdout.flush()
         res = subprocess.check_call(['/lv_local/home/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex', '/lv_local/home/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(interval) + '.xml'])
         print('Index built...')
+        sys.stdout.flush()
 
 
