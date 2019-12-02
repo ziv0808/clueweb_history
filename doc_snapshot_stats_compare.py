@@ -134,6 +134,7 @@ if __name__=='__main__':
     for file_name in os.listdir(doc_vector_folder):
         if file_name.startswith('clueweb09') and not file_name.endswith('.json'):
             print (file_name)
+            sys.stdout.flush()
             doc_json = create_doc_json(doc_vector_folder, file_name, stopword_list)
             prev_interval = None
             for interval in interval_ordered_list:
