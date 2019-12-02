@@ -57,38 +57,38 @@ if __name__=='__main__':
             query_num = (3 - len(str(i))) * '0' + str(i)
             query_num_list.append(query_num)
 
-    if run_create_spam_index == True:
-        print("Creating spam score index...")
-        spam_index_dict = create_spam_score_index()
-    else:
-        print("Loading spam score index...")
-        with open('/lv_local/home/zivvasilisky/ziv/env/indri/query/spamer/clueweb09spam.Fusion.json', 'r') as f:
-            spam_index_dict = ast.literal_eval(f.read())
 
 
-    print ("Running spam filter...")
     big_df = pd.DataFrame(columns = ['Docno','QueryNum','Url'])
     next_index = 0
 
-    for filename in os.listdir(dir_path):
-        if filename.endswith('urls.txt'):
-            query_num = filename.split('_')[1]
-            if query_num not in query_num_list:
+    for query_num in query_num_list:
+        filename = "query_" + query_num + "_urls.txt"
+        with open(dir_path + filename, 'r') as f:
+            cur_file_lines = f.readlines()
+        print("Working on :" + query_num)
+        sys.stdout.flush()
+        good_docs = 0
+        for line in cur_file_lines:
+            line = line.strip()
+            splitted_line = line.split(' ')
+            if len(splitted_line) == 1:
                 continue
-            with open(dir_path + filename, 'r') as f:
-                cur_file_txt = f.read()
-            print("Working on :" + query_num)
-            sys.stdout.flush()
-            all_lines = cur_file_txt.split('\n')
-            good_docs = 0
-            for line in all_lines:
-                splitted_line = line.split(' ')
-                if len(splitted_line) == 1:
-                    continue
-                else:
-                    big_df.loc[next_index] = [splitted_line[0], query_num, splitted_line[1]]
-                    next_index += 1
+            else:
+                big_df.loc[next_index] = [splitted_line[0], query_num, splitted_line[1]]
+                next_index += 1
 
+    if run_create_spam_index == True:
+        print("Creating spam score index...")
+        sys.stdout.flush()
+        spam_index_dict = create_spam_score_index()
+    else:
+        print("Loading spam score index...")
+        sys.stdout.flush()
+        with open('/lv_local/home/zivvasilisky/ziv/env/indri/query/spamer/clueweb09spam.Fusion.json', 'r') as f:
+            spam_index_dict = ast.literal_eval(f.read())
+    print("Running spam filter...")
+    sys.stdout.flush()
     big_df['Spam_score'] = big_df['Docno'].apply(lambda x: int(spam_index_dict[x]))
     index_drop_list = []
     query_num = ""

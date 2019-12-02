@@ -200,6 +200,7 @@ if __name__ == '__main__':
     next_index = 0
     for interval in interval_list:
         print ("Curr interval: " + str(interval))
+        sys.stdout.flush()
         if not os.path.exists(os.path.join(destination_folder, interval)):
             os.mkdir(os.path.join(destination_folder, interval))
 
