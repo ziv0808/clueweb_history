@@ -1,8 +1,10 @@
 import os
 import ast
+import sys
 import math
-from scipy import spatial
 import pandas as pd
+
+from utils import *
 
 def create_doc_json(
         data_path,
@@ -68,25 +70,6 @@ def calc_tfidf_dict(
 
     return res_dict
 
-def calc_cosine(
-        dict_1,
-        dict_2):
-    list_1 = []
-    list_2 = []
-    for stem in dict_1:
-        if stem in dict_2:
-            list_1.append(dict_1[stem])
-            list_2.append(dict_2[stem])
-        else:
-            list_1.append(dict_1[stem])
-            list_2.append(0.0)
-    for stem in dict_2:
-        if stem not in dict_1:
-            list_1.append(0.0)
-            list_2.append(dict_2[stem])
-    return (1.0 - spatial.distance.cosine(list_1,list_2))
-
-
 
 def build_text_and_tf(
         stem_list,
@@ -108,32 +91,11 @@ def build_text_and_tf(
     return fulltext[:-1], tf_list, num_of_words, num_stopwords
 
 
-def build_interval_list(
-        work_year,
-        frequency):
-
-    interval_list = []
-    for i in range(1, 13):
-        if frequency == '2W':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
-                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
-        elif frequency == '1M':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        elif frequency == '2M':
-            if i % 2 == 1:
-                interval_list.extend(
-                    [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        else:
-            raise Exception('build_interval_dict: Unknoen frequency...')
-
-    return interval_list
-
 
 if __name__=='__main__':
-    work_year = '2008'
-    interval_freq = '2M'
+    work_year = sys.argv[1]
+    interval_freq = sys.argv[2]
+    similarity_to_clueweb_threshold = 0.6
     doc_vector_folder = '/lv_local/home/zivvasilisky/ziv/data/document_vectors/' + work_year + '/'
     stop_word_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Stop_Words'
     save_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/' + interval_freq +'/'
@@ -166,8 +128,8 @@ if __name__=='__main__':
                                          'Entropy', 'SimToClueWeb', 'SimToPrev', 'SimToClosePrev',
                                          'StemDiffCluWeb', 'CluWebStemDiff'])
     next_index = 0
-    interval_ordered_list = build_interval_list(work_year, interval_freq)
-    interval_ordered_list.append('ClueWeb09')
+    interval_ordered_list = build_interval_list(work_year, interval_freq, add_clueweb=True)
+
     print(stopword_list, len(stopword_list))
     for file_name in os.listdir(doc_vector_folder):
         if file_name.startswith('clueweb09') and not file_name.endswith('.json'):
@@ -176,18 +138,29 @@ if __name__=='__main__':
             prev_interval = None
             for interval in interval_ordered_list:
                 if doc_json[interval] is None:
-                    if interval_freq == '2W':
+                    if interval_freq == '1W':
                         continue
-                    elif interval_freq in ['1M', '2M']:
-                        optional_ref_list = [interval[:8] + '16']
-                        if interval_freq == '2M':
-                            curr_month = int(interval[5:7])
-                            next_month = curr_month + 1
-                            optional_ref_list.extend([interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-01',
-                                                      interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-16'])
+                    else:
+                        if interval_freq == '2W':
+                            if interval[-2:] == '01':
+                                optional_ref_list = [interval[:8] + '08']
+                            elif interval[-2:] == '16':
+                                optional_ref_list = [interval[:8] + '23']
+
+                        elif interval_freq in ['1M', '2M']:
+                            optional_ref_list = [interval[:8] + '08', interval[:8] + '16', interval[:8] + '23']
+                            if interval_freq == '2M':
+                                curr_month = int(interval[5:7])
+                                next_month = curr_month + 1
+                                optional_ref_list.extend([interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-01',
+                                                          interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-08',
+                                                          interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-16',
+                                                          interval[:5] + (2 - len(str(next_month))) * '0' + str(next_month) + '-23'])
 
                         for potential_ref in optional_ref_list:
                             if doc_json[potential_ref] is not None:
+                                if similarity_to_clueweb_threshold > calc_cosine(doc_json[potential_ref]['TfIdf'], doc_json['ClueWeb09']['TfIdf']):
+                                    continue
                                 doc_json[interval] = doc_json[potential_ref]
                                 break
 
@@ -198,6 +171,9 @@ if __name__=='__main__':
                 num_stop_words      = doc_json[interval]['NumStopWords']
                 entropy             = doc_json[interval]['Entropy']
                 sim_to_clueweb      = calc_cosine(doc_json[interval]['TfIdf'], doc_json['ClueWeb09']['TfIdf'])
+                if sim_to_clueweb < similarity_to_clueweb_threshold:
+                    doc_json[interval] = None
+                    continue
                 sim_to_prev         = None
                 sim_to_close_prev   = None
                 if prev_interval is not None:
