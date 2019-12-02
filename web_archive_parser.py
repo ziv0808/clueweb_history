@@ -38,9 +38,13 @@ def get_history_links_for_url_web_api(
 
 
 if __name__=='__main__':
-    init_query = int(sys.argv[1])
-    end_query = int(sys.argv[2])
-    RUN_YEAR = 2008
+    RUN_YEAR = int(sys.argv[1])
+    init_query = int(sys.argv[2])
+    end_query = int(sys.argv[3])
+    print("Run Year: " + str(RUN_YEAR))
+    print("From Query : " + str(init_query))
+    print("Till Query : " + str(end_query))
+    sys.stdout.flush()
     LOAD_FILE = None#"/lv_local/home/zivvasilisky/ziv/data/history_snapshots_2008.json"
     save_path = "/lv_local/home/zivvasilisky/ziv/data/history_snapshots/" + str(RUN_YEAR) + "/"
 
