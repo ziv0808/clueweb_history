@@ -77,6 +77,7 @@ if __name__=="__main__":
     for query_num in range(1, 201):
         no_res_list = []
         print('Query: ' + str(query_num))
+        sys.stdout.flush()
         ranked_list_dict = {}
         relevant_to_query_df = snapshot_stats_df[snapshot_stats_df['QueryNum'] == query_num].copy()
         for interval in interval_list:
