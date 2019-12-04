@@ -66,7 +66,7 @@ if __name__=='__main__':
         filename = "query_" + query_num + "_urls.txt"
         with open(dir_path + filename, 'r') as f:
             cur_file_lines = f.readlines()
-        print("Working on :" + query_num)
+        print("Working on :" + query_num + " Len DF : " + str(len(cur_file_lines)))
         sys.stdout.flush()
         good_docs = 0
         for line in cur_file_lines:
