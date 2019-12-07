@@ -1,8 +1,13 @@
 import os
 import ast
 import math
+import subprocess
 import pandas as pd
 from scipy import spatial
+
+
+TREC_EVAL_PATH = "/lv_local/home/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
+QRELS_FILE_PATH = "/lv_local/home/zivvasilisky/ziv/results/qrels/qrels.adhoc"
 
 
 def build_interval_list(
@@ -171,3 +176,42 @@ def convert_str_to_bool(strng):
         return True
     else:
         raise Exception("convert_str_to_bool: Not supported string")
+
+def convert_trec_results_file_to_pandas_df(
+        results_file_path):
+    # converts results file in trec format to pandas df
+    res_df = pd.DataFrame(columns=['Query_ID', 'Iteration', 'Docno', 'Rank', 'Score', 'Method'])
+    next_index = 0
+
+    with open(results_file_path, "r") as f:
+        f_lines = f.readlines()
+
+    for line in f_lines:
+        line = line.strip()
+        broken_line = line.split(" ")
+        if len(broken_line) > 1:
+            res_df.loc[next_index] = broken_line
+            next_index += 1
+
+    return  res_df
+
+def get_ranking_effectiveness_for_res_file(
+        file_path,
+        filename):
+    bashCommand = TREC_EVAL_PATH + ' ' + QRELS_FILE_PATH + ' ' + \
+                  os.path.join(file_path, filename)
+
+    output = subprocess.check_output(['bash', '-c', bashCommand])
+    output_lines = output.split('\n')
+    for line in output_lines[:-1]:
+        splitted_line = line.split('\t')
+        splitted_line = list(filter(None, splitted_line))
+        if splitted_line[1] == 'all':
+            if splitted_line[0].replace(' ', '') == 'map':
+                map = float(splitted_line[2])
+            elif splitted_line[0].replace(' ', '') == 'P_5':
+                p_5 = float(splitted_line[2])
+            elif splitted_line[0].replace(' ', '') == 'P_10':
+                p_10 = float(splitted_line[2])
+
+    return {'Map': map, 'P_5': p_5, 'P_10': p_10}
