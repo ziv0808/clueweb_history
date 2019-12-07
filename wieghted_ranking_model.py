@@ -86,7 +86,7 @@ class WeightedListRanker():
         normalize_factor = normalize_factor.reshape((len(all_wieghts), 1))
         all_wieghts = all_wieghts/normalize_factor
 
-        new_score = np.sum( self.data_df[self.interval_list].values * all_wieghts, axis = 0)
+        new_score = np.sum( self.data_df[self.interval_list].values * all_wieghts, axis = 1)
         new_score_df = self.data_df[['Query_ID', 'Docno']].copy()
         new_score_df['Score'] = new_score
         new_score_df['Iteration'] = 'Q0'
