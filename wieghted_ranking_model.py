@@ -124,7 +124,7 @@ class WeightedListRanker():
             reverse):
         # create decaying weights for the interval list without skiped indexes
         p = len(self.interval_list) - len(skip_idx_list)
-        wieght_list = [0.0]*(self.interval_list)
+        wieght_list = [0.0]*len(self.interval_list)
         k = 0.0
         if reverse == True:
             k = float(p - 1)
@@ -143,7 +143,7 @@ class WeightedListRanker():
             skip_idx_list):
         # create uniform weights for the interval list without skiped indexes
         denominator = float(len(self.interval_list) - len(skip_idx_list))
-        wieght_list = [0.0] * (self.interval_list)
+        wieght_list = [0.0] * len(self.interval_list)
         for i in range(len(wieght_list)):
             wieght_list[i] = 1.0 / denominator
         return wieght_list
