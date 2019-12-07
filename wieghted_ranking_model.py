@@ -161,6 +161,8 @@ class WeightedListRanker():
                 if res_dict['Map'] > best_map:
                     best_map = res_dict['Map']
                     best_config = weight_list
+                    print("Curr Best config gets Map: " +str(best_map))
+                    sys.stdout.flush()
                 for decay_factor in [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]:
                     # decying weights
                     weight_list = self.create_decaying_wieghts(
@@ -172,6 +174,8 @@ class WeightedListRanker():
                     if res_dict['Map'] > best_map:
                         best_map = res_dict['Map']
                         best_config = weight_list
+                        print("Curr Best config gets Map: " + str(best_map))
+                        sys.stdout.flush()
                     # reverse decaying weights
                     weight_list = self.create_decaying_wieghts(
                         decaying_factor=decay_factor,
@@ -182,6 +186,8 @@ class WeightedListRanker():
                     if res_dict['Map'] > best_map:
                         best_map = res_dict['Map']
                         best_config = weight_list
+                        print("Curr Best config gets Map: " + str(best_map))
+                        sys.stdout.flush()
                 self.save_log()
 
         self.add_to_log("Best\t" + str(best_config) + "\t" + str(best_map))
