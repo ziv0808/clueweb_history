@@ -198,8 +198,8 @@ if __name__=="__main__":
     work_year = '2008'
     interval_freq = sys.argv[1]
     interval_lookup_method = sys.argv[2]
-    rank_or_score = convert_str_to_bool(sys.argv[3])
-    start_month = convert_str_to_bool(sys.argv[4])
+    rank_or_score = sys.argv[3]
+    start_month = int(sys.argv[4])
 
     weighted_list_object = WeightedListRanker(
         interval_lookup_method=interval_lookup_method,
