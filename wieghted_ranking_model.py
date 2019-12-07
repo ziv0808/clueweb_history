@@ -31,13 +31,14 @@ class WeightedListRanker():
         self.save_files_suffix = "_" + rank_or_score + self.result_files_sufix
 
         self.rank_or_score = rank_or_score
-        self.pre_process_data(rank_or_score=rank_or_score)
 
         self.save_dirname = "/lv_local/home/zivvasilisky/ziv/data/WeightedListRanker/"
         self.save_dirname = os.path.join(self.save_dirname, rank_or_score + "_" + interval_freq + "_" + interval_lookup_method + addition)
         if not os.path.exists(self.save_dirname):
             os.mkdir(self.save_dirname)
         self.run_log = ""
+
+        self.pre_process_data(rank_or_score=rank_or_score)
 
 
     def save_log(self):
@@ -66,9 +67,9 @@ class WeightedListRanker():
                     on=['Query_ID', 'Docno'],
                     how='outer')
         # initiate wieght multiplier df
-        self.wieght_multiplier_df = self.data_df.copy()
+        self.wieght_multiplier_df = self.data_df[self.interval_list].copy()
         self.wieght_multiplier_df = self.wieght_multiplier_df.applymap(lambda x: 0 if np.isnan(float(x)) else 1)
-        self.data_df = self.data_df.applymap(lambda x: 0.0 if np.isnan(float(x)) else float(x))
+        self.data_df[self.interval_list] = self.data_df[self.interval_list].applymap(lambda x: 0.0 if np.isnan(float(x)) else float(x))
 
         self.data_df.to_csv(os.path.join(self.save_dirname, 'Data_df.tsv'), sep = '\t', index = False)
 
@@ -85,7 +86,7 @@ class WeightedListRanker():
         normalize_factor = normalize_factor.reshape((len(weight_list), 1))
         all_wieghts = all_wieghts/normalize_factor
 
-        new_score = np.sum( self.data_df.values * all_wieghts, axis = 0)
+        new_score = np.sum( self.data_df[self.interval_list].values * all_wieghts, axis = 0)
         new_score_df = self.data_df[['Query_ID', 'Docno']].copy()
         new_score_df['Score'] = new_score
         new_score_df['Iteration'] = 'Q0'
