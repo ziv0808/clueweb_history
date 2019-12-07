@@ -202,6 +202,7 @@ if __name__=="__main__":
     start_month = int(sys.argv[4])
 
     weighted_list_object = WeightedListRanker(
+        work_year=work_year,
         interval_lookup_method=interval_lookup_method,
         interval_freq=interval_freq,
         rank_or_score=rank_or_score,
