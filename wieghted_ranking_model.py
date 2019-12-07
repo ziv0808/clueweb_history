@@ -33,7 +33,7 @@ class WeightedListRanker():
         self.rank_or_score = rank_or_score
         self.pre_process_data(rank_or_score=rank_or_score)
 
-        self.save_dirname = "/lv_local/home/zivvasilisky/ziv/WeightedListRanker/"
+        self.save_dirname = "/lv_local/home/zivvasilisky/ziv/data/WeightedListRanker/"
         self.save_dirname = os.path.join(self.save_dirname, rank_or_score + "_" + interval_freq + "_" + interval_lookup_method + addition)
         if not os.path.exists(self.save_dirname):
             os.mkdir(self.save_dirname)
@@ -55,6 +55,7 @@ class WeightedListRanker():
         for interval in self.interval_list:
             curr_df = convert_trec_results_file_to_pandas_df(os.path.join(RESULT_FILES_PATH, interval + self.result_files_sufix))
             curr_df = curr_df[['Query_ID', 'Docno', rank_or_score]]
+
             if True == first:
                 self.data_df = curr_df.rename(columns = {rank_or_score : interval})
                 first = False
@@ -66,8 +67,10 @@ class WeightedListRanker():
                     how='outer')
         # initiate wieght multiplier df
         self.wieght_multiplier_df = self.data_df.copy()
-        self.wieght_multiplier_df = self.wieght_multiplier_df.applymap(lambda x: 0 if np.isnan(x) else 1)
-        self.data_df = self.data_df.applymap(lambda x: 0.0 if np.isnan(x) else x)
+        self.wieght_multiplier_df = self.wieght_multiplier_df.applymap(lambda x: 0 if np.isnan(float(x)) else 1)
+        self.data_df = self.data_df.applymap(lambda x: 0.0 if np.isnan(float(x)) else float(x))
+
+        self.data_df.to_csv(os.path.join(self.save_dirname, 'Data_df.tsv'), sep = '\t', index = False)
 
     def get_score_for_weight_vector(
             self,
@@ -104,11 +107,11 @@ class WeightedListRanker():
         results_trec_str = convert_df_to_trec(res_df[['Query_ID', 'Iteration', 'Docno', 'Rank', 'Score', 'Method']])
         cur_time = str(datetime.datetime.now())
         curr_file_name = cur_time.replace(' ', '_') + self.save_files_suffix
-        with open(os.path.join(os.path.join(RESULT_FILES_PATH, 'weighted_list_res'),curr_file_name ), 'w') as f:
+        with open(os.path.join(os.path.join(RESULT_FILES_PATH, 'wieghted_lists_res'),curr_file_name ), 'w') as f:
             f.write(results_trec_str)
 
         results = get_ranking_effectiveness_for_res_file(
-            file_path=os.path.join(RESULT_FILES_PATH, 'weighted_list_res'),
+            file_path=os.path.join(RESULT_FILES_PATH, 'wieghted_lists_res'),
             filename=curr_file_name)
 
         return results
