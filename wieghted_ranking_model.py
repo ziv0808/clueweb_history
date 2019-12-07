@@ -82,8 +82,8 @@ class WeightedListRanker():
             wieght_vector[i, 0] = weight_list[i]
 
         all_wieghts = self.wieght_multiplier_df.values * wieght_vector.transpose()
-        normalize_factor = np.sum(all_wieghts, axis = 0)
-        normalize_factor = normalize_factor.reshape((len(weight_list), 1))
+        normalize_factor = np.sum(all_wieghts, axis = 1)
+        normalize_factor = normalize_factor.reshape((len(all_wieghts), 1))
         all_wieghts = all_wieghts/normalize_factor
 
         new_score = np.sum( self.data_df[self.interval_list].values * all_wieghts, axis = 0)
