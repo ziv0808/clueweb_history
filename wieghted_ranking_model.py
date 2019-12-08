@@ -7,6 +7,8 @@ import numpy as np
 from utils import *
 
 
+DEBUG = True
+
 RESULT_FILES_PATH = "/lv_local/home/zivvasilisky/ziv/results/"
 
 class WeightedListRanker():
@@ -53,7 +55,7 @@ class WeightedListRanker():
             rank_or_score):
         # initiate all scores df
         first = True
-        for interval in self.interval_list:
+        for interval in self.interval_list[::-1]:
             curr_df = convert_trec_results_file_to_pandas_df(os.path.join(RESULT_FILES_PATH, interval + self.result_files_sufix))
             curr_df = curr_df[['Query_ID', 'Docno', rank_or_score]]
 
@@ -67,8 +69,9 @@ class WeightedListRanker():
                     on=['Query_ID', 'Docno'],
                     how='outer')
         # initiate wieght multiplier df
+        self.data_df = self.data_df[['Query_ID', 'Docno'] + self.interval_list]
         self.wieght_multiplier_df = self.data_df[self.interval_list].copy()
-        self.wieght_multiplier_df = self.wieght_multiplier_df.applymap(lambda x: 0 if np.isnan(float(x)) else 1)
+        self.wieght_multiplier_df = self.wieght_multiplier_df.applymap(lambda x: 0 if np.isnan(float(x)) else 1.0)
         self.data_df[self.interval_list] = self.data_df[self.interval_list].applymap(lambda x: 0.0 if np.isnan(float(x)) else float(x))
 
         self.data_df.to_csv(os.path.join(self.save_dirname, 'Data_df.tsv'), sep = '\t', index = False)
@@ -85,6 +88,11 @@ class WeightedListRanker():
         normalize_factor = np.sum(all_wieghts, axis = 1)
         normalize_factor = normalize_factor.reshape((len(all_wieghts), 1))
         all_wieghts = all_wieghts/normalize_factor
+        if DEBUG == True:
+            print("Normalize Factors : ")
+            print(normalize_factor)
+            print("Normalized wieghts : ")
+            print(all_wieghts)
 
         new_score = np.sum( self.data_df[self.interval_list].values * all_wieghts, axis = 1)
         new_score_df = self.data_df[['Query_ID', 'Docno']].copy()
@@ -101,6 +109,8 @@ class WeightedListRanker():
                 query_df.sort_values('Score', ascending=True, inplace=True)
             elif self.rank_or_score == 'Score':
                 query_df.sort_values('Score', ascending=False, inplace=True)
+            else:
+                raise Exception("Uknown measure...")
 
             query_df['Rank'] = list(range(1, len(query_df) + 1))
             res_df = res_df.append(query_df, ignore_index=True)
@@ -110,7 +120,8 @@ class WeightedListRanker():
         curr_file_name = cur_time.replace(' ', '_') + self.save_files_suffix
         with open(os.path.join(os.path.join(RESULT_FILES_PATH, 'wieghted_lists_res'),curr_file_name ), 'w') as f:
             f.write(results_trec_str)
-
+        if DEBUG == True:
+            print(curr_file_name)
         results = get_ranking_effectiveness_for_res_file(
             file_path=os.path.join(RESULT_FILES_PATH, 'wieghted_lists_res'),
             filename=curr_file_name)
@@ -213,7 +224,12 @@ if __name__=="__main__":
         start_month=start_month)
     print("Object Created...")
     sys.stdout.flush()
-    weighted_list_object.check_wieght_options()
+    if DEBUG == True:
+        wieght_list = ast.literal_eval(sys.argv[5])
+        print (str(wieght_list))
+        print(weighted_list_object.get_score_for_weight_vector(weight_list=wieght_list))
+    else:
+        weighted_list_object.check_wieght_options()
 
 
 
