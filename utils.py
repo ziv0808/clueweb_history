@@ -166,7 +166,7 @@ def create_stemmed_queries_df(
     return pd.read_csv(stemmed_query_file, sep = '\t', index_col = False)
 
 def create_query_to_doc_mapping_df(
-        query_to_doc_mapping_file='/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'):
+        query_to_doc_mapping_file='/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered_50_per_query.tsv'):
     return pd.read_csv(query_to_doc_mapping_file, sep = '\t', index_col = False)
 
 def convert_str_to_bool(strng):
