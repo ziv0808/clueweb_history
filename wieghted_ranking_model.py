@@ -106,7 +106,8 @@ class WeightedListRanker():
         for query in all_queries:
             query_df = new_score_df[new_score_df['Query_ID'] == query].copy()
             if self.rank_or_score == 'Rank':
-                query_df.sort_values('Score', ascending=True, inplace=True)
+                query_df['Score'] = query_df['Score'].apply(lambda x: x*(-1))
+                query_df.sort_values('Score', ascending=False, inplace=True)
             elif self.rank_or_score == 'Score':
                 query_df.sort_values('Score', ascending=False, inplace=True)
             else:
