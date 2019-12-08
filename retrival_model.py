@@ -86,7 +86,7 @@ def get_scored_df_for_query(
             cc_dict=cc_dict,
             doc_dict=doc_interval_dict,
             mue=mue)
-        res_df.loc[next_index] = [query_num, 'Q0', docno, 0, doc_score, 'indri']
+        res_df.loc[next_index] = ["0"*(3 - len(str(query_num)))+ str(query_num), 'Q0', docno, 0, doc_score, 'indri']
         next_index += 1
 
     res_df.sort_values('Score', ascending=False, inplace=True)
