@@ -170,6 +170,11 @@ class WeightedListRanker():
         for L in range(len(all_inteval_indexs)):
             for subset in itertools.combinations(all_inteval_indexs, L):
                 ignore_idx_list = list(subset)
+                if (len(all_inteval_indexs) - 1) in ignore_idx_list:
+                    continue
+                if (len(ignore_idx_list) == int(len(self.interval_list) / 2)) or (len(ignore_idx_list) == int(len(self.interval_list) / 2) + 1):
+                    if 0 not in ignore_idx_list:
+                        continue
                 # uniform weights
                 weight_list = self.create_uniform_wieghts(ignore_idx_list)
                 res_dict = self.get_score_for_weight_vector(weight_list)
@@ -179,7 +184,7 @@ class WeightedListRanker():
                     best_config = weight_list
                     print("Curr Best config gets Map: " +str(best_map))
                     sys.stdout.flush()
-                for decay_factor in [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]:
+                for decay_factor in [0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95]:
                     # decying weights
                     weight_list = self.create_decaying_wieghts(
                         decaying_factor=decay_factor,
@@ -206,7 +211,7 @@ class WeightedListRanker():
                         sys.stdout.flush()
                 self.save_log()
 
-        self.add_to_log("Best\t" + str(best_config) + "\t" + str(best_map))
+        self.add_to_log("\nBest\t" + str(best_config) + "\t" + str(best_map))
         self.save_log()
 
 
