@@ -59,7 +59,7 @@ if __name__=="__main__":
 
             next_row = [rank_or_score, lookup_method]
             for interval in interval_list:
-                corr_  = curr_corr_df[[interval], 'Map'].corr()
+                corr_  = curr_corr_df[[interval, 'Map']].corr()
                 next_row.append(corr_.loc[interval]['Map'])
 
             res_df.loc[next_idx] = next_row
