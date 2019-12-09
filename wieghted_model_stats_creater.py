@@ -65,6 +65,6 @@ if __name__=="__main__":
             res_df.loc[next_idx] = next_row
             next_idx += 1
 
-    res_df.to_csv(os.path.join(WEIGHTED_MODELS_FILES_PATH, interval_freq + "_" + addition + ".tsv") , sep = '\t', index=False)
+    res_df.to_csv(os.path.join(WEIGHTED_MODELS_FILES_PATH, "Weight_Corr_Df_" + interval_freq + "_" + addition + ".tsv") , sep = '\t', index=False)
 
 
