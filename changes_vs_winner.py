@@ -10,9 +10,10 @@ from utils import *
 def plot_stats_vs_winner(
         stats_file_path,
         interval_freq,
-        lookup_method):
+        lookup_method,
+        txt_addition):
 
-    work_df = pd.read_csv(os.path.join(stats_file_path,'Summay_vs_winner_' + interval_freq + '_' + lookup_method + '.tsv'),sep = '\t' ,index_col=False)
+    work_df = pd.read_csv(os.path.join(stats_file_path,'Summay_vs_winner_' + interval_freq + '_' + lookup_method + txt_addition+'.tsv'),sep = '\t' ,index_col=False)
     all_queries = list(work_df['QueryNum'].drop_duplicates())
     all_intervals = sorted(list(work_df['Interval'].drop_duplicates()))
 
@@ -55,22 +56,26 @@ def plot_stats_vs_winner(
                     addition += 1
 
     print('Spearman corr: ' + str(spearman_corr_df.corr().loc['Sim_PD_Rank']['Rank']))
-    summary_df.to_csv('Summay_vs_winner_processed_' + interval_freq + '_' + lookup_method + '_' +
+    summary_df.to_csv('Summay_vs_winner_processed_' + interval_freq + '_' + lookup_method + txt_addition + '_' +
                       str(round(spearman_corr_df.corr().loc['Sim_PD_Rank']['Rank'], 6)) + '.tsv', sep='\t', index=False)
 
 if __name__=="__main__":
     work_year = '2008'
     interval_freq = sys.argv[1]
     interval_lookup_method = sys.argv[2]
+    interval_start_month = int(sys.argv[3])
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
+    txt_addition = ""
+    if interval_start_month != 1:
+        txt_addition = "_" + str(interval_start_month) + "SM_"
 
     query_retrn_files_path = '/lv_local/home/zivvasilisky/ziv/results/ranked_docs/'
     processed_docs_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/' + interval_freq + '/'
     stats_file_path = '/lv_local/home/zivvasilisky/ziv/clueweb_history/'
 
     snapshot_stats_df = pd.read_csv(os.path.join(stats_file_path, 'Summay_snapshot_stats_' + interval_freq + '.tsv'), sep = '\t', index_col = False)
-    interval_list = build_interval_list(work_year, interval_freq, add_clueweb=True)
+    interval_list = build_interval_list(work_year, interval_freq, add_clueweb=True, start_month=interval_start_month)
 
     summary_df = pd.DataFrame(columns = ['QueryNum', 'Interval', 'Docno','Rank','SimClueWeb','QueryTermsRatio', 'StopwordsRatio', 'Entropy','Sim_PW'])
     next_index = 0
@@ -82,7 +87,7 @@ if __name__=="__main__":
         relevant_to_query_df = snapshot_stats_df[snapshot_stats_df['QueryNum'] == query_num].copy()
         for interval in interval_list:
             with open(os.path.join(query_retrn_files_path, str(
-                    query_num) + '_' + interval_freq + '_' + interval + '_' + interval_lookup_method + '_Results.txt'),
+                    query_num) + '_' + interval_freq + '_' + interval + '_' + interval_lookup_method + txt_addition +'_Results.txt'),
                       'r') as f:
                 trec_str = f.read()
             ranked_list_dict[interval] = convert_trec_to_ranked_list(trec_str)
@@ -152,10 +157,11 @@ if __name__=="__main__":
                 summary_df.loc[next_index] = insert_row
                 next_index += 1
 
-    summary_df.to_csv(os.path.join(stats_file_path, 'Summay_vs_winner_' + interval_freq + '_' + interval_lookup_method + '.tsv'), sep = '\t', index=False)
+    summary_df.to_csv(os.path.join(stats_file_path, 'Summay_vs_winner_' + interval_freq + '_' + interval_lookup_method + txt_addition +'.tsv'), sep = '\t', index=False)
     plot_stats_vs_winner(
         stats_file_path = stats_file_path,
         interval_freq = interval_freq,
-        lookup_method = interval_lookup_method)
+        lookup_method = interval_lookup_method,
+        txt_addition = txt_addition )
 
 
