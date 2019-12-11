@@ -17,6 +17,9 @@ def create_data_df(
     for line in file_lines:
         line = line.strip()
         if line == "" or line.startswith("Best"):
+            if line.startswith("Best"):
+                print (log_file_path.split('/')[-1])
+                print (line)
             continue
 
         broken_line = line.split('\t')
