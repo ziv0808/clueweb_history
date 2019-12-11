@@ -58,6 +58,7 @@ class WeightedListRanker():
         for interval in self.interval_list[::-1]:
             curr_df = convert_trec_results_file_to_pandas_df(os.path.join(RESULT_FILES_PATH, interval + self.result_files_sufix))
             curr_df = curr_df[['Query_ID', 'Docno', rank_or_score]]
+            curr_df[rank_or_score] = curr_df[rank_or_score].apply(lambda x: float(x))
             if rank_or_score == 'Rank':
                 # min max normalize values
                 min_df = curr_df[['Query_ID',rank_or_score]].groupby(['Query_ID']).min()
