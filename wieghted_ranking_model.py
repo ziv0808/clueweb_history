@@ -7,8 +7,8 @@ import numpy as np
 from utils import *
 
 
-DEBUG = True
-
+DEBUG = False
+DISTRIBUTE_MISSING_WIEGHTS = False
 RESULT_FILES_PATH = "/lv_local/home/zivvasilisky/ziv/results/"
 
 class WeightedListRanker():
@@ -58,7 +58,13 @@ class WeightedListRanker():
         for interval in self.interval_list[::-1]:
             curr_df = convert_trec_results_file_to_pandas_df(os.path.join(RESULT_FILES_PATH, interval + self.result_files_sufix))
             curr_df = curr_df[['Query_ID', 'Docno', rank_or_score]]
-
+            if rank_or_score == 'Rank':
+                # min max normalize values
+                min_df = curr_df[['Query_ID',rank_or_score]].groupby(['Query_ID']).min()
+                max_df = curr_df[['Query_ID', rank_or_score]].groupby(['Query_ID']).max()
+                curr_df[rank_or_score] = curr_df.apply(lambda row:
+                    (row[rank_or_score] - min_df.loc[row['Query_ID'][0]])/(max_df.loc[row['Query_ID'][0]] - min_df.loc[row['Query_ID'][0]])
+                                                       , axis = 1)
             if True == first:
                 self.data_df = curr_df.rename(columns = {rank_or_score : interval})
                 first = False
@@ -84,10 +90,17 @@ class WeightedListRanker():
         for i in range(len(weight_list)):
             wieght_vector[i, 0] = weight_list[i]
 
-        all_wieghts = self.wieght_multiplier_df.values * wieght_vector.transpose()
-        normalize_factor = np.sum(all_wieghts, axis = 1)
-        normalize_factor = normalize_factor.reshape((len(all_wieghts), 1))
-        all_wieghts = all_wieghts/normalize_factor
+
+        if DISTRIBUTE_MISSING_WIEGHTS == True:
+            all_wieghts = self.wieght_multiplier_df.values * wieght_vector.transpose()
+            normalize_factor = np.sum(all_wieghts, axis = 1)
+            normalize_factor = normalize_factor.reshape((len(all_wieghts), 1))
+            all_wieghts = all_wieghts/normalize_factor
+        else:
+            wieght_vector = wieght_vector/np.sum(wieght_vector)
+            all_wieghts = self.wieght_multiplier_df.values * wieght_vector.transpose()
+
+
         if DEBUG == True:
             print("Normalize Factors : ")
             print(normalize_factor)
@@ -168,48 +181,49 @@ class WeightedListRanker():
         all_inteval_indexs = list(range(len(self.interval_list)))
         self.add_to_log("Method\tWieghtList\tScore")
         for L in range(len(all_inteval_indexs)):
-            for subset in itertools.combinations(all_inteval_indexs, L):
-                ignore_idx_list = list(subset)
-                if (len(all_inteval_indexs) - 1) in ignore_idx_list:
-                    continue
-                if (len(ignore_idx_list) == int(len(self.interval_list) / 2)) or (len(ignore_idx_list) == int(len(self.interval_list) / 2) + 1):
-                    if 0 not in ignore_idx_list:
-                        continue
-                # uniform weights
-                weight_list = self.create_uniform_wieghts(ignore_idx_list)
+            ignore_idx_list = all_inteval_indexs[:L]
+            # for subset in itertools.combinations(all_inteval_indexs, L):
+            #     ignore_idx_list = list(subset)
+            #     if (len(all_inteval_indexs) - 1) in ignore_idx_list:
+            #         continue
+            #     if (len(ignore_idx_list) == int(len(self.interval_list) / 2)) or (len(ignore_idx_list) == int(len(self.interval_list) / 2) + 1):
+            #         if 0 not in ignore_idx_list:
+            #             continue
+            # uniform weights
+            weight_list = self.create_uniform_wieghts(ignore_idx_list)
+            res_dict = self.get_score_for_weight_vector(weight_list)
+            self.add_to_log("Uniform\t" + str(weight_list) + "\t" + str(res_dict))
+            if res_dict['Map'] > best_map:
+                best_map = res_dict['Map']
+                best_config = weight_list
+                print("Curr Best config gets Map: " +str(best_map))
+                sys.stdout.flush()
+            for decay_factor in [0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95]:
+                # decying weights
+                weight_list = self.create_decaying_wieghts(
+                    decaying_factor=decay_factor,
+                    skip_idx_list=ignore_idx_list,
+                    reverse=False)
                 res_dict = self.get_score_for_weight_vector(weight_list)
-                self.add_to_log("Uniform\t" + str(weight_list) + "\t" + str(res_dict))
+                self.add_to_log("Decay_" + str(decay_factor) + "\t" + str(weight_list) + "\t" + str(res_dict))
                 if res_dict['Map'] > best_map:
                     best_map = res_dict['Map']
                     best_config = weight_list
-                    print("Curr Best config gets Map: " +str(best_map))
+                    print("Curr Best config gets Map: " + str(best_map))
                     sys.stdout.flush()
-                for decay_factor in [0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95]:
-                    # decying weights
-                    weight_list = self.create_decaying_wieghts(
-                        decaying_factor=decay_factor,
-                        skip_idx_list=ignore_idx_list,
-                        reverse=False)
-                    res_dict = self.get_score_for_weight_vector(weight_list)
-                    self.add_to_log("Decay_" + str(decay_factor) + "\t" + str(weight_list) + "\t" + str(res_dict))
-                    if res_dict['Map'] > best_map:
-                        best_map = res_dict['Map']
-                        best_config = weight_list
-                        print("Curr Best config gets Map: " + str(best_map))
-                        sys.stdout.flush()
-                    # reverse decaying weights
-                    weight_list = self.create_decaying_wieghts(
-                        decaying_factor=decay_factor,
-                        skip_idx_list=ignore_idx_list,
-                        reverse=True)
-                    res_dict = self.get_score_for_weight_vector(weight_list)
-                    self.add_to_log("Decay_" + str(decay_factor) + "\t" + str(weight_list) + "\t" + str(res_dict))
-                    if res_dict['Map'] > best_map:
-                        best_map = res_dict['Map']
-                        best_config = weight_list
-                        print("Curr Best config gets Map: " + str(best_map))
-                        sys.stdout.flush()
-                self.save_log()
+                # reverse decaying weights
+                weight_list = self.create_decaying_wieghts(
+                    decaying_factor=decay_factor,
+                    skip_idx_list=ignore_idx_list,
+                    reverse=True)
+                res_dict = self.get_score_for_weight_vector(weight_list)
+                self.add_to_log("Decay_" + str(decay_factor) + "\t" + str(weight_list) + "\t" + str(res_dict))
+                if res_dict['Map'] > best_map:
+                    best_map = res_dict['Map']
+                    best_config = weight_list
+                    print("Curr Best config gets Map: " + str(best_map))
+                    sys.stdout.flush()
+            self.save_log()
 
         self.add_to_log("\nBest\t" + str(best_config) + "\t" + str(best_map))
         self.save_log()
