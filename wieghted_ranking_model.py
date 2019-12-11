@@ -63,7 +63,7 @@ class WeightedListRanker():
                 min_df = curr_df[['Query_ID',rank_or_score]].groupby(['Query_ID']).min()
                 max_df = curr_df[['Query_ID', rank_or_score]].groupby(['Query_ID']).max()
                 curr_df[rank_or_score] = curr_df.apply(lambda row:
-                    (row[rank_or_score] - min_df.loc[row['Query_ID'][0]])/(max_df.loc[row['Query_ID'][0]] - min_df.loc[row['Query_ID'][0]])
+                    (row[rank_or_score] - min_df.loc[row['Query_ID']][0])/(max_df.loc[row['Query_ID']][0] - min_df.loc[row['Query_ID']][0])
                                                        , axis = 1)
             if True == first:
                 self.data_df = curr_df.rename(columns = {rank_or_score : interval})
