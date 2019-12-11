@@ -7,7 +7,7 @@ import numpy as np
 from utils import *
 
 
-DEBUG = False
+DEBUG = True
 
 RESULT_FILES_PATH = "/lv_local/home/zivvasilisky/ziv/results/"
 
