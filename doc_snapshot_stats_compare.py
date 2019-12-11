@@ -95,12 +95,12 @@ def build_text_and_tf(
 if __name__=='__main__':
     work_year = sys.argv[1]
     interval_freq = sys.argv[2]
-    similarity_to_clueweb_threshold = 0.6
+    similarity_to_clueweb_threshold = 0.05
     doc_vector_folder = '/lv_local/home/zivvasilisky/ziv/data/document_vectors/' + work_year + '/'
     stop_word_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Stop_Words'
     save_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/' + interval_freq +'/'
     query_stem_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Query_Words'
-    query_to_doc_file = '/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'
+    query_to_doc_file = '/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered_50_per_query.tsv'
 
     df_query_to_doc = pd.read_csv(query_to_doc_file, sep = '\t', index_col= False)
     df_query_stems = pd.read_csv(query_stem_file, sep = '\t', index_col= False)
