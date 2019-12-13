@@ -89,7 +89,7 @@ def fill_cc_dict_with_doc(
                         cc_dict[interval_freq][lookup][curr_interval][curr_stem] += int(curr_doc_instance['TfList'][j])
                     else:
                         cc_dict[interval_freq][lookup][curr_interval][curr_stem] = int(curr_doc_instance['TfList'][j])
-                cc_dict[interval_freq][lookup][curr_stem][curr_interval]['ALL_TERMS_COUNT'] += int(curr_doc_instance['TfList'][j])
+                cc_dict[interval_freq][lookup][curr_interval]['ALL_TERMS_COUNT'] += int(curr_doc_instance['TfList'][j])
 
 
 
