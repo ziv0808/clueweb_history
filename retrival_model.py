@@ -110,7 +110,7 @@ if __name__=='__main__':
     query_to_doc_mapping_df = create_query_to_doc_mapping_df()
     stemmed_queries_df = create_stemmed_queries_df()
     # create easy to use index for cc
-    cc_dict = create_cc_dict()
+    cc_dict = create_per_interval_cc_dict(interval_freq=frequency, lookup_method=interval_lookup_method)
 
     big_df_dict = {}
     full_bench = ""
@@ -131,7 +131,7 @@ if __name__=='__main__':
                 interval_list=interval_list,
                 interval_lookup_method=interval_lookup_method,
                 processed_docs_path=processed_docs_folder,
-                cc_dict=cc_dict,
+                cc_dict=cc_dict[interval_list[j]],
                 mue=mue)
 
             with open(os.path.join(save_folder, str(query_num) + "_" + frequency + '_' + str(interval_list[j] + "_" + interval_lookup_method + addition +"_Results.txt")), 'w') as f:

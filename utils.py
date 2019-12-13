@@ -215,3 +215,19 @@ def get_ranking_effectiveness_for_res_file(
                 p_10 = float(splitted_line[2])
 
     return {'Map': map, 'P_5': p_5, 'P_10': p_10}
+
+def create_per_interval_cc_dict(
+        cc_dict_file='/lv_local/home/zivvasilisky/ziv/data/cc_per_interval_dict.json',
+        interval_freq = None,
+        lookup_method = None):
+
+    with open(cc_dict_file, 'r') as f:
+        cc_dict = ast.literal_eval(f.read())
+
+    if interval_freq is not None:
+        cc_dict = cc_dict[interval_freq]
+        if lookup_method is not None:
+            cc_dict = cc_dict[lookup_method]
+    return  cc_dict
+
+
