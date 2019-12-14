@@ -230,4 +230,12 @@ def create_per_interval_cc_dict(
             cc_dict = cc_dict[lookup_method]
     return  cc_dict
 
+def get_number_of_snapshots_for_doc(
+        doc_dict):
+    num_of_snapshots = 0
+    for snapshot in doc_dict:
+        if doc_dict[snapshot] is not None:
+            num_of_snapshots += 1
+    return num_of_snapshots
+
 
