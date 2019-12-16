@@ -99,13 +99,16 @@ class WeightedListRanker():
         self.wieght_multiplier_test = self.wieght_multiplier_df[self.wieght_multiplier_df['IsTest'] == 1].copy()
         self.data_df = self.data_df[self.data_df['IsTest'] == 0]
         self.wieght_multiplier_df = self.wieght_multiplier_df[self.wieght_multiplier_df['IsTest'] == 0]
-        
+
+        print(self.wieght_multiplier_df)
+        print(self.wieght_multiplier_test)
+
         del self.data_test['IsTest']
         del self.wieght_multiplier_test['IsTest']
 
         del self.data_df['IsTest']
         del self.wieght_multiplier_df['IsTest']
-        print (self.wieght_multiplier_df)
+
 
     def get_score_for_weight_vector(
             self,
