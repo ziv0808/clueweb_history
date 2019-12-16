@@ -227,6 +227,8 @@ class WeightedListRanker():
         else:
             k_list = [None]
         for K in k_list:
+            print ("K:" + str(K))
+            sys.stdout.flush()
             for L in range(len(all_inteval_indexs)):
                 curr_ignore_idx_list = all_inteval_indexs[:L]
                 rest_of_idx_list = all_inteval_indexs[L:]
