@@ -72,14 +72,14 @@ class WeightedListRanker():
             curr_df = convert_trec_results_file_to_pandas_df(os.path.join(RESULT_FILES_PATH, interval + self.result_files_sufix))
             curr_df = curr_df[['Query_ID', 'Docno', rank_or_score]]
             curr_df[rank_or_score] = curr_df[rank_or_score].apply(lambda x: float(x))
-            if rank_or_score == 'Rank':
-                # min max normalize values
-
-                min_df = curr_df[['Query_ID',rank_or_score]].groupby(['Query_ID']).min()
-                max_df = curr_df[['Query_ID', rank_or_score]].groupby(['Query_ID']).max()
-                curr_df[rank_or_score] = curr_df.apply(lambda row:
-                    (row[rank_or_score] - min_df.loc[row['Query_ID']][0])/(max_df.loc[row['Query_ID']][0] - min_df.loc[row['Query_ID']][0])
-                                            if not np.isnan(row[rank_or_score]) else row[rank_or_score] , axis = 1)
+            # if rank_or_score == 'Rank':
+            #     # min max normalize values
+            #
+            #     min_df = curr_df[['Query_ID',rank_or_score]].groupby(['Query_ID']).min()
+            #     max_df = curr_df[['Query_ID', rank_or_score]].groupby(['Query_ID']).max()
+            #     curr_df[rank_or_score] = curr_df.apply(lambda row:
+            #         (row[rank_or_score] - min_df.loc[row['Query_ID']][0])/(max_df.loc[row['Query_ID']][0] - min_df.loc[row['Query_ID']][0])
+            #                                 if not np.isnan(row[rank_or_score]) else row[rank_or_score] , axis = 1)
             if True == first:
                 self.data_df = curr_df.rename(columns = {rank_or_score : interval})
                 first = False
@@ -253,7 +253,7 @@ class WeightedListRanker():
                             best_config = weight_list + [K]
                             print("Curr Best config gets Map: " +str(best_map))
                             sys.stdout.flush()
-                        for decay_factor in [0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95]:
+                        for decay_factor in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95]:
                             # decying weights
                             weight_list = self.create_decaying_wieghts(
                                 decaying_factor=decay_factor,
@@ -280,8 +280,8 @@ class WeightedListRanker():
                                 sys.stdout.flush()
                         self.save_log()
         if self.rank_or_score == 'Score':
-            self.add_to_log("Best\t" + str(best_config) + "\t" + str(self.get_score_for_weight_vector(weight_list=best_config)))
-            self.add_to_log("Test\t" + str(best_config) + "\t" + str(self.get_score_for_weight_vector(weight_list=best_config, train=False)))
+            self.add_to_log("Best\t" + str(best_config) + "\t" + str(self.get_score_for_weight_vector(weight_list=best_config[:-1])))
+            self.add_to_log("Test\t" + str(best_config) + "\t" + str(self.get_score_for_weight_vector(weight_list=best_config[:-1], train=False)))
         else:
             self.add_to_log(
                 "Best\t" + str(best_config) + "\t" + str(self.get_score_for_weight_vector(weight_list=best_config[:-1], rank_at_k=best_config[-1])))
