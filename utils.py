@@ -36,10 +36,14 @@ def build_interval_list(
             if i % 2 == 1:
                 interval_list.extend(
                     [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
+        elif frequency.startswith('SIM'):
+            for i in list(reversed(range(0, -49, -1)))[:-1]:
+                interval_list.append(str(i))
+            interval_list = interval_list[(start_month - 1)*4:]
         else:
             raise Exception('build_interval_dict: Unknoen frequency...')
 
-    if add_clueweb == True:
+    if (add_clueweb == True):
         interval_list.append('ClueWeb09')
 
     return interval_list

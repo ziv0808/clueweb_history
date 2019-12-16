@@ -142,12 +142,64 @@ def create_per_interval_per_lookup_cc_dict(
             f.write(str(res_dict))
 
 
-create_per_interval_per_lookup_cc_dict()
+def create_similarity_interval(
+        from_interval_size='1W',
+        sim_threshold = 1.0,
+        work_year = '2008',
+        sim_folder_name = "SIM"
+        ):
+    time_interval_list = build_interval_list(
+        work_year=work_year,
+        frequency=from_interval_size,
+        add_clueweb= True)
+
+    sim_interval_list = build_interval_list(
+        work_year=work_year,
+        frequency="SIM",
+        add_clueweb= True)
+
+    processed_docs_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+
+    for file_name in os.listdir(os.path.join(processed_docs_folder, from_interval_size)):
+        if file_name.startswith('clueweb09') and not file_name.endswith('.json'):
+            with open(os.path.join(os.path.join(processed_docs_folder, from_interval_size),file_name), 'r') as f:
+                doc_dict = ast.literal_eval(f.read())
+
+            doc_active_interval_list = reversed(time_interval_list[:])
+            res_doc_dict = {}
+            last = ""
+            for sim_interval in reversed(sim_interval_list):
+                assigned = False
+                for time_interval in doc_active_interval_list[:]:
+                    if sim_interval == "ClueWeb09":
+                        res_doc_dict[sim_interval] = doc_dict[time_interval]
+                        doc_active_interval_list.remove(time_interval)
+                        last = sim_interval
+                        assigned = True
+                        break
+                    elif doc_dict[time_interval] is not None:
+                        curr_sim = calc_cosine(doc_dict[time_interval]['TfIdf'], res_doc_dict[last]['TfIdf'])
+                        if curr_sim < sim_threshold:
+                            res_doc_dict[sim_interval] = doc_dict[time_interval]
+                            doc_active_interval_list.remove(time_interval)
+                            last = sim_interval
+                            assigned = True
+                            break
+                    else:
+                        doc_active_interval_list.remove(time_interval)
+
+                if assigned ==False:
+                    res_doc_dict[sim_interval] = None
+
+            with open(os.path.join(os.path.join(processed_docs_folder, sim_folder_name), file_name), 'w') as f:
+                f.write(str(res_doc_dict))
+
+create_similarity_interval()
 
 
+# create_per_interval_per_lookup_cc_dict()
 
-
-            # check_for_txt_len_problem()
+# check_for_txt_len_problem()
 # merge_covered_df_with_file()
 # get_relevant_docs_df()
 
