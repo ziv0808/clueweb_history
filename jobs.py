@@ -164,7 +164,8 @@ def create_similarity_interval(
         if file_name.startswith('clueweb09') and not file_name.endswith('.json'):
             with open(os.path.join(os.path.join(processed_docs_folder, from_interval_size),file_name), 'r') as f:
                 doc_dict = ast.literal_eval(f.read())
-
+            print(file_name)
+            sys.stdout.flush()
             doc_active_interval_list = reversed(time_interval_list[:])
             res_doc_dict = {}
             last = ""
