@@ -143,12 +143,12 @@ class WeightedListRanker():
             print("Normalized wieghts : ")
             print(all_wieghts)
         if train == True:
-            work_data = self.data_df[self.interval_list].copy()
+            work_data = self.data_df.copy()
         else:
-            work_data = self.data_test[self.interval_list].copy()
+            work_data = self.data_test.copy()
         if self.rank_or_score == 'Rank':
-            work_data = work_data.applymap(lambda x: x if np.isnan(x) else 1.0/(x + float(rank_at_k)))
-        new_score = np.sum(work_data.values * all_wieghts, axis=1)
+            work_data[self.interval_list] = work_data[self.interval_list].applymap(lambda x: x if np.isnan(x) else 1.0/(x + float(rank_at_k)))
+        new_score = np.sum(work_data[self.interval_list].values * all_wieghts, axis=1)
         new_score_df = work_data[['Query_ID', 'Docno']].copy()
 
         new_score_df['Score'] = new_score
