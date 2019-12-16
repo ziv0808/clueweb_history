@@ -233,8 +233,7 @@ class WeightedListRanker():
                 ignore_sub_set_len = 0
                 if len(rest_of_idx_list) > 2:
                     ignore_sub_set_len = 1
-                if len(rest_of_idx_list) > 3:
-                    ignore_sub_set_len = 2
+
                 for i in range(ignore_sub_set_len + 1):
                     for subset in itertools.combinations(rest_of_idx_list, i):
                         ignore_idx_list = curr_ignore_idx_list + list(subset)
@@ -274,7 +273,7 @@ class WeightedListRanker():
                                 best_config = weight_list + [K]
                                 print("Curr Best config gets Map: " + str(best_map))
                                 sys.stdout.flush()
-                self.save_log()
+                        self.save_log()
         if self.rank_or_score == 'Score':
             self.add_to_log("Best\t" + str(best_config) + "\t" + str(self.get_score_for_weight_vector(weight_list=best_config)))
             self.add_to_log("Test\t" + str(best_config) + "\t" + str(self.get_score_for_weight_vector(weight_list=best_config, train=False)))
