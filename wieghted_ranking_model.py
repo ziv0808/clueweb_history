@@ -231,13 +231,13 @@ class WeightedListRanker():
                 curr_ignore_idx_list = all_inteval_indexs[:L]
                 rest_of_idx_list = all_inteval_indexs[L:]
                 ignore_sub_set_len = 0
-                if len(rest_of_idx_list) > 2:
+                if len(rest_of_idx_list) > 2 and len(rest_of_idx_list) < 7:
                     ignore_sub_set_len = 1
 
                 for i in range(ignore_sub_set_len + 1):
                     for subset in itertools.combinations(rest_of_idx_list, i):
                         ignore_idx_list = curr_ignore_idx_list + list(subset)
-                        if (len(all_inteval_indexs) - 1) in ignore_idx_list:
+                        if (len(all_inteval_indexs) - 1) in ignore_idx_list or L in ignore_idx_list:
                             continue
                         # uniform weights
                         weight_list = self.create_uniform_wieghts(ignore_idx_list)
