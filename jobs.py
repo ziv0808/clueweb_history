@@ -166,10 +166,10 @@ def create_similarity_interval(
                 doc_dict = ast.literal_eval(f.read())
             print(file_name)
             sys.stdout.flush()
-            doc_active_interval_list = reversed(time_interval_list[:])
+            doc_active_interval_list = list(reversed(time_interval_list[:]))
             res_doc_dict = {}
             last = ""
-            for sim_interval in reversed(sim_interval_list):
+            for sim_interval in list(reversed(sim_interval_list)):
                 assigned = False
                 for time_interval in doc_active_interval_list[:]:
                     if sim_interval == "ClueWeb09":
