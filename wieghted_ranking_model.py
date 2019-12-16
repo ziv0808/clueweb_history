@@ -96,7 +96,7 @@ class WeightedListRanker():
         self.data_df.to_csv(os.path.join(self.save_dirname, 'Data_df.tsv'), sep = '\t', index = False)
 
         self.data_test = self.data_df[self.data_df['IsTest'] == 1].copy()
-        self.wieght_multiplier_test = self.wieght_multiplier_test[self.wieght_multiplier_test['IsTest'] == 1].copy()
+        self.wieght_multiplier_test = self.wieght_multiplier_df[self.wieght_multiplier_df['IsTest'] == 1].copy()
 
         del self.data_test['IsTest']
         del self.wieght_multiplier_test ['IsTest']
