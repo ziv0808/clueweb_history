@@ -42,6 +42,8 @@ class WeightedListRanker():
 
         self.save_dirname = "/lv_local/home/zivvasilisky/ziv/data/WeightedListRanker/"
         self.save_dirname = os.path.join(self.save_dirname, rank_or_score + "_" + interval_freq + "_" + interval_lookup_method + addition)
+        if DISTRIBUTE_MISSING_WIEGHTS == True:
+            self.save_dirname += "_DW"
         if not os.path.exists(self.save_dirname):
             os.mkdir(self.save_dirname)
         self.run_log = ""
@@ -161,7 +163,7 @@ class WeightedListRanker():
         for query in all_queries:
             query_df = new_score_df[new_score_df['Query_ID'] == query].copy()
             if self.rank_or_score == 'Rank':
-                query_df['Score'] = query_df['Score'].apply(lambda x: x*(-1))
+                # query_df['Score'] = query_df['Score'].apply(lambda x: x*(-1))
                 query_df.sort_values('Score', ascending=False, inplace=True)
             elif self.rank_or_score == 'Score':
                 query_df.sort_values('Score', ascending=False, inplace=True)
@@ -212,7 +214,8 @@ class WeightedListRanker():
         denominator = float(len(self.interval_list) - len(skip_idx_list))
         wieght_list = [0.0] * len(self.interval_list)
         for i in range(len(wieght_list)):
-            wieght_list[i] = 1.0 / denominator
+            if i not in skip_idx_list:
+                wieght_list[i] = 1.0 / denominator
         return wieght_list
 
     def check_wieght_options(
