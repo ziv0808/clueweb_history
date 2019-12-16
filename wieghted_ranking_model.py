@@ -91,7 +91,7 @@ class WeightedListRanker():
         self.data_df = self.data_df[['Query_ID', 'Docno'] + self.interval_list]
         self.data_df['IsTest'] = self.data_df['Query_ID'].apply(lambda x: 1 if x in self.test_set_q else 0)
         self.wieght_multiplier_df = self.data_df[['IsTest'] + self.interval_list].copy()
-        self.wieght_multiplier_df = self.wieght_multiplier_df.applymap(lambda x: 0 if np.isnan(float(x)) else 1.0)
+        self.wieght_multiplier_df[self.interval_list] = self.wieght_multiplier_df[self.interval_list].applymap(lambda x: 0 if np.isnan(float(x)) else 1.0)
         self.data_df[self.interval_list] = self.data_df[self.interval_list].applymap(lambda x: 0.0 if np.isnan(float(x)) else float(x))
         self.data_df.to_csv(os.path.join(self.save_dirname, 'Data_df.tsv'), sep = '\t', index = False)
 
@@ -100,8 +100,6 @@ class WeightedListRanker():
         self.data_df = self.data_df[self.data_df['IsTest'] == 0]
         self.wieght_multiplier_df = self.wieght_multiplier_df[self.wieght_multiplier_df['IsTest'] == 0]
 
-        print(self.wieght_multiplier_df)
-        print(self.wieght_multiplier_test)
 
         del self.data_test['IsTest']
         del self.wieght_multiplier_test['IsTest']
