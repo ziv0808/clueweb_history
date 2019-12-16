@@ -95,20 +95,27 @@ def fill_cc_dict_with_doc(
 
 
 def create_per_interval_per_lookup_cc_dict(
-        work_interval_freq_list = ['1W', '2W', '1M', '2M'],
-        lookup_method_list = ['NoLookup', 'Backward','OnlyBackward','Forward']):
+        work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM'],
+        lookup_method_list = ['NoLookup', 'Backward','OnlyBackward','Forward'],
+        already_exists = True):
 
     work_df = pd.read_csv('/lv_local/home/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv', sep = '\t', index_col = False)
     work_df = work_df[work_df['Interval']=='ClueWeb09']
 
-    res_dict = {}
-    res_dict['ClueWeb09'] = {}
-    for index, row in work_df.iterrows():
-        res_dict['ClueWeb09'][row['Stem']] = int(row['CollectionCount'])
+    if already_exists == False:
+        res_dict = {}
+        res_dict['ClueWeb09'] = {}
+        for index, row in work_df.iterrows():
+            res_dict['ClueWeb09'][row['Stem']] = int(row['CollectionCount'])
+    else:
+        with open('/lv_local/home/zivvasilisky/ziv/data/cc_per_interval_dict.json', 'r') as f:
+            res_dict = ast.literal_eval(f.read())
 
     for interval_freq in work_interval_freq_list:
         print(interval_freq)
         sys.stdout.flush()
+        if interval_freq in res_dict:
+            continue
         res_dict[interval_freq] = {}
         curr_interval_list = build_interval_list(
                 work_year='2008',
@@ -193,10 +200,10 @@ def create_similarity_interval(
             with open(os.path.join(os.path.join(processed_docs_folder, sim_folder_name), file_name), 'w') as f:
                 f.write(str(res_doc_dict))
 
-create_similarity_interval()
+# create_similarity_interval()
 
 
-# create_per_interval_per_lookup_cc_dict()
+create_per_interval_per_lookup_cc_dict()
 
 # check_for_txt_len_problem()
 # merge_covered_df_with_file()
