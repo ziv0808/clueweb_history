@@ -161,7 +161,7 @@ def create_similarity_interval(
     processed_docs_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/2008/'
 
     for file_name in os.listdir(os.path.join(processed_docs_folder, from_interval_size)):
-        if file_name.startswith('clueweb09') and not file_name.endswith('.json'):
+        if file_name.startswith('clueweb09') and file_name.endswith('.json'):
             with open(os.path.join(os.path.join(processed_docs_folder, from_interval_size),file_name), 'r') as f:
                 doc_dict = ast.literal_eval(f.read())
             print(file_name)
