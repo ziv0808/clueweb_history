@@ -170,13 +170,11 @@ def create_similarity_interval(
             res_doc_dict = {}
             last = ""
             for sim_interval in list(reversed(sim_interval_list)):
-                assigned = False
                 for time_interval in doc_active_interval_list[:]:
                     if sim_interval == "ClueWeb09":
                         res_doc_dict[sim_interval] = doc_dict[time_interval]
                         doc_active_interval_list.remove(time_interval)
                         last = sim_interval
-                        assigned = True
                         break
                     elif doc_dict[time_interval] is not None:
                         curr_sim = calc_cosine(doc_dict[time_interval]['TfIdf'], res_doc_dict[last]['TfIdf'])
@@ -184,12 +182,12 @@ def create_similarity_interval(
                             res_doc_dict[sim_interval] = doc_dict[time_interval]
                             doc_active_interval_list.remove(time_interval)
                             last = sim_interval
-                            assigned = True
                             break
                     else:
                         doc_active_interval_list.remove(time_interval)
 
-                if assigned ==False:
+            for sim_interval in sim_interval_list:
+                if sim_interval not in res_doc_dict:
                     res_doc_dict[sim_interval] = None
 
             with open(os.path.join(os.path.join(processed_docs_folder, sim_folder_name), file_name), 'w') as f:
