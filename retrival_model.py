@@ -104,12 +104,13 @@ if __name__=='__main__':
     interval_lookup_method = sys.argv[2]
     interval_start_month = int(sys.argv[3])
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[4])
-    processed_docs_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
-    save_folder = '/lv_local/home/zivvasilisky/ziv/results/ranked_docs/'
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
+    save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
     addition = ""
+
     if interval_start_month != 1:
         addition = "_" + str(interval_start_month) + "SM_"
-        
+
     if amount_of_snapshot_limit is not None and amount_of_snapshot_limit > 1:
         addition += "_SnapLimit_" + str(amount_of_snapshot_limit)
 
@@ -155,7 +156,7 @@ if __name__=='__main__':
                 grep_term = ""
                 for docno in res_df['Docno']:
                     grep_term += docno + "\|"
-                bashCommand = 'cat ~/ziv/env/indri/query/query_res/query_' + "0"*(3 - len(str(query_num)))+ str(query_num) +\
+                bashCommand = 'cat /mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/query_res/query_' + "0"*(3 - len(str(query_num)))+ str(query_num) +\
                               '_res.txt | grep "' + grep_term[:-2] + '"'
                 output = subprocess.check_output(['bash', '-c', bashCommand])
                 full_bench += output + '\n'

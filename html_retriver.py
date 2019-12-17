@@ -128,12 +128,12 @@ if __name__=='__main__':
         work_year=work_year,
         frequency='1W')
 
-    save_folder = "/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/" + work_year + "/"
-    resource_path = "/lv_local/home/zivvasilisky/ziv/data"
+    save_folder = "/mnt/bi-strg3/v/zivvasilisky/ziv/data/retrived_htmls/" + work_year + "/"
+    resource_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/data"
     filename = os.path.join(resource_path, "history_snapshots_" + work_year + ".json")
-    snapshot_files_path = "/lv_local/home/zivvasilisky/ziv/data/history_snapshots/" + str(work_year) + "/"
+    snapshot_files_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/data/history_snapshots/" + str(work_year) + "/"
 
-    work_df = pd.read_csv('/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv', sep='\t',
+    work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv', sep='\t',
                           index_col=False)
     work_df['QueryInt'] = work_df['QueryNum'].apply(lambda x: int(x))
     work_df = work_df[work_df['QueryInt'] >= init_query]

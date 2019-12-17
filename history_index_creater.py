@@ -36,15 +36,15 @@ if __name__=='__main__':
         gzip_all_folder(os.path.join(data_folder, interval))
         print('Gziped all...')
         sys.stdout.flush()
-        with open('/lv_local/home/zivvasilisky/ziv/clueweb_history/IndriBuildIndex.xml', 'r') as f:
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/IndriBuildIndex.xml', 'r') as f:
             params_text = f.read()
 
-        with open('/lv_local/home/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(interval) + '.xml',
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(interval) + '.xml',
                   'w') as f:
             f.write(params_text.replace('###', str(os.path.join(destination_folder,interval))).replace('%%%', str(os.path.join(data_folder,interval))))
         print('Params fixed...')
         sys.stdout.flush()
-        res = subprocess.check_call(['/lv_local/home/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex', '/lv_local/home/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(interval) + '.xml'])
+        res = subprocess.check_call(['/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex', '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(interval) + '.xml'])
         print('Index built...')
         sys.stdout.flush()
 

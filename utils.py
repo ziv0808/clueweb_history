@@ -6,8 +6,8 @@ import pandas as pd
 from scipy import spatial
 
 
-TREC_EVAL_PATH = "/lv_local/home/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
-QRELS_FILE_PATH = "/lv_local/home/zivvasilisky/ziv/results/qrels/qrels.adhoc"
+TREC_EVAL_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
+QRELS_FILE_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
 
 
 def build_interval_list(
@@ -143,7 +143,7 @@ def get_doc_snapshot_by_lookup_method(
 
 
 def create_cc_dict(
-        stemmed_query_collection_counts='/lv_local/home/zivvasilisky/ziv/data/StemsCollectionCounts.tsv'):
+        stemmed_query_collection_counts='/mnt/bi-strg3/v/zivvasilisky/ziv/data/StemsCollectionCounts.tsv'):
     # create easy to use index for collection counts - only for query stems
     query_stems_cc_df = pd.read_csv(stemmed_query_collection_counts, sep='\t', index_col=False)
     cc_dict = {}
@@ -166,11 +166,11 @@ def convert_query_to_tf_dict(
     return query_dict
 
 def create_stemmed_queries_df(
-        stemmed_query_file = '/lv_local/home/zivvasilisky/ziv/data/Stemmed_Query_Words'):
+        stemmed_query_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Query_Words'):
     return pd.read_csv(stemmed_query_file, sep = '\t', index_col = False)
 
 def create_query_to_doc_mapping_df(
-        query_to_doc_mapping_file='/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered_50_per_query.tsv'):
+        query_to_doc_mapping_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered_50_per_query.tsv'):
     return pd.read_csv(query_to_doc_mapping_file, sep = '\t', index_col = False)
 
 def convert_str_to_bool(strng):
@@ -221,7 +221,7 @@ def get_ranking_effectiveness_for_res_file(
     return {'Map': map, 'P_5': p_5, 'P_10': p_10}
 
 def create_per_interval_cc_dict(
-        cc_dict_file='/lv_local/home/zivvasilisky/ziv/data/cc_per_interval_dict.json',
+        cc_dict_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/cc_per_interval_dict.json',
         interval_freq = None,
         lookup_method = None):
 

@@ -70,9 +70,9 @@ if __name__=="__main__":
     if interval_start_month != 1:
         txt_addition = "_" + str(interval_start_month) + "SM_"
 
-    query_retrn_files_path = '/lv_local/home/zivvasilisky/ziv/results/ranked_docs/'
-    processed_docs_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/' + interval_freq + '/'
-    stats_file_path = '/lv_local/home/zivvasilisky/ziv/clueweb_history/'
+    query_retrn_files_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/' + interval_freq + '/'
+    stats_file_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/'
 
     snapshot_stats_df = pd.read_csv(os.path.join(stats_file_path, 'Summay_snapshot_stats_' + interval_freq + '.tsv'), sep = '\t', index_col = False)
     interval_list = build_interval_list(work_year, interval_freq, add_clueweb=True, start_month=interval_start_month)

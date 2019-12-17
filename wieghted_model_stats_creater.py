@@ -2,7 +2,7 @@ import ast
 import sys
 from utils import *
 
-WEIGHTED_MODELS_FILES_PATH = "/lv_local/home/zivvasilisky/ziv/data/WeightedListRanker/"
+WEIGHTED_MODELS_FILES_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/data/WeightedListRanker/"
 
 
 def create_data_df(

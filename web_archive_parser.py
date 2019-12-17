@@ -46,10 +46,10 @@ if __name__=='__main__':
     print("Till Query : " + str(end_query))
     sys.stdout.flush()
     LOAD_FILE = None#"/lv_local/home/zivvasilisky/ziv/data/history_snapshots_2008.json"
-    save_path = "/lv_local/home/zivvasilisky/ziv/data/history_snapshots/" + str(RUN_YEAR) + "/"
+    save_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/data/history_snapshots/" + str(RUN_YEAR) + "/"
 
 
-    work_df = pd.read_csv('/lv_local/home/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv', sep = '\t', index_col = False)
+    work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv', sep = '\t', index_col = False)
     if LOAD_FILE is not None:
         with open(LOAD_FILE, 'r') as f:
             ref_json = json.load(f)

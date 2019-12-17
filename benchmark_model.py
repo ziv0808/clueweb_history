@@ -8,9 +8,9 @@ import pandas as pd
 
 from utils import *
 
-PROCESSED_DOCS_MAIN_FOLDER = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors'
-TREC_EVAL_PATH = "/lv_local/home/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
-QRELS_FILE_PATH = "/lv_local/home/zivvasilisky/ziv/results/qrels/qrels.adhoc"
+PROCESSED_DOCS_MAIN_FOLDER = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors'
+TREC_EVAL_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
+QRELS_FILE_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
 COLLECTION_MODEL_BY_PAPER = True
 
 
@@ -323,7 +323,7 @@ if __name__=="__main__":
     print('Lookup method: ' + interval_lookup_method)
     print('Retrivel Model: ' + retrieval_model)
 
-    output_folder = '/lv_local/home/zivvasilisky/ziv/results/benchmark'
+    output_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark'
 
 
     print('Time: ' + str(datetime.datetime.now()))

@@ -9,7 +9,7 @@ from utils import *
 
 DEBUG = False
 DISTRIBUTE_MISSING_WIEGHTS = False
-RESULT_FILES_PATH = "/lv_local/home/zivvasilisky/ziv/results/"
+RESULT_FILES_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
 
 class WeightedListRanker():
     def __init__(
@@ -40,7 +40,7 @@ class WeightedListRanker():
 
         self.rank_or_score = rank_or_score
 
-        self.save_dirname = "/lv_local/home/zivvasilisky/ziv/data/WeightedListRanker/"
+        self.save_dirname = "/mnt/bi-strg3/v/zivvasilisky/ziv/data/WeightedListRanker/"
         self.save_dirname = os.path.join(self.save_dirname, rank_or_score + "_" + interval_freq + "_" + interval_lookup_method + addition)
         if DISTRIBUTE_MISSING_WIEGHTS == True:
             self.save_dirname += "_DW"

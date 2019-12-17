@@ -4,7 +4,7 @@ import pandas as pd
 from utils import *
 
 def get_relevant_docs_df(
-        qurls_path = '/lv_local/home/zivvasilisky/ziv/results/qrels/qrels.adhoc'):
+        qurls_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc'):
 
     relevant_docs_df = pd.DataFrame(columns = ['Query', 'Docno', 'Relevance'])
     next_index = 0
@@ -99,7 +99,7 @@ def create_per_interval_per_lookup_cc_dict(
         lookup_method_list = ['NoLookup', 'Backward','OnlyBackward','Forward'],
         already_exists = True):
 
-    work_df = pd.read_csv('/lv_local/home/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv', sep = '\t', index_col = False)
+    work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv', sep = '\t', index_col = False)
     work_df = work_df[work_df['Interval']=='ClueWeb09']
 
     if already_exists == False:
@@ -108,7 +108,7 @@ def create_per_interval_per_lookup_cc_dict(
         for index, row in work_df.iterrows():
             res_dict['ClueWeb09'][row['Stem']] = int(row['CollectionCount'])
     else:
-        with open('/lv_local/home/zivvasilisky/ziv/data/cc_per_interval_dict.json', 'r') as f:
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/cc_per_interval_dict.json', 'r') as f:
             res_dict = ast.literal_eval(f.read())
 
     for interval_freq in work_interval_freq_list:
@@ -121,7 +121,7 @@ def create_per_interval_per_lookup_cc_dict(
                 work_year='2008',
                 frequency=interval_freq,
                 add_clueweb=True)
-        processed_docs_path = os.path.join('/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/2008/', interval_freq)
+        processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/', interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
             sys.stdout.flush()
@@ -145,7 +145,7 @@ def create_per_interval_per_lookup_cc_dict(
                         doc_dict = doc_dict,
                         lookup = lookup_method)
 
-        with open('/lv_local/home/zivvasilisky/ziv/data/cc_per_interval_dict.json', 'w') as f:
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/cc_per_interval_dict.json', 'w') as f:
             f.write(str(res_dict))
 
 
@@ -165,7 +165,7 @@ def create_similarity_interval(
         frequency="SIM",
         add_clueweb= True)
 
-    processed_docs_folder = '/lv_local/home/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
 
     for file_name in os.listdir(os.path.join(processed_docs_folder, from_interval_size)):
         if file_name.startswith('clueweb09') and file_name.endswith('.json'):

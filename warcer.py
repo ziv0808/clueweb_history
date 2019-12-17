@@ -200,7 +200,7 @@ if __name__ == '__main__':
         end_month=int(end_interval_month))
 
     destination_folder = "/mnt/bi-strg3/v/zivvasilisky/data/" + work_year + "/"
-    data_folder ="/lv_local/home/zivvasilisky/ziv/data/retrived_htmls/" + work_year + "/"
+    data_folder ="/mnt/bi-strg3/v/zivvasilisky/ziv/data/retrived_htmls/" + work_year + "/"
 
     summary_df = pd.DataFrame(columns = ['Interval', 'NumOfDocs', 'LostRecords'])
     next_index = 0

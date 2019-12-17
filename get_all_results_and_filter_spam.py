@@ -8,7 +8,7 @@ from utils import *
 
 
 def create_spam_score_index(
-        path = '/lv_local/home/zivvasilisky/ziv/env/indri/query/spamer',
+        path = '/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/spamer',
         file_name = 'clueweb09spam.Fusion'):
     index_dic = {}
     with open(os.path.join(path, file_name), 'r') as f:
@@ -37,7 +37,7 @@ if __name__=='__main__':
     specific_queries_list = ast.literal_eval(sys.argv[3])
 
     num_of_required_results_per_query = 1000
-    dir_path = '/lv_local/home/zivvasilisky/ziv/env/indri/query/query_url/'
+    dir_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/query_url/'
     query_list = list(range(1,201))
     if specific_queries_list is not None:
         query_list = specific_queries_list
@@ -50,7 +50,7 @@ if __name__=='__main__':
         for i in query_list:
             query_num = (3 - len(str(i))) * '0' + str(i)
             if i not in query_num_list:
-                res = subprocess.check_call(['/lv_local/home/zivvasilisky/ziv/env/indri/query/url_retrival.sh', query_num])
+                res = subprocess.check_call(['/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/url_retrival.sh', query_num])
                 query_num_list.append(query_num)
     else:
         for i in query_list:
@@ -85,7 +85,7 @@ if __name__=='__main__':
     else:
         print("Loading spam score index...")
         sys.stdout.flush()
-        with open('/lv_local/home/zivvasilisky/ziv/env/indri/query/spamer/clueweb09spam.Fusion.json', 'r') as f:
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/spamer/clueweb09spam.Fusion.json', 'r') as f:
             spam_index_dict = ast.literal_eval(f.read())
     print("Running spam filter...")
     sys.stdout.flush()
