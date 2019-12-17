@@ -7,7 +7,7 @@ import pandas as pd
 
 ALL_WORDS = False
 from utils import *
-
+from retrival_stats_creator import create_retrieval_stats
 
 def score_doc_for_query(
         query_stem_dict,
@@ -169,3 +169,11 @@ if __name__=='__main__':
     for interval in interval_list:
         with open(os.path.join(os.path.dirname(save_folder[:-1]), interval +  "_" + frequency + '_' + interval_lookup_method + addition +"_Results.txt"), 'w') as f:
             f.write(convert_df_to_trec(big_df_dict[interval]))
+
+    print("Creating Retrival stats...")
+    sys.stdout.flush()
+    create_retrieval_stats(
+        interval_freq=frequency,
+        interval_lookup_method=interval_lookup_method,
+        interval_start_month=interval_start_month,
+        amount_of_snapshot_limit=amount_of_snapshot_limit)

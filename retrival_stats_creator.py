@@ -132,16 +132,17 @@ def rbo_dict(dict1, dict2, p):
     return rbo(list1, list2, p)
 
 
+def create_retrieval_stats(
+        interval_freq,
+        interval_lookup_method,
+        interval_start_month,
+        amount_of_snapshot_limit):
 
-
-if __name__=="__main__":
     query_retrn_files_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
     trec_eval_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
     qrels_file_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
-    interval_freq = sys.argv[1]
-    interval_lookup_method = sys.argv[2]
-    interval_start_month = int(sys.argv[3])
-    amount_of_snapshot_limit = ast.literal_eval(sys.argv[4])
+
+    save_dirname = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/"
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
     addition = ""
@@ -272,7 +273,7 @@ if __name__=="__main__":
             next_index += 1
             prev_interval = interval
 
-    summary_df.to_csv(os.path.join(os.path.dirname(query_retrn_files_path[:-1]),interval_freq + '_' + interval_lookup_method + addition +'_Per_query_stats.tsv'), sep = '\t', index = False)
+    summary_df.to_csv(os.path.join(save_dirname ,interval_freq + '_' + interval_lookup_method + addition +'_Per_query_stats.tsv'), sep = '\t', index = False)
 
 
 
