@@ -18,30 +18,31 @@ def build_interval_list(
         end_month   = 12):
     # create interval list for work year according to required frequency
     interval_list = []
-    for i in range(start_month, end_month + 1):
-        if frequency == '2W':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
-                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
-        elif frequency == '1W':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
-                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-08',
-                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16',
-                 work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-23'])
-        elif frequency == '1M':
-            interval_list.extend(
-                [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        elif frequency == '2M':
-            if i % 2 == 1:
+    if frequency.startswith('SIM'):
+        for i in list(reversed(range(0, -49, -1)))[:-1]:
+            interval_list.append(str(i))
+        interval_list = interval_list[(start_month - 1) * 4:]
+    else:
+        for i in range(start_month, end_month + 1):
+            if frequency == '2W':
+                interval_list.extend(
+                    [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
+                     work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16'])
+            elif frequency == '1W':
+                interval_list.extend(
+                    [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01',
+                     work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-08',
+                     work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-16',
+                     work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-23'])
+            elif frequency == '1M':
                 interval_list.extend(
                     [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
-        elif frequency.startswith('SIM'):
-            for i in list(reversed(range(0, -49, -1)))[:-1]:
-                interval_list.append(str(i))
-            interval_list = interval_list[(start_month - 1)*4:]
-        else:
-            raise Exception('build_interval_dict: Unknoen frequency...')
+            elif frequency == '2M':
+                if i % 2 == 1:
+                    interval_list.extend(
+                        [work_year + "-" + (2 - len(str(i))) * '0' + str(i) + '-01'])
+            else:
+                raise Exception('build_interval_dict: Unknoen frequency...')
 
     if (add_clueweb == True):
         interval_list.append('ClueWeb09')
