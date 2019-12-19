@@ -157,10 +157,10 @@ def create_retrieval_stats(
     last_not_clueweb_interval = interval_list[len(interval_list) - 2]
     for interval in interval_list:
         eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]), interval + '_' + interval_freq + '_' + interval_lookup_method + addition +'_Results_evaluation.txt')
-        if not os.path.exists(eval_file_path):
-            bashCommand = trec_eval_path + ' -q ' + qrels_file_path + ' ' + \
-                          eval_file_path.replace('_evaluation', '') + ' > ' + eval_file_path
-            output = subprocess.check_output(['bash', '-c', bashCommand])
+        # if not os.path.exists(eval_file_path):
+        bashCommand = trec_eval_path + ' -q ' + qrels_file_path + ' ' + \
+                      eval_file_path.replace('_evaluation', '') + ' > ' + eval_file_path
+        output = subprocess.check_output(['bash', '-c', bashCommand])
 
     summary_df = pd.DataFrame(columns = ['Query_Num', 'Interval', 'Map','P@5','P@10', 'Overlap@5_ClueWeb',
                                          'Overlap@5_Prev', 'Overlap@5_Last', 'RBO_0.95_Res_ClueWeb', 'RBO_0.95_Min_ClueWeb',
