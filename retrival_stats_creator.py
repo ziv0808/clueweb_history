@@ -276,10 +276,16 @@ def create_retrieval_stats(
     summary_df.to_csv(os.path.join(save_dirname ,interval_freq + '_' + interval_lookup_method + addition +'_Per_query_stats.tsv'), sep = '\t', index = False)
 
 
-
-
-
-
+if __name__=='__main__':
+    frequency = sys.argv[1]
+    interval_lookup_method = sys.argv[2]
+    interval_start_month = int(sys.argv[3])
+    amount_of_snapshot_limit = ast.literal_eval(sys.argv[4])
+    create_retrieval_stats(
+        interval_freq=frequency,
+        interval_lookup_method=interval_lookup_method,
+        interval_start_month=interval_start_month,
+        amount_of_snapshot_limit=amount_of_snapshot_limit)
 
 
 
