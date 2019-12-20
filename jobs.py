@@ -203,7 +203,7 @@ def create_similarity_interval(
 
 def create_stats_data_frame_for_snapshot_changes(
         work_year='2008',
-        sim_folder_name="SIM"):
+        sim_folder_name="SIM_995"):
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
     summary_df = pd.DataFrame(
         columns=['Docno', 'Interval', 'PrevValidInterval', 'QueryNum', 'TextLen', '#Stopword', 'QueryWords',
@@ -268,9 +268,9 @@ def create_stats_data_frame_for_snapshot_changes(
     summary_df.to_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + sim_folder_name + '.tsv',
                             sep='\t', index=False)
 
-# create_similarity_interval()
+create_similarity_interval()
 create_stats_data_frame_for_snapshot_changes()
-# create_per_interval_per_lookup_cc_dict()
+create_per_interval_per_lookup_cc_dict()
 
 # check_for_txt_len_problem()
 # merge_covered_df_with_file()
