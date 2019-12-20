@@ -233,6 +233,7 @@ def create_stats_data_frame_for_snapshot_changes(
             with open(os.path.join(os.path.join(processed_docs_folder, sim_folder_name), file_name), 'r') as f:
                 doc_json = ast.literal_eval(f.read())
             print(file_name)
+            docno = file_name.replace('.json', '')
             sys.stdout.flush()
             prev_interval = None
             for interval in interval_ordered_list:
@@ -251,16 +252,14 @@ def create_stats_data_frame_for_snapshot_changes(
                 clueweb_document_stem_set = set(doc_json['ClueWeb09']['StemList'])
                 document_from_clueweb_stem_diff = list(curr_document_stem_set - clueweb_document_stem_set)
                 clueweb_from_document_stem_diff = list(clueweb_document_stem_set - curr_document_stem_set)
-                found_related_query = False
                 for query_num in query_to_docno_mapping:
-                    if file_name in query_to_docno_mapping[query_num]:
-                        found_related_query = True
+                    if docno in query_to_docno_mapping[query_num]:
                         query_word_num = 0
                         for j in range(len(doc_json[interval]['StemList'])):
                             if doc_json[interval]['StemList'][j] in query_to_stem_mapping[query_num]:
                                 query_word_num += doc_json[interval]['TfList'][j]
 
-                        summary_df.loc[next_index] = [file_name, interval, prev_interval, query_num,
+                        summary_df.loc[next_index] = [docno, interval, prev_interval, query_num,
                                                       txt_len, num_stop_words, query_word_num, entropy,
                                                       sim_to_clueweb, sim_to_prev, sim_to_close_prev,
                                                       str(document_from_clueweb_stem_diff),
