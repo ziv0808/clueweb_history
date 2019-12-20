@@ -200,10 +200,79 @@ def create_similarity_interval(
             with open(os.path.join(os.path.join(processed_docs_folder, sim_folder_name), file_name), 'w') as f:
                 f.write(str(res_doc_dict))
 
+
+def create_stats_data_frame_for_snapshot_changes(
+        work_year='2008',
+        sim_folder_name="SIM"):
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+    summary_df = pd.DataFrame(
+        columns=['Docno', 'Interval', 'PrevValidInterval', 'QueryNum', 'TextLen', '#Stopword', 'QueryWords',
+                 'Entropy', 'SimToClueWeb', 'SimToPrev', 'SimToClosePrev',
+                 'StemDiffCluWeb', 'CluWebStemDiff'])
+    next_index = 0
+    df_query_stems = create_stemmed_queries_df()
+    query_to_stem_mapping = {}
+    for index, row in df_query_stems.iterrows():
+        query_num = ('0' * (3 - len(str(row['QueryNum'])))) + str(row['QueryNum'])
+        query_to_stem_mapping[query_num] = row['QueryStems'].split(' ')
+
+    df_query_to_doc = create_query_to_doc_mapping_df()
+
+
+    query_to_docno_mapping = {}
+    for index, row in df_query_to_doc.iterrows():
+        query_num = ('0' * (3 - len(str(row['QueryNum'])))) + str(row['QueryNum'])
+        if query_num in query_to_docno_mapping:
+            query_to_docno_mapping[query_num].append(row['Docno'])
+        else:
+            query_to_docno_mapping[query_num] = [row['Docno']]
+
+    interval_ordered_list = build_interval_list(work_year, sim_folder_name, add_clueweb=True)
+    for file_name in os.listdir(os.path.join(processed_docs_folder, sim_folder_name)):
+        if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+            with open(os.path.join(os.path.join(processed_docs_folder, sim_folder_name), file_name), 'r') as f:
+                doc_json = ast.literal_eval(f.read())
+            print(file_name)
+            sys.stdout.flush()
+            prev_interval = None
+            for interval in interval_ordered_list:
+                if doc_json[interval] is None:
+                    continue
+                txt_len = doc_json[interval]['NumWords']
+                num_stop_words = doc_json[interval]['NumStopWords']
+                entropy = doc_json[interval]['Entropy']
+                sim_to_clueweb = calc_cosine(doc_json[interval]['TfIdf'], doc_json['ClueWeb09']['TfIdf'])
+                sim_to_prev = None
+                sim_to_close_prev = None
+                if prev_interval is not None:
+                    sim_to_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
+                    sim_to_close_prev = sim_to_prev
+                curr_document_stem_set = set(doc_json[interval]['StemList'])
+                clueweb_document_stem_set = set(doc_json['ClueWeb09']['StemList'])
+                document_from_clueweb_stem_diff = list(curr_document_stem_set - clueweb_document_stem_set)
+                clueweb_from_document_stem_diff = list(clueweb_document_stem_set - curr_document_stem_set)
+                found_related_query = False
+                for query_num in query_to_docno_mapping:
+                    if file_name in query_to_docno_mapping[query_num]:
+                        found_related_query = True
+                        query_word_num = 0
+                        for j in range(len(doc_json[interval]['StemList'])):
+                            if doc_json[interval]['StemList'][j] in query_to_stem_mapping[query_num]:
+                                query_word_num += doc_json[interval]['TfList'][j]
+
+                        summary_df.loc[next_index] = [file_name, interval, prev_interval, query_num,
+                                                      txt_len, num_stop_words, query_word_num, entropy,
+                                                      sim_to_clueweb, sim_to_prev, sim_to_close_prev,
+                                                      str(document_from_clueweb_stem_diff),
+                                                      str(clueweb_from_document_stem_diff)]
+                        next_index += 1
+    summary_df.to_csv('mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + sim_folder_name + '.tsv',
+                            sep='\t', index=False)
+
 # create_similarity_interval()
+create_stats_data_frame_for_snapshot_changes()
 
-
-create_per_interval_per_lookup_cc_dict()
+# create_per_interval_per_lookup_cc_dict()
 
 # check_for_txt_len_problem()
 # merge_covered_df_with_file()
