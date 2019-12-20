@@ -95,7 +95,7 @@ def fill_cc_dict_with_doc(
 
 
 def create_per_interval_per_lookup_cc_dict(
-        work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM'],
+        work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM', 'SIM_995'],
         lookup_method_list = ['NoLookup', 'Backward','OnlyBackward','Forward'],
         already_exists = True):
 
@@ -151,9 +151,9 @@ def create_per_interval_per_lookup_cc_dict(
 
 def create_similarity_interval(
         from_interval_size='1W',
-        sim_threshold = 1.0,
+        sim_threshold = 0.995,
         work_year = '2008',
-        sim_folder_name = "SIM"
+        sim_folder_name = "SIM_995"
         ):
     time_interval_list = build_interval_list(
         work_year=work_year,
@@ -265,12 +265,11 @@ def create_stats_data_frame_for_snapshot_changes(
                                                       str(document_from_clueweb_stem_diff),
                                                       str(clueweb_from_document_stem_diff)]
                         next_index += 1
-    summary_df.to_csv('mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + sim_folder_name + '.tsv',
+    summary_df.to_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + sim_folder_name + '.tsv',
                             sep='\t', index=False)
 
 # create_similarity_interval()
 create_stats_data_frame_for_snapshot_changes()
-
 # create_per_interval_per_lookup_cc_dict()
 
 # check_for_txt_len_problem()
