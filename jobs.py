@@ -268,11 +268,11 @@ def create_stats_data_frame_for_snapshot_changes(
     summary_df.to_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + sim_folder_name + '.tsv',
                             sep='\t', index=False)
 
-create_similarity_interval()
-create_stats_data_frame_for_snapshot_changes()
-create_per_interval_per_lookup_cc_dict()
+# create_similarity_interval()
+# create_stats_data_frame_for_snapshot_changes()
+# create_per_interval_per_lookup_cc_dict()
 
 # check_for_txt_len_problem()
 # merge_covered_df_with_file()
-# get_relevant_docs_df()
+get_relevant_docs_df()
 
