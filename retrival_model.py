@@ -32,8 +32,8 @@ def score_doc_for_query(
             raise Exception('Unexpected Situation')
             cc_dict[stem] = stem_cc
 
-        if cc_dict[stem] == 0:
-            continue
+        # if cc_dict[stem] == 0:
+        #     continue
 
         query_tf = 0
         if stem in query_stem_dict:
@@ -142,7 +142,7 @@ if __name__=='__main__':
                 interval_list=interval_list,
                 interval_lookup_method=interval_lookup_method,
                 processed_docs_path=processed_docs_folder,
-                cc_dict=cc_dict['ClueWeb09'],
+                cc_dict=cc_dict[interval_list[j]],
                 mue=mue,
                 amount_of_snapshot_limit=amount_of_snapshot_limit)
 
