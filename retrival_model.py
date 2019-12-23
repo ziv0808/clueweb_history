@@ -29,8 +29,8 @@ def score_doc_for_query(
         #     continue
 
         if stem not in cc_dict:
-            raise Exception('Unexpected Situation')
-            cc_dict[stem] = stem_cc
+            # raise Exception('Unexpected Situation')
+            cc_dict[stem] = 1
 
         # if cc_dict[stem] == 0:
         #     continue
