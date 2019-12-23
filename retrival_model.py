@@ -25,10 +25,11 @@ def score_doc_for_query(
                 doc_stem_tf = doc_dict['TfList'][i]
                 stem_cc = doc_dict['CCList'][i]
 
-        if doc_stem_tf == 0:
-            continue
+        # if doc_stem_tf == 0:
+        #     continue
 
         if stem not in cc_dict:
+            raise Exception('Unexpected Situation')
             cc_dict[stem] = stem_cc
 
         if cc_dict[stem] == 0:
@@ -141,7 +142,7 @@ if __name__=='__main__':
                 interval_list=interval_list,
                 interval_lookup_method=interval_lookup_method,
                 processed_docs_path=processed_docs_folder,
-                cc_dict=cc_dict[interval_list[j]],
+                cc_dict=cc_dict['ClueWeb09'],
                 mue=mue,
                 amount_of_snapshot_limit=amount_of_snapshot_limit)
 
