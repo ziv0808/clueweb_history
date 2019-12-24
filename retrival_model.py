@@ -74,7 +74,7 @@ def get_scored_df_for_query(
             doc_dict = ast.literal_eval(f.read())
 
         if amount_of_snapshot_limit is not None:
-            if amount_of_snapshot_limit != get_number_of_snapshots_for_doc(doc_dict):
+            if amount_of_snapshot_limit > get_number_of_snapshots_for_doc(doc_dict):
                 continue
         # find the interval to look for
         doc_interval_dict = get_doc_snapshot_by_lookup_method(
