@@ -108,7 +108,7 @@ if __name__=='__main__':
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
     addition = ""
-
+    print ("interval_start_month: " +str(interval_start_month))
     if interval_start_month != 1:
         addition = "_" + str(interval_start_month) + "SM_"
 
