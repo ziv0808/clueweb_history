@@ -20,13 +20,13 @@ def score_doc_for_query(
 
     for stem in work_stem_list:
         doc_stem_tf = 0
-        for i in range(len(doc_dict['StemList'])):
-            if doc_dict['StemList'][i] == stem:
-                doc_stem_tf = doc_dict['TfList'][i]
-                stem_cc = doc_dict['CCList'][i]
-
-        # if doc_stem_tf == 0:
-        #     continue
+        if 'TfDict' in doc_dict:
+            if stem in doc_dict['TfDict']:
+                doc_stem_tf = float(doc_dict['TfDict'][stem])
+        else:
+            for i in range(len(doc_dict['StemList'])):
+                if doc_dict['StemList'][i] == stem:
+                    doc_stem_tf = doc_dict['TfList'][i]
 
         if stem not in cc_dict:
             # raise Exception('Unexpected Situation')
