@@ -21,7 +21,7 @@ def build_interval_list(
     if frequency.startswith('SIM'):
         for i in list(reversed(range(0, -49, -1)))[:-1]:
             interval_list.append(str(i))
-        if start_month < 0:
+        if int(start_month) < 0:
             interval_list[(start_month - 1):]
         else:
             interval_list = interval_list[(start_month - 1) * 4:]
