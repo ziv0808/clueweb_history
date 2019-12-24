@@ -22,9 +22,11 @@ def score_doc_for_query(
     for stem in work_stem_list:
         doc_stem_tf = 0
         doc_len = 0
+        active_intervals = 0.0
         for interval in interval_list:
             if doc_dict[interval] is not None:
                 doc_len += float(doc_dict[interval]['NumWords'])
+                active_intervals += 1
                 if stem in doc_dict[interval]['TfDict']:
                     doc_stem_tf += float(doc_dict[interval]['TfDict'][stem])
 
@@ -35,8 +37,8 @@ def score_doc_for_query(
         stem_q_prob = float(query_tf)/sum(list(query_stem_dict.values()))
 
         stem_d_proba = get_word_diriclet_smoothed_probability(
-            tf_in_doc = doc_stem_tf,
-            doc_len = doc_len,
+            tf_in_doc = doc_stem_tf/active_intervals,
+            doc_len = doc_len/active_intervals,
             collection_count_for_word=cc_dict[stem],
             collection_len=cc_dict['ALL_TERMS_COUNT'],
             mue=mue)
