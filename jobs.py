@@ -270,7 +270,7 @@ def create_stats_data_frame_for_snapshot_changes(
 
 
 def create_tf_dict_for_processed_docs(
-        work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM', 'SIM_995'],
+        work_interval_freq_list = ['2W', '1M', '2M', 'SIM', 'SIM_995', '1W'],
         ):
 
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
