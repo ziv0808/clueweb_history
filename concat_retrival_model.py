@@ -88,50 +88,53 @@ def get_scored_df_for_query(
 
 if __name__=='__main__':
     frequency = sys.argv[1]
-    interval_start_month = int(sys.argv[2])
-    amount_of_snapshot_limit = ast.literal_eval(sys.argv[3])
+    # interval_start_month = int(sys.argv[2])
+    amount_of_snapshot_limit = ast.literal_eval(sys.argv[2])
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/concat_model_res/'
-    addition = ""
-    print('Interval Freq: ' + frequency)
-    print ("interval_start_month: " +str(interval_start_month))
-    if interval_start_month != 1:
-        addition = "_" + str(interval_start_month) + "SM_"
+    for interval_start_month_ in range(1, 30):
+        interval_start_month = interval_start_month_ *(-1)
+        addition = ""
+        print('Interval Freq: ' + frequency)
+        print ("interval_start_month: " +str(interval_start_month))
+        if interval_start_month != 1:
+            addition = "_" + str(interval_start_month) + "SM_"
 
-    if amount_of_snapshot_limit is not None and amount_of_snapshot_limit > 1:
-        addition += "_SnapLimit_" + str(amount_of_snapshot_limit)
+        if amount_of_snapshot_limit is not None and amount_of_snapshot_limit > 1:
+            addition += "_SnapLimit_" + str(amount_of_snapshot_limit)
 
-    mue = 1000.0
-    interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=interval_start_month)
-    # retrieve necessary dataframes
-    query_to_doc_mapping_df = create_query_to_doc_mapping_df()
-    stemmed_queries_df = create_stemmed_queries_df()
-    # create easy to use index for cc
-    cc_dict = create_per_interval_cc_dict(interval_freq=frequency, lookup_method='NoLookup')
+        mue = 1000.0
+        interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=interval_start_month)
+        # retrieve necessary dataframes
+        query_to_doc_mapping_df = create_query_to_doc_mapping_df()
+        stemmed_queries_df = create_stemmed_queries_df()
+        # create easy to use index for cc
+        cc_dict = create_per_interval_cc_dict(interval_freq=frequency, lookup_method='NoLookup')
 
-    big_df = pd.DataFrame({})
-    for index, row in stemmed_queries_df.iterrows():
-        query_num = int(row['QueryNum'])
-        print("Query: " + str(query_num))
+        big_df = pd.DataFrame({})
+        for index, row in stemmed_queries_df.iterrows():
+            query_num = int(row['QueryNum'])
+            print("Query: " + str(query_num))
+            sys.stdout.flush()
+            query_txt = row['QueryStems']
+            relevant_df = query_to_doc_mapping_df[query_to_doc_mapping_df['QueryNum'] == query_num].copy()
+            res_df = get_scored_df_for_query(
+                query_num=query_num,
+                query=query_txt,
+                query_doc_df=relevant_df,
+                interval_list=interval_list,
+                processed_docs_path=processed_docs_folder,
+                cc_dict=cc_dict['ClueWeb09'],
+                mue=mue,
+                amount_of_snapshot_limit=amount_of_snapshot_limit)
+
+            big_df = big_df.append(res_df, ignore_index=True)
+
+
+        with open(os.path.join(save_folder,frequency + '_' + addition + "_Results.txt"), 'w') as f:
+            f.write(convert_df_to_trec(big_df))
+
+        res_dict = get_ranking_effectiveness_for_res_file(file_path=save_folder,filename=frequency + '_' + addition + "_Results.txt")
+        print(frequency + '_' + addition + "_Results.txt")
+        print("SCORE : " + str(res_dict))
         sys.stdout.flush()
-        query_txt = row['QueryStems']
-        relevant_df = query_to_doc_mapping_df[query_to_doc_mapping_df['QueryNum'] == query_num].copy()
-        res_df = get_scored_df_for_query(
-            query_num=query_num,
-            query=query_txt,
-            query_doc_df=relevant_df,
-            interval_list=interval_list,
-            processed_docs_path=processed_docs_folder,
-            cc_dict=cc_dict['ClueWeb09'],
-            mue=mue,
-            amount_of_snapshot_limit=amount_of_snapshot_limit)
-
-        big_df = big_df.append(res_df, ignore_index=True)
-
-
-    with open(os.path.join(save_folder,frequency + '_' + addition + "_Results.txt"), 'w') as f:
-        f.write(convert_df_to_trec(big_df))
-
-    res_dict = get_ranking_effectiveness_for_res_file(file_path=save_folder,filename=frequency + '_' + addition + "_Results.txt")
-    print(frequency + '_' + addition + "_Results.txt")
-    print(str(res_dict))
