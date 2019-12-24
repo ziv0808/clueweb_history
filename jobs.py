@@ -239,7 +239,7 @@ def create_stats_data_frame_for_snapshot_changes(
             for interval in interval_ordered_list:
                 if doc_json[interval] is None:
                     continue
-                txt_len = doc_json[interval]['NumWords']
+                txt_len = doc_json[interval]['ccccc']
                 num_stop_words = doc_json[interval]['NumStopWords']
                 entropy = doc_json[interval]['Entropy']
                 sim_to_clueweb = calc_cosine(doc_json[interval]['TfIdf'], doc_json['ClueWeb09']['TfIdf'])
@@ -268,11 +268,57 @@ def create_stats_data_frame_for_snapshot_changes(
     summary_df.to_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + sim_folder_name + '.tsv',
                             sep='\t', index=False)
 
+
+def create_tf_dict_for_processed_docs(
+        work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM', 'SIM_995'],
+        ):
+
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+
+    for interval_freq in work_interval_freq_list:
+        print(interval_freq)
+        sys.stdout.flush()
+        for file_name in os.listdir(os.path.join(processed_docs_folder, interval_freq)):
+            if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+                with open(os.path.join(os.path.join(processed_docs_folder, interval_freq), file_name), 'r') as f:
+                    doc_dict = ast.literal_eval(f.read())
+                print(file_name)
+                sys.stdout.flush()
+                for interval in doc_dict:
+                    if doc_dict[interval] is None:
+                        continue
+                    elif 'TfDict' not in doc_dict[interval]:
+                        doc_dict[interval]['TfDict'] = {}
+                        for i in range(len(doc_dict[interval]['StemList'])):
+                            stem = doc_dict[interval]['StemList'][i]
+                            tf = doc_dict[interval]['TfList'][i]
+                            doc_dict[interval]['TfDict'][stem] = tf
+
+                with open(os.path.join(os.path.join(processed_docs_folder, interval_freq), file_name),'w') as f:
+                    f.write(str(doc_dict))
+
+
 # create_similarity_interval()
 # create_stats_data_frame_for_snapshot_changes()
 # create_per_interval_per_lookup_cc_dict()
 
 # check_for_txt_len_problem()
 # merge_covered_df_with_file()
-get_relevant_docs_df()
+# get_relevant_docs_df()
+#
+# import ast
+# with open('clueweb09-enwp01-31-11362.json', 'r') as f:
+#     curr_json = ast.literal_eval(f.read())
+#
+#
+# for interval in ['ClueWeb09', '-1', '-2']:
+#     print ('Interval : ' + interval)
+#     print ('DocLen : ' + str(curr_json[interval]['NumWords']))
+#     print("Len Stemlist: " + str(len(curr_json[interval]['StemList'])))
+#     print("Len tflist: " + str(len(curr_json[interval]['TfList'])))
+#     for stem in ['obama', 'family', 'tree']:
+#         for i in range(len(curr_json[interval]['StemList'])):
+#             if curr_json[interval]['StemList'][i] == stem:
+#                 print (stem + " " + str(curr_json[interval]['TfList'][i]))
 
+create_tf_dict_for_processed_docs()
