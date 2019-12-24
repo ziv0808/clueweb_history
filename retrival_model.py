@@ -74,7 +74,7 @@ def get_scored_df_for_query(
             doc_dict = ast.literal_eval(f.read())
 
         if amount_of_snapshot_limit is not None:
-            if amount_of_snapshot_limit > get_number_of_snapshots_for_doc(doc_dict):
+            if amount_of_snapshot_limit != get_number_of_snapshots_for_doc(doc_dict):
                 continue
         # find the interval to look for
         doc_interval_dict = get_doc_snapshot_by_lookup_method(
@@ -94,9 +94,9 @@ def get_scored_df_for_query(
             mue=mue)
         res_df.loc[next_index] = ["0"*(3 - len(str(query_num)))+ str(query_num), 'Q0', docno, 0, doc_score, 'indri']
         next_index += 1
-
-    res_df.sort_values('Score', ascending=False, inplace=True)
-    res_df['Rank'] = list(range(1, next_index + 1))
+    if res_df.empty == False:
+        res_df.sort_values('Score', ascending=False, inplace=True)
+        res_df['Rank'] = list(range(1, next_index + 1))
     return res_df
 
 
