@@ -8,7 +8,7 @@ from utils import *
 
 
 DEBUG = False
-DISTRIBUTE_MISSING_WIEGHTS = False
+DISTRIBUTE_MISSING_WIEGHTS = True
 RESULT_FILES_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
 
 class WeightedListRanker():
