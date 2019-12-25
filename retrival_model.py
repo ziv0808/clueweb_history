@@ -48,7 +48,7 @@ def score_doc_for_query(
             collection_len=cc_dict['ALL_TERMS_COUNT'],
             mue=mue)
 
-        kl_score += (-1)*stem_q_prob*(math.log((stem_q_prob/stem_d_proba) , 2))
+        kl_score += (-1)*stem_q_prob*(math.log((stem_q_prob/stem_d_proba) , 10))
 
     return kl_score
 
@@ -58,7 +58,7 @@ def get_scored_df_for_query(
         query_doc_df,
         interval_idx,
         interval_lookup_method,
-        processed_docs_path,
+        processed_docs_dict,
         interval_list,
         cc_dict,
         mue,
@@ -70,9 +70,7 @@ def get_scored_df_for_query(
     for index, row in query_doc_df.iterrows():
         docno = row['Docno']
         # retrive docno dict
-        with open(os.path.join(processed_docs_path, docno + '.json'), 'r') as f:
-            doc_dict = ast.literal_eval(f.read())
-
+        doc_dict = processed_docs_dict[docno]
         if amount_of_snapshot_limit is not None:
             if amount_of_snapshot_limit > get_number_of_snapshots_for_doc(doc_dict):
                 continue
@@ -133,6 +131,13 @@ if __name__=='__main__':
         sys.stdout.flush()
         query_txt = row['QueryStems']
         relevant_df = query_to_doc_mapping_df[query_to_doc_mapping_df['QueryNum'] == query_num].copy()
+        relevant_doc_dict = {}
+        for index, row in relevant_df.iterrows():
+            docno_ = row['Docno']
+            # retrive docno dict
+            with open(os.path.join(processed_docs_folder, docno_ + '.json'), 'r') as f:
+                doc_dict = ast.literal_eval(f.read())
+            relevant_doc_dict[docno_] = doc_dict
         for j in range(len(interval_list)):
             print("Interval: " + str(interval_list[j]))
             sys.stdout.flush()
@@ -143,7 +148,7 @@ if __name__=='__main__':
                 interval_idx=j,
                 interval_list=interval_list,
                 interval_lookup_method=interval_lookup_method,
-                processed_docs_path=processed_docs_folder,
+                processed_docs_dict=relevant_doc_dict,
                 cc_dict=cc_dict[interval_list[j]],
                 mue=mue,
                 amount_of_snapshot_limit=amount_of_snapshot_limit)
