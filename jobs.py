@@ -301,9 +301,94 @@ def create_tf_dict_for_processed_docs(
                     f.write(str(doc_dict))
 
 
+def fill_df_dict_with_doc(
+        interval_list,
+        df_dict,
+        word_ref_dict,
+        doc_dict,
+        interval_freq,
+        lookup):
+
+    for interval_idx in range(len(interval_list)):
+        curr_interval = interval_list[interval_idx]
+        curr_doc_instance = get_doc_snapshot_by_lookup_method(
+            doc_dict=doc_dict,
+            interval_list=interval_list,
+            interval_lookup_method=lookup,
+            curr_interval_idx=interval_idx)
+        if curr_doc_instance is not None:
+            df_dict[interval_freq][lookup][curr_interval]['ALL_DOCS_COUNT'] += 1.0
+            df_dict[interval_freq][lookup][curr_interval]['AVG_DOC_LEN'] += float(curr_doc_instance['NumWords'])
+            for j in range(len(curr_doc_instance['StemList'])):
+                curr_stem = curr_doc_instance['StemList'][j]
+                if curr_stem in word_ref_dict:
+                    if curr_stem in df_dict[interval_freq][lookup][curr_interval]:
+                        df_dict[interval_freq][lookup][curr_interval][curr_stem] += 1.0
+                    else:
+                        df_dict[interval_freq][lookup][curr_interval][curr_stem] = 1.0
+
+
+def create_per_interval_per_lookup_df_dict(
+        work_interval_freq_list=['1W', '2W', '1M', '2M', 'SIM', 'SIM_995'],
+        lookup_method_list=['NoLookup', 'Backward', 'OnlyBackward', 'Forward'],
+        already_exists=False):
+
+    work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv',
+                          sep='\t', index_col=False)
+    work_df = work_df[work_df['Interval'] == 'ClueWeb09']
+
+    if already_exists == False:
+        res_dict = {}
+        res_dict['ClueWeb09'] = {}
+        for index, row in work_df.iterrows():
+            res_dict['ClueWeb09'][row['Stem']] = 0
+    else:
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/df_per_interval_dict.json', 'r') as f:
+            res_dict = ast.literal_eval(f.read())
+
+    for interval_freq in work_interval_freq_list:
+        print(interval_freq)
+        sys.stdout.flush()
+        if interval_freq in res_dict:
+            continue
+        res_dict[interval_freq] = {}
+        curr_interval_list = build_interval_list(
+            work_year='2008',
+            frequency=interval_freq,
+            add_clueweb=True)
+        processed_docs_path = os.path.join(
+            '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/', interval_freq)
+        for lookup_method in lookup_method_list:
+            print(lookup_method)
+            sys.stdout.flush()
+            res_dict[interval_freq][lookup_method] = {}
+            for interval in curr_interval_list:
+                res_dict[interval_freq][lookup_method][interval] = {}
+                res_dict[interval_freq][lookup_method][interval]['ALL_DOCS_COUNT'] = 0
+                res_dict[interval_freq][lookup_method][interval]['AVG_DOC_LEN'] = 0.0
+
+            for file_name in os.listdir(processed_docs_path):
+                if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+                    print(file_name)
+                    sys.stdout.flush()
+                    with open(os.path.join(processed_docs_path, file_name), 'r') as f:
+                        doc_dict = ast.literal_eval(f.read())
+
+                    fill_df_dict_with_doc(
+                        interval_list=curr_interval_list,
+                        interval_freq=interval_freq,
+                        cc_dict=res_dict,
+                        word_ref_dict=res_dict['ClueWeb09'],
+                        doc_dict=doc_dict,
+                        lookup=lookup_method)
+            for interval in curr_interval_list:
+                res_dict[interval_freq][lookup_method][interval]['AVG_DOC_LEN'] = res_dict[interval_freq][lookup_method][interval]['AVG_DOC_LEN'] /float(res_dict[interval_freq][lookup_method][interval]['ALL_DOCS_COUNT'])
+
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/df_per_interval_dict.json', 'w') as f:
+            f.write(str(res_dict))
 
 # create_similarity_interval()
-create_stats_data_frame_for_snapshot_changes()
+# create_stats_data_frame_for_snapshot_changes()
 # create_per_interval_per_lookup_cc_dict()
 
 # check_for_txt_len_problem()
@@ -326,3 +411,4 @@ create_stats_data_frame_for_snapshot_changes()
 #                 print (stem + " " + str(curr_json[interval]['TfList'][i]))
 
 # create_tf_dict_for_processed_docs()
+create_per_interval_per_lookup_df_dict()
