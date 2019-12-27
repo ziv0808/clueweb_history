@@ -136,11 +136,15 @@ def create_retrieval_stats(
         interval_freq,
         interval_lookup_method,
         interval_start_month,
-        amount_of_snapshot_limit):
+        amount_of_snapshot_limit,
+        is_bm25 = False):
 
     query_retrn_files_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
     trec_eval_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
     qrels_file_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
+    afix_addition = ""
+    if is_bm25 == True:
+        afix_addition = "BM25_"
 
     save_dirname = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/"
     print('Interval Feaq: ' + interval_freq)
@@ -156,7 +160,7 @@ def create_retrieval_stats(
 
     last_not_clueweb_interval = interval_list[len(interval_list) - 2]
     for interval in interval_list:
-        eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]), interval + '_' + interval_freq + '_' + interval_lookup_method + addition +'_Results_evaluation.txt')
+        eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]), afix_addition + interval + '_' + interval_freq + '_' + interval_lookup_method + addition +'_Results_evaluation.txt')
         # if not os.path.exists(eval_file_path):
         bashCommand = trec_eval_path + ' -q ' + qrels_file_path + ' ' + \
                       eval_file_path.replace('_evaluation', '') + ' > ' + eval_file_path
@@ -180,7 +184,7 @@ def create_retrieval_stats(
         sys.stdout.flush()
         ranked_list_dict = {}
         for interval in interval_list:
-            with open(os.path.join(query_retrn_files_path, str(query_num) + '_' + interval_freq + '_' + interval + '_' + interval_lookup_method + addition + '_Results.txt'), 'r') as f:
+            with open(os.path.join(query_retrn_files_path, afix_addition + str(query_num) + '_' + interval_freq + '_' + interval + '_' + interval_lookup_method + addition + '_Results.txt'), 'r') as f:
                 trec_str = f.read()
             ranked_list_dict[interval] = convert_trec_to_ranked_list(trec_str)
             if len(ranked_list_dict[interval]) == 0:
@@ -191,7 +195,7 @@ def create_retrieval_stats(
         prev_interval = None
         for interval in interval_list:
             eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]),
-                                          interval + '_' + interval_freq + '_' +interval_lookup_method + addition +'_Results_evaluation.txt')
+                                          afix_addition + interval + '_' + interval_freq + '_' +interval_lookup_method + addition +'_Results_evaluation.txt')
             print('interval: ' + str(interval))
             insert_row = [query_num, interval]
             if interval in no_res_list:
@@ -273,7 +277,7 @@ def create_retrieval_stats(
             next_index += 1
             prev_interval = interval
 
-    summary_df.to_csv(os.path.join(save_dirname ,interval_freq + '_' + interval_lookup_method + addition +'_Per_query_stats.tsv'), sep = '\t', index = False)
+    summary_df.to_csv(os.path.join(save_dirname ,afix_addition + interval_freq + '_' + interval_lookup_method + addition +'_Per_query_stats.tsv'), sep = '\t', index = False)
 
 
 if __name__=='__main__':

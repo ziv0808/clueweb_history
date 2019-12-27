@@ -238,6 +238,21 @@ def create_per_interval_cc_dict(
             cc_dict = cc_dict[lookup_method]
     return  cc_dict
 
+
+def create_per_interval_df_dict(
+        cc_dict_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/df_per_interval_dict.json',
+        interval_freq=None,
+        lookup_method=None):
+
+    with open(cc_dict_file, 'r') as f:
+        df_dict = ast.literal_eval(f.read())
+
+    if interval_freq is not None:
+        df_dict = df_dict[interval_freq]
+        if lookup_method is not None:
+            df_dict = df_dict[lookup_method]
+    return df_dict
+
 def get_number_of_snapshots_for_doc(
         doc_dict):
     num_of_snapshots = 0
