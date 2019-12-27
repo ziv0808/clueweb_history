@@ -377,7 +377,7 @@ def create_per_interval_per_lookup_df_dict(
                     fill_df_dict_with_doc(
                         interval_list=curr_interval_list,
                         interval_freq=interval_freq,
-                        cc_dict=res_dict,
+                        df_dict=res_dict,
                         word_ref_dict=res_dict['ClueWeb09'],
                         doc_dict=doc_dict,
                         lookup=lookup_method)
