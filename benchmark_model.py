@@ -202,7 +202,7 @@ class Benchmark:
             if self.retrieval_model == 'KL':
                 query_tf = query_stem_dict[stem]
                 stem_q_prob = float(query_tf) / sum(list(query_stem_dict.values()))
-                kl_score += (-1) * stem_q_prob * (math.log((stem_q_prob / stem_d_proba), 10))
+                kl_score += (-1) * stem_q_prob * (math.log((stem_q_prob / stem_d_proba), 2))
 
             elif self.retrieval_model == 'LM':
                 kl_score = kl_score * stem_d_proba
