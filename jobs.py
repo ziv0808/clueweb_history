@@ -203,12 +203,12 @@ def create_similarity_interval(
 
 def create_stats_data_frame_for_snapshot_changes(
         work_year='2008',
-        sim_folder_name="SIM_995"):
+        sim_folder_name="SIM"):
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
     summary_df = pd.DataFrame(
         columns=['Docno', 'Interval', 'PrevValidInterval', 'QueryNum', 'TextLen', '#Stopword', 'QueryWords',
                  'Entropy', 'SimToClueWeb', 'SimToPrev', 'SimToClosePrev',
-                 'StemDiffCluWeb', 'CluWebStemDiff'])
+                 'StemDiffCluWeb', 'CluWebStemDiff','PerTermQueryWordRatio', 'QueryLen'])
     next_index = 0
     df_query_stems = create_stemmed_queries_df()
     query_to_stem_mapping = {}
@@ -239,7 +239,7 @@ def create_stats_data_frame_for_snapshot_changes(
             for interval in interval_ordered_list:
                 if doc_json[interval] is None:
                     continue
-                txt_len = doc_json[interval]['ccccc']
+                txt_len = doc_json[interval]['NumWords']
                 num_stop_words = doc_json[interval]['NumStopWords']
                 entropy = doc_json[interval]['Entropy']
                 sim_to_clueweb = calc_cosine(doc_json[interval]['TfIdf'], doc_json['ClueWeb09']['TfIdf'])
@@ -255,23 +255,26 @@ def create_stats_data_frame_for_snapshot_changes(
                 for query_num in query_to_docno_mapping:
                     if docno in query_to_docno_mapping[query_num]:
                         query_word_num = 0
+                        per_term_query_ratio_mean = 0.0
                         for j in range(len(doc_json[interval]['StemList'])):
                             if doc_json[interval]['StemList'][j] in query_to_stem_mapping[query_num]:
                                 query_word_num += doc_json[interval]['TfList'][j]
-
+                                per_term_query_ratio_mean += float(doc_json[interval]['TfList'][j])/txt_len
+                        per_term_query_ratio_mean = per_term_query_ratio_mean/float(len(query_to_stem_mapping[query_num]))
                         summary_df.loc[next_index] = [docno, interval, prev_interval, query_num,
                                                       txt_len, num_stop_words, query_word_num, entropy,
                                                       sim_to_clueweb, sim_to_prev, sim_to_close_prev,
                                                       str(document_from_clueweb_stem_diff),
-                                                      str(clueweb_from_document_stem_diff)]
+                                                      str(clueweb_from_document_stem_diff),per_term_query_ratio_mean,
+                                                      len(query_to_stem_mapping[query_num])]
                         next_index += 1
     summary_df.to_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + sim_folder_name + '.tsv',
                             sep='\t', index=False)
 
 
 def create_tf_dict_for_processed_docs(
-        work_interval_freq_list = ['2W', '1M', '2M', 'SIM', 'SIM_995', '1W'],
-        ):
+        work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM', 'SIM_995'],
+        work_year = '2008'):
 
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
 
@@ -298,8 +301,9 @@ def create_tf_dict_for_processed_docs(
                     f.write(str(doc_dict))
 
 
+
 # create_similarity_interval()
-# create_stats_data_frame_for_snapshot_changes()
+create_stats_data_frame_for_snapshot_changes()
 # create_per_interval_per_lookup_cc_dict()
 
 # check_for_txt_len_problem()
@@ -321,4 +325,4 @@ def create_tf_dict_for_processed_docs(
 #             if curr_json[interval]['StemList'][i] == stem:
 #                 print (stem + " " + str(curr_json[interval]['TfList'][i]))
 
-create_tf_dict_for_processed_docs()
+# create_tf_dict_for_processed_docs()
