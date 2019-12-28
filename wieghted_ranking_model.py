@@ -8,6 +8,7 @@ from utils import *
 
 
 DEBUG = False
+BM25 = True
 DISTRIBUTE_MISSING_WIEGHTS = True
 RESULT_FILES_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
 
@@ -27,6 +28,9 @@ class WeightedListRanker():
             frequency=interval_freq,
             add_clueweb=True,
             start_month=start_month)
+        self.affix = ""
+        if BM25 == True:
+            self.affix = "BM25_"
 
         addition = ""
         if start_month != 1:
@@ -41,7 +45,7 @@ class WeightedListRanker():
         self.rank_or_score = rank_or_score
 
         self.save_dirname = "/mnt/bi-strg3/v/zivvasilisky/ziv/data/WeightedListRanker/"
-        self.save_dirname = os.path.join(self.save_dirname, rank_or_score + "_" + interval_freq + "_" + interval_lookup_method + addition)
+        self.save_dirname = os.path.join(self.save_dirname,self.affix+ rank_or_score + "_" + interval_freq + "_" + interval_lookup_method + addition)
         if DISTRIBUTE_MISSING_WIEGHTS == True:
             self.save_dirname += "_DW"
         if not os.path.exists(self.save_dirname):
@@ -69,7 +73,7 @@ class WeightedListRanker():
         # initiate all scores df
         first = True
         for interval in self.interval_list[::-1]:
-            curr_df = convert_trec_results_file_to_pandas_df(os.path.join(RESULT_FILES_PATH, interval + self.result_files_sufix))
+            curr_df = convert_trec_results_file_to_pandas_df(os.path.join(RESULT_FILES_PATH, self.affix + interval + self.result_files_sufix))
             curr_df = curr_df[['Query_ID', 'Docno', rank_or_score]]
             curr_df[rank_or_score] = curr_df[rank_or_score].apply(lambda x: float(x))
             # if rank_or_score == 'Rank':
@@ -176,13 +180,13 @@ class WeightedListRanker():
         results_trec_str = convert_df_to_trec(res_df[['Query_ID', 'Iteration', 'Docno', 'Rank', 'Score', 'Method']])
         cur_time = str(datetime.datetime.now())
         curr_file_name = cur_time.replace(' ', '_') + self.save_files_suffix
-        with open(os.path.join(os.path.join(RESULT_FILES_PATH, 'wieghted_lists_res'),curr_file_name ), 'w') as f:
+        with open(os.path.join(os.path.join(RESULT_FILES_PATH, 'wieghted_lists_res'),self.affix+curr_file_name ), 'w') as f:
             f.write(results_trec_str)
         if DEBUG == True:
             print(curr_file_name)
         results = get_ranking_effectiveness_for_res_file(
             file_path=os.path.join(RESULT_FILES_PATH, 'wieghted_lists_res'),
-            filename=curr_file_name)
+            filename=self.affix+curr_file_name)
 
         return results
 
