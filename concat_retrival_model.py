@@ -64,6 +64,8 @@ def score_doc_for_query_bm25(
         active_intervals = 0.0
         for interval in interval_list:
             if doc_dict[interval] is not None:
+                if (abs((float(doc_dict['ClueWeb09']['NumWords']) - float(doc_dict[interval]['NumWords']))/float(doc_dict['ClueWeb09']['NumWords'])) > 0.8):
+                    continue
                 doc_len += float(doc_dict[interval]['NumWords'])
                 active_intervals += 1
                 if stem in doc_dict[interval]['TfDict']:
