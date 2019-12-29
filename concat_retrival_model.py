@@ -84,7 +84,7 @@ def score_doc_for_query_bm25(
         doc_len = doc_len/float(active_intervals)
         avg_doc_len = avg_doc_len/float(active_intervals)
         all_docs_count = df_dict['ClueWeb09']['ALL_DOCS_COUNT']
-        stem_df =  df_dict['ClueWeb09'][stem_df]
+        stem_df =  df_dict['ClueWeb09'][stem]
         idf = math.log(all_docs_count / float(stem_df), 10)
         stem_d_proba = (doc_stem_tf * (k1 + 1)) / (
         doc_stem_tf + k1 * ((1 - b) + b * (float(doc_len) / avg_doc_len)))
