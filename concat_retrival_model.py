@@ -71,12 +71,10 @@ def score_doc_for_query_bm25(
                     continue
                 doc_len += float(doc_dict[interval]['NumWords'])
                 avg_doc_len += df_dict[interval]['AVG_DOC_LEN']
-                all_docs_count += df_dict[interval]['ALL_DOCS_COUNT']
                 active_intervals += 1
                 if stem in doc_dict[interval]['TfDict']:
                     doc_stem_tf += float(doc_dict[interval]['TfDict'][stem])
-                if stem in df_dict[interval]:
-                    stem_df += df_dict[interval][stem]
+
 
         if stem not in df_dict:
             # raise Exception('Unexpected Situation')
@@ -85,8 +83,8 @@ def score_doc_for_query_bm25(
         doc_stem_tf = doc_stem_tf/float(active_intervals)
         doc_len = doc_len/float(active_intervals)
         avg_doc_len = avg_doc_len/float(active_intervals)
-        all_docs_count = all_docs_count/float(active_intervals)
-        stem_df = stem_df/float(active_intervals)
+        all_docs_count = df_dict['ClueWeb09']['ALL_DOCS_COUNT']
+        stem_df =  df_dict['ClueWeb09'][stem_df]
         idf = math.log(all_docs_count / float(stem_df), 10)
         stem_d_proba = (doc_stem_tf * (k1 + 1)) / (
         doc_stem_tf + k1 * ((1 - b) + b * (float(doc_len) / avg_doc_len)))
