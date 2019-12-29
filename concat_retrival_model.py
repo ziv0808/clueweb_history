@@ -60,16 +60,23 @@ def score_doc_for_query_bm25(
 
     for stem in work_stem_list:
         doc_stem_tf = 0
-        doc_len = 0
+        doc_len = 0.0
+        avg_doc_len = 0.0
+        all_docs_count = 0.0
         active_intervals = 0.0
+        stem_df = 0.0
         for interval in interval_list:
             if doc_dict[interval] is not None:
                 if (abs((float(doc_dict['ClueWeb09']['NumWords']) - float(doc_dict[interval]['NumWords']))/float(doc_dict['ClueWeb09']['NumWords'])) > 0.6):
                     continue
                 doc_len += float(doc_dict[interval]['NumWords'])
+                avg_doc_len += df_dict[interval]['AVG_DOC_LEN']
+                all_docs_count += df_dict[interval]['ALL_DOCS_COUNT']
                 active_intervals += 1
                 if stem in doc_dict[interval]['TfDict']:
                     doc_stem_tf += float(doc_dict[interval]['TfDict'][stem])
+                if stem in df_dict[interval]:
+                    stem_df += df_dict[interval][stem]
 
         if stem not in df_dict:
             # raise Exception('Unexpected Situation')
@@ -77,10 +84,12 @@ def score_doc_for_query_bm25(
 
         doc_stem_tf = doc_stem_tf/float(active_intervals)
         doc_len = doc_len/float(active_intervals)
-
-        idf = math.log(df_dict['ALL_DOCS_COUNT'] / float(df_dict[stem]), 10)
+        avg_doc_len = avg_doc_len/float(active_intervals)
+        all_docs_count = all_docs_count/float(active_intervals)
+        stem_df = stem_df/float(active_intervals)
+        idf = math.log(all_docs_count / float(stem_df), 10)
         stem_d_proba = (doc_stem_tf * (k1 + 1)) / (
-        doc_stem_tf + k1 * ((1 - b) + b * (float(doc_len) / df_dict['AVG_DOC_LEN'])))
+        doc_stem_tf + k1 * ((1 - b) + b * (float(doc_len) / avg_doc_len)))
 
         bm25_score += idf * stem_d_proba
 
@@ -179,7 +188,7 @@ if __name__=='__main__':
                 query_doc_df=relevant_df,
                 interval_list=interval_list,
                 processed_docs_path=processed_docs_folder,
-                cc_dict=cc_dict['ClueWeb09'],
+                cc_dict=cc_dict,
                 params=params,
                 amount_of_snapshot_limit=amount_of_snapshot_limit)
 
