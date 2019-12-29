@@ -67,7 +67,7 @@ def score_doc_for_query_bm25(
         stem_df = 0.0
         for interval in interval_list:
             if doc_dict[interval] is not None:
-                if (abs((float(doc_dict['ClueWeb09']['NumWords']) - float(doc_dict[interval]['NumWords']))/float(doc_dict['ClueWeb09']['NumWords'])) > 0.6):
+                if (abs((float(doc_dict['ClueWeb09']['NumWords']) - float(doc_dict[interval]['NumWords']))/float(doc_dict['ClueWeb09']['NumWords'])) > 0.8):
                     continue
                 doc_len += float(doc_dict[interval]['NumWords'])
                 avg_doc_len += df_dict[interval]['AVG_DOC_LEN']
