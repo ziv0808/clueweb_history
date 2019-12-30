@@ -261,4 +261,38 @@ def get_number_of_snapshots_for_doc(
             num_of_snapshots += 1
     return num_of_snapshots
 
+def verify_snapshot_for_doc(
+        doc_dict,
+        interval,
+        filter_params):
 
+    if (interval == 'ClueWeb09') or (doc_dict[interval] is None):
+        return doc_dict[interval]
+
+    if (filter_params['Sim_Upper'] is not None) or (filter_params['Sim_Lower'] is not None):
+        similarity = calc_cosine(doc_dict[interval]['TfIdf'], doc_dict['ClueWeb09']['TfIdf'])
+        if (filter_params['Sim_Upper'] is not None):
+            if similarity > filter_params['Sim_Upper']:
+                return None
+        if (filter_params['Sim_Lower'] is not None):
+            if similarity < filter_params['Sim_Lower']:
+                return None
+
+    txt_diff = doc_dict['ClueWeb09']['NumWords'] - doc_dict[interval]['NumWords']
+    if (filter_params['TxtDiff_Upper'] is not None):
+        if txt_diff > filter_params['TxtDiff_Upper']:
+            return None
+    if (filter_params['TxtDiff_Lower'] is not None):
+        if txt_diff < filter_params['TxtDiff_Lower']:
+            return None
+
+    if (filter_params['%TxtDiff_Upper'] is not None) or (filter_params['%TxtDiff_Lower'] is not None):
+        txt_diff = txt_diff/float(doc_dict['ClueWeb09']['NumWords'])
+        if (filter_params['%TxtDiff_Upper'] is not None):
+            if txt_diff > filter_params['%TxtDiff_Upper']:
+                return None
+        if (filter_params['%TxtDiff_Lower'] is not None):
+            if txt_diff < filter_params['%TxtDiff_Lower']:
+                return None
+
+    return doc_dict[interval]

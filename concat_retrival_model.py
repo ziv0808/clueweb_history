@@ -52,7 +52,8 @@ def score_doc_for_query_bm25(
         df_dict,
         doc_dict,
         interval_list,
-        params):
+        params,
+        filter_params):
     k1 = params['K1']
     b = params['b']
     bm25_score = 0.0
@@ -62,13 +63,9 @@ def score_doc_for_query_bm25(
         doc_stem_tf = 0
         doc_len = 0.0
         avg_doc_len = 0.0
-        all_docs_count = 0.0
         active_intervals = 0.0
-        stem_df = 0.0
         for interval in interval_list:
-            if doc_dict[interval] is not None:
-                if (abs((float(doc_dict['ClueWeb09']['NumWords']) - float(doc_dict[interval]['NumWords']))/float(doc_dict['ClueWeb09']['NumWords'])) > 0.8):
-                    continue
+            if verify_snapshot_for_doc(doc_dict,interval,filter_params) is not None:
                 doc_len += float(doc_dict[interval]['NumWords'])
                 avg_doc_len += df_dict[interval]['AVG_DOC_LEN']
                 active_intervals += 1
@@ -103,6 +100,7 @@ def get_scored_df_for_query(
         interval_list,
         cc_dict,
         params,
+        filter_params,
         amount_of_snapshot_limit):
 
     res_df= pd.DataFrame(columns = ['Query_ID','Iteration', 'Docno', 'Rank', 'Score', 'Method'])
@@ -124,7 +122,8 @@ def get_scored_df_for_query(
                 df_dict = cc_dict,
                 doc_dict = doc_dict,
                 interval_list =interval_list,
-                params= params)
+                params= params,
+                filter_params=filter_params)
         else:
             # print(doc_interval_dict)
             doc_score = score_doc_for_query_lm(
@@ -157,46 +156,69 @@ if __name__=='__main__':
         cc_dict = create_per_interval_cc_dict(interval_freq=frequency, lookup_method='NoLookup')
         params = {'Mue' : 1000.0}
         affix  = ""
-    for interval_start_month_ in range(1, 40):
-        interval_start_month = interval_start_month_ *(-1)
-        addition = ""
-        print('Interval Freq: ' + frequency)
-        print ("interval_start_month: " +str(interval_start_month))
-        if interval_start_month != 1:
-            addition = "_" + str(interval_start_month) + "SM_"
 
-        if amount_of_snapshot_limit is not None and amount_of_snapshot_limit > 1:
-            addition += "_SnapLimit_" + str(amount_of_snapshot_limit)
+    filter_params_options = {
+        "Sim_Upper" : [None, 0.999, 0.99, 0.98, 0.97],
+        "Sim_Lower" : [None, 0.1, 0.3, 0.5, 0.6, 0.7, 0.8],
+        "TxtDiff_Upper" : [None, 500, 1000, 2000, 3000, 5000],
+        "TxtDiff_Lower" : [None, -500, -1000, -2000, -3000, -5000],
+        "%TxtDiff_Upper" : [None,0.4,0.5, 0.6, 0.8, 1.0],
+        "%TxtDiff_Lower" : [None, -0.4, -0.5, -0.6, -0.8, -1.0]}
 
-        interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=interval_start_month)
-        # retrieve necessary dataframes
-        query_to_doc_mapping_df = create_query_to_doc_mapping_df()
-        stemmed_queries_df = create_stemmed_queries_df()
+    curr_filter_params = {
+        "Sim_Upper": None,
+        "Sim_Lower": None,
+        "TxtDiff_Upper": None,
+        "TxtDiff_Lower": None,
+        "%TxtDiff_Upper": None,
+        "%TxtDiff_Lower": None}
 
-        big_df = pd.DataFrame({})
-        for index, row in stemmed_queries_df.iterrows():
-            query_num = int(row['QueryNum'])
-            print("Query: " + str(query_num))
-            sys.stdout.flush()
-            query_txt = row['QueryStems']
-            relevant_df = query_to_doc_mapping_df[query_to_doc_mapping_df['QueryNum'] == query_num].copy()
-            res_df = get_scored_df_for_query(
-                query_num=query_num,
-                query=query_txt,
-                query_doc_df=relevant_df,
-                interval_list=interval_list,
-                processed_docs_path=processed_docs_folder,
-                cc_dict=cc_dict,
-                params=params,
-                amount_of_snapshot_limit=amount_of_snapshot_limit)
-
-            big_df = big_df.append(res_df, ignore_index=True)
-
-
-        with open(os.path.join(save_folder,affix + frequency + '_' + addition + "_Results.txt"), 'w') as f:
-            f.write(convert_df_to_trec(big_df))
-
-        res_dict = get_ranking_effectiveness_for_res_file(file_path=save_folder,filename=affix +frequency + '_' + addition + "_Results.txt")
-        print(frequency + '_' + addition + "_Results.txt")
-        print("SCORE : " + str(res_dict))
+    best_map = 0.0
+    for param_kind in list(filter_params_options.keys()):
+        print (param_kind )
         sys.stdout.flush()
+        best = None
+        for param_option in filter_params_options[param_kind]:
+            curr_filter_params[param_kind] = param_option
+
+            addition = ""
+            print('Interval Freq: ' + frequency)
+
+            interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=1)
+            # retrieve necessary dataframes
+            query_to_doc_mapping_df = create_query_to_doc_mapping_df()
+            stemmed_queries_df = create_stemmed_queries_df()
+
+            big_df = pd.DataFrame({})
+            for index, row in stemmed_queries_df.iterrows():
+                query_num = int(row['QueryNum'])
+                print("Query: " + str(query_num))
+                sys.stdout.flush()
+                query_txt = row['QueryStems']
+                relevant_df = query_to_doc_mapping_df[query_to_doc_mapping_df['QueryNum'] == query_num].copy()
+                res_df = get_scored_df_for_query(
+                    query_num=query_num,
+                    query=query_txt,
+                    query_doc_df=relevant_df,
+                    interval_list=interval_list,
+                    processed_docs_path=processed_docs_folder,
+                    cc_dict=cc_dict,
+                    params=params,
+                    filter_params=curr_filter_params,
+                    amount_of_snapshot_limit=amount_of_snapshot_limit)
+
+                big_df = big_df.append(res_df, ignore_index=True)
+
+
+            with open(os.path.join(save_folder,affix + frequency + '_' + addition + "_Results.txt"), 'w') as f:
+                f.write(convert_df_to_trec(big_df))
+
+            res_dict = get_ranking_effectiveness_for_res_file(file_path=save_folder,filename=affix +frequency + '_' + addition + "_Results.txt")
+            print(curr_filter_params)
+            print("SCORE : " + str(res_dict))
+            sys.stdout.flush()
+            if res_dict['Map'] > best_map:
+                best_map = res_dict['Map']
+                best = param_option
+
+        curr_filter_params[param_kind] = best
