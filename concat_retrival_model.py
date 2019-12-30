@@ -158,8 +158,8 @@ if __name__=='__main__':
         affix  = ""
 
     filter_params_options = {
-        "Sim_Upper" : [None, 0.999, 0.99, 0.98, 0.97],
-        "Sim_Lower" : [None, 0.1, 0.3, 0.5, 0.6, 0.7, 0.8],
+        "Sim_Upper" : [None, 0.999, 0.995,0.99, 0.98, 0.97,0.95],
+        "Sim_Lower" : [None, 0.1, 0.3, 0.5, 0.6, 0.7, 0.8, 0.85],
         "TxtDiff_Upper" : [None, 500, 1000, 2000, 3000, 5000],
         "TxtDiff_Lower" : [None, -500, -1000, -2000, -3000, -5000],
         "%TxtDiff_Upper" : [None,0.4,0.5, 0.6, 0.8, 1.0],
@@ -174,7 +174,7 @@ if __name__=='__main__':
         "%TxtDiff_Lower": None}
 
     best_map = 0.0
-    for param_kind in list(filter_params_options.keys()):
+    for param_kind in ["TxtDiff_Lower", "Sim_Lower", "%TxtDiff_Lower", "%TxtDiff_Upper","Sim_Upper", "TxtDiff_Upper"]:
         print (param_kind )
         sys.stdout.flush()
         best = None
@@ -184,7 +184,7 @@ if __name__=='__main__':
             addition = ""
             print('Interval Freq: ' + frequency)
 
-            interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=1)
+            interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=-4)
             # retrieve necessary dataframes
             query_to_doc_mapping_df = create_query_to_doc_mapping_df()
             stemmed_queries_df = create_stemmed_queries_df()
