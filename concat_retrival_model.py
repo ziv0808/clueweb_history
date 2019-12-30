@@ -174,7 +174,7 @@ if __name__=='__main__':
         "%TxtDiff_Lower": None}
 
     best_map = 0.0
-    for param_kind in ["TxtDiff_Lower", "Sim_Lower", "%TxtDiff_Lower", "%TxtDiff_Upper","Sim_Upper", "TxtDiff_Upper"]:
+    for param_kind in [ "Sim_Lower", "%TxtDiff_Lower", "TxtDiff_Lower", "%TxtDiff_Upper","Sim_Upper", "TxtDiff_Upper"]:
         print (param_kind )
         sys.stdout.flush()
         best = None
