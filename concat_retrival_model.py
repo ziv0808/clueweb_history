@@ -186,16 +186,17 @@ if __name__=='__main__':
 
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/concat_model_res/'
+    affix = str(start_test_q) + '_' + str(end_test_q) + "_"
     if retrival_model == 'BM25':
         cc_dict = create_per_interval_df_dict(interval_freq=frequency, lookup_method='NoLookup')
         params = {'K1' : 1 , 'b' : 0.5}
-        affix = "BM25_"
+        affix += "BM25_"
 
     elif retrival_model == 'LM' :
         # create easy to use index for cc
         cc_dict = create_per_interval_cc_dict(interval_freq=frequency, lookup_method='NoLookup')
         params = {'Mue' : 1000.0}
-        affix  = ""
+        affix  += ""
     else:
         raise Exception("Unknown model")
 
