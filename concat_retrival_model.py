@@ -129,7 +129,7 @@ def get_scored_df_for_query(
             # print(doc_interval_dict)
             doc_score = score_doc_for_query_lm(
                 query_stem_dict=query_dict,
-                cc_dict=cc_dict,
+                cc_dict=cc_dict['ClueWeb09'],
                 doc_dict=doc_dict,
                 interval_list=interval_list,
                 params=params,
