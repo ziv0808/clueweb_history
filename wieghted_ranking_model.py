@@ -21,7 +21,8 @@ class WeightedListRanker():
             rank_or_score,
             start_month = 1,
             amount_of_snapshot_limit = 1,
-            test_set_queries = []):
+            test_set_queries = [],
+            filter_params =None):
 
         self.interval_list = build_interval_list(
             work_year=work_year,
@@ -38,6 +39,9 @@ class WeightedListRanker():
 
         if amount_of_snapshot_limit is not None and amount_of_snapshot_limit > 1:
             addition += "_SnapLimit_" + str(amount_of_snapshot_limit)
+
+        if filter_params is not None and len(filter_params) > 0:
+            addition += create_filter_params_txt_addition(filter_params)
 
         self.result_files_sufix = "_" + interval_freq + "_" + interval_lookup_method + addition +  "_Results.txt"
         self.save_files_suffix = "_" + rank_or_score + self.result_files_sufix
@@ -301,8 +305,9 @@ if __name__=="__main__":
     rank_or_score = sys.argv[3]
     start_month = int(sys.argv[4])
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[5])
-    start_test_q = int(sys.argv[6])
-    end_test_q = int(sys.argv[7])
+    filter_params = ast.literal_eval(sys.argv[6])
+    start_test_q = int(sys.argv[7])
+    end_test_q = int(sys.argv[8])
 
     weighted_list_object = WeightedListRanker(
         work_year=work_year,
@@ -311,7 +316,8 @@ if __name__=="__main__":
         rank_or_score=rank_or_score,
         start_month=start_month,
         amount_of_snapshot_limit=amount_of_snapshot_limit,
-        test_set_queries=[start_test_q, end_test_q])
+        test_set_queries=[start_test_q, end_test_q],
+        filter_params=filter_params)
     print("Object Created...")
     sys.stdout.flush()
     if DEBUG == True:
