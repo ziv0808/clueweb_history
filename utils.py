@@ -107,9 +107,10 @@ def get_doc_snapshot_by_lookup_method(
         doc_dict,
         interval_list,
         curr_interval_idx,
-        interval_lookup_method):
+        interval_lookup_method,
+        filter_params = {}):
     # gets the right interval snapshot according to lookup method
-    doc_interval_dict = doc_dict[interval_list[curr_interval_idx]]
+    doc_interval_dict = verify_snapshot_for_doc(doc_dict, interval_list[curr_interval_idx],filter_params)
     if doc_interval_dict is None:
         if interval_list[curr_interval_idx] == "ClueWeb09":
             raise Exception("ClueWeb09 needs lookup..")
@@ -117,24 +118,24 @@ def get_doc_snapshot_by_lookup_method(
         if interval_lookup_method == "Forward":
             addition = 1
             while doc_interval_dict is None:
-                doc_interval_dict = doc_dict[interval_list[curr_interval_idx + addition]]
+                doc_interval_dict = verify_snapshot_for_doc(doc_dict,interval_list[curr_interval_idx + addition],filter_params)
                 addition += 1
 
         elif interval_lookup_method == "Backward":
             addition = 1
             while (doc_interval_dict is None) and ((curr_interval_idx - addition) >= 0):
-                doc_interval_dict = doc_dict[interval_list[curr_interval_idx - addition]]
+                doc_interval_dict = verify_snapshot_for_doc(doc_dict,interval_list[curr_interval_idx - addition],filter_params)
                 addition += 1
             if doc_interval_dict is None:
                 addition = 1
                 while doc_interval_dict is None:
-                    doc_interval_dict = doc_dict[interval_list[curr_interval_idx + addition]]
+                    doc_interval_dict = verify_snapshot_for_doc(doc_dict,interval_list[curr_interval_idx + addition],filter_params)
                     addition += 1
 
         elif interval_lookup_method == "OnlyBackward":
             addition = 1
             while (doc_interval_dict is None) and ((curr_interval_idx - addition) >= 0):
-                doc_interval_dict = doc_dict[interval_list[curr_interval_idx - addition]]
+                doc_interval_dict = verify_snapshot_for_doc(doc_dict,interval_list[curr_interval_idx - addition],filter_params)
                 addition += 1
 
         elif interval_lookup_method == "NoLookup":
@@ -268,31 +269,43 @@ def verify_snapshot_for_doc(
 
     if (interval == 'ClueWeb09') or (doc_dict[interval] is None):
         return doc_dict[interval]
-
-    if (filter_params['Sim_Upper'] is not None) or (filter_params['Sim_Lower'] is not None):
-        similarity = calc_cosine(doc_dict[interval]['TfIdf'], doc_dict['ClueWeb09']['TfIdf'])
-        if (filter_params['Sim_Upper'] is not None):
-            if similarity > filter_params['Sim_Upper']:
-                return None
-        if (filter_params['Sim_Lower'] is not None):
-            if similarity < filter_params['Sim_Lower']:
-                return None
+    if ('Sim_Upper' in filter_params) or ('Sim_Lower' in filter_params):
+        if (filter_params['Sim_Upper'] is not None) or (filter_params['Sim_Lower'] is not None):
+            similarity = calc_cosine(doc_dict[interval]['TfIdf'], doc_dict['ClueWeb09']['TfIdf'])
+            if ('Sim_Upper' in filter_params) and (filter_params['Sim_Upper'] is not None):
+                if similarity > filter_params['Sim_Upper']:
+                    return None
+            if ('Sim_Lower' in filter_params) and (filter_params['Sim_Lower'] is not None):
+                if similarity < filter_params['Sim_Lower']:
+                    return None
 
     txt_diff = doc_dict['ClueWeb09']['NumWords'] - doc_dict[interval]['NumWords']
-    if (filter_params['TxtDiff_Upper'] is not None):
+    if ('TxtDiff_Upper' in filter_params) and (filter_params['TxtDiff_Upper'] is not None):
         if txt_diff > filter_params['TxtDiff_Upper']:
             return None
-    if (filter_params['TxtDiff_Lower'] is not None):
+    if ('TxtDiff_Lower' in filter_params) and (filter_params['TxtDiff_Lower'] is not None):
         if txt_diff < filter_params['TxtDiff_Lower']:
             return None
 
-    if (filter_params['%TxtDiff_Upper'] is not None) or (filter_params['%TxtDiff_Lower'] is not None):
-        txt_diff = txt_diff/float(doc_dict['ClueWeb09']['NumWords'])
-        if (filter_params['%TxtDiff_Upper'] is not None):
-            if txt_diff > filter_params['%TxtDiff_Upper']:
-                return None
-        if (filter_params['%TxtDiff_Lower'] is not None):
-            if txt_diff < filter_params['%TxtDiff_Lower']:
-                return None
+
+    if ('%TxtDiff_Upper' in filter_params) or ('%TxtDiff_Lower' in filter_params):
+        if (filter_params['%TxtDiff_Upper'] is not None) or (filter_params['%TxtDiff_Lower'] is not None):
+            txt_diff = txt_diff/float(doc_dict['ClueWeb09']['NumWords'])
+            if ('%TxtDiff_Upper' in filter_params) and (filter_params['%TxtDiff_Upper'] is not None):
+                if txt_diff > filter_params['%TxtDiff_Upper']:
+                    return None
+            if ('%TxtDiff_Lower' in filter_params) and (filter_params['%TxtDiff_Lower'] is not None):
+                if txt_diff < filter_params['%TxtDiff_Lower']:
+                    return None
 
     return doc_dict[interval]
+
+def create_filter_params_txt_addition(
+        filter_params):
+
+    str_addition = ""
+    for val in ["Sim_Lower", "%TxtDiff_Lower", "TxtDiff_Lower", "%TxtDiff_Upper","Sim_Upper", "TxtDiff_Upper"]:
+        if val in filter_params:
+            str_addition += val + '_' + str(filter_params[val]) + '_'
+
+    return str_addition

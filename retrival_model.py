@@ -62,7 +62,8 @@ def get_scored_df_for_query(
         interval_list,
         cc_dict,
         mue,
-        amount_of_snapshot_limit):
+        amount_of_snapshot_limit,
+        filter_params):
 
     res_df= pd.DataFrame(columns = ['Query_ID','Iteration', 'Docno', 'Rank', 'Score', 'Method'])
     next_index = 0
@@ -79,7 +80,8 @@ def get_scored_df_for_query(
             doc_dict=doc_dict,
             interval_list=interval_list,
             interval_lookup_method=interval_lookup_method,
-            curr_interval_idx=interval_idx)
+            curr_interval_idx=interval_idx,
+            filter_params=filter_params)
 
         if doc_interval_dict is None:
             continue
@@ -103,6 +105,7 @@ if __name__=='__main__':
     interval_lookup_method = sys.argv[2]
     interval_start_month = int(sys.argv[3])
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[4])
+    filter_params = ast.literal_eval(sys.argv[5])
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
     addition = ""
@@ -114,6 +117,9 @@ if __name__=='__main__':
 
     if amount_of_snapshot_limit is not None and amount_of_snapshot_limit > 1:
         addition += "_SnapLimit_" + str(amount_of_snapshot_limit)
+
+    if filter_params is not None and len(filter_params) > 0:
+        addition += create_filter_params_txt_addition(filter_params)
 
     mue = 1000.0
     interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=interval_start_month)
@@ -151,7 +157,8 @@ if __name__=='__main__':
                 processed_docs_dict=relevant_doc_dict,
                 cc_dict=cc_dict[interval_list[j]],
                 mue=mue,
-                amount_of_snapshot_limit=amount_of_snapshot_limit)
+                amount_of_snapshot_limit=amount_of_snapshot_limit,
+                filter_params=filter_params)
 
             with open(os.path.join(save_folder, str(query_num) + "_" + frequency + '_' + str(interval_list[j] + "_" + interval_lookup_method + addition +"_Results.txt")), 'w') as f:
                 f.write(convert_df_to_trec(res_df))
@@ -184,4 +191,5 @@ if __name__=='__main__':
         interval_freq=frequency,
         interval_lookup_method=interval_lookup_method,
         interval_start_month=interval_start_month,
-        amount_of_snapshot_limit=amount_of_snapshot_limit)
+        amount_of_snapshot_limit=amount_of_snapshot_limit,
+        addition=addition)

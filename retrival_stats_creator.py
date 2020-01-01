@@ -137,7 +137,8 @@ def create_retrieval_stats(
         interval_lookup_method,
         interval_start_month,
         amount_of_snapshot_limit,
-        is_bm25 = False):
+        is_bm25 = False,
+        addition = None):
 
     query_retrn_files_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
     trec_eval_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
@@ -149,12 +150,13 @@ def create_retrieval_stats(
     save_dirname = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/"
     print('Interval Feaq: ' + interval_freq)
     print('Lookup method: ' + interval_lookup_method)
-    addition = ""
-    if interval_start_month != 1:
-        addition = "_" + str(interval_start_month) + "SM_"
+    if addition is None:
+        addition = ""
+        if interval_start_month != 1:
+            addition = "_" + str(interval_start_month) + "SM_"
 
-    if amount_of_snapshot_limit is not None and amount_of_snapshot_limit > 1:
-        addition += "_SnapLimit_" + str(amount_of_snapshot_limit)
+        if amount_of_snapshot_limit is not None and amount_of_snapshot_limit > 1:
+            addition += "_SnapLimit_" + str(amount_of_snapshot_limit)
 
     interval_list = build_interval_list('2008', interval_freq, add_clueweb=True, start_month=interval_start_month)
 
