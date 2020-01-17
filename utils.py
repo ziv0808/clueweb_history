@@ -307,3 +307,85 @@ def create_filter_params_txt_addition(
             str_addition += val + '_' + str(filter_params[val]) + '_'
 
     return str_addition
+
+def get_stopword_list():
+    stop_word_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Stop_Words'
+    with open(stop_word_file, 'r') as f:
+        stopword_str = f.read()
+    stopword_list = stopword_str.split('\n')
+    stopword_list.remove('')
+    return stopword_list
+
+def calc_shannon_entopy(tf_list):
+    total = float(sum(tf_list))
+    return sum(float(freq) / total * math.log(total / freq, 2) for freq in tf_list)
+
+
+def calc_tfidf_dict(
+        stem_list,
+        tf_list,
+        df_list):
+
+    res_dict = {}
+    for i in range(1, len(stem_list)):
+        if df_list[i] > 0:
+            res_dict[stem_list[i]] = round(tf_list[i] * math.log10(500000000.0 / float(df_list[i])), 6)
+        else:
+            print("Prob Stem: " + stem_list[i])
+            res_dict[stem_list[i]] = 0.0
+
+    return res_dict
+
+def create_full_doc_dict_from_fulltext(
+        curr_fulltext_list,
+        concatenated_stem_list,
+        concatenated_df_list,
+        concatenated_cc_list,
+        stopword_list):
+
+    res_dict = {}
+    res_dict['StemList'] = ['[[OOV]']
+    res_dict['IndexList'] = []
+    res_dict['NumStopWords'] = 0
+    res_dict['NumWords'] = 0
+    res_dict['TfList'] = [0]
+    res_dict['DfList'] = [0]
+    res_dict['CCList'] = [0]
+    res_dict['Fulltext'] = ""
+    res_dict['TfDict'] = {}
+
+    for stem in curr_fulltext_list:
+        if stem not in res_dict['TfDict']:
+            res_dict['StemList'].append(stem)
+            res_dict['TfDict'][stem] = 1
+        else:
+            res_dict['TfDict'][stem] += 1
+
+        res_dict['IndexList'].append(res_dict['StemList'].index(stem))
+        if stem in stopword_list:
+            res_dict['NumStopWords'] += 1
+
+        res_dict['NumWords'] += 1
+        res_dict['Fulltext'] += stem + " "
+
+    res_dict['Fulltext'] = res_dict['Fulltext'][:-1]
+
+    for stem in res_dict['StemList']:
+        res_dict['TfList'].append(res_dict['TfDict'][stem])
+        res_dict['CCList'].append(concatenated_cc_list[concatenated_stem_list.index(stem)])
+        res_dict['DfList'].append(concatenated_df_list[concatenated_stem_list.index(stem)])
+
+    res_dict['Entropy'] = calc_shannon_entopy(res_dict['TfList'][1:])
+
+    res_dict['TfIdf'] = calc_tfidf_dict(
+        res_dict['StemList'],
+        res_dict['TfList'],
+        res_dict['DfList'])
+
+    return res_dict
+
+
+
+
+
+

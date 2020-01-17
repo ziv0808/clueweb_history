@@ -95,7 +95,7 @@ def fill_cc_dict_with_doc(
 
 
 def create_per_interval_per_lookup_cc_dict(
-        work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM', 'SIM_995'],
+        work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM', 'SIM_995','SIM_TXT_UP_DOWN','SIM_TXT_UP','SIM_TXT_DOWN'],
         lookup_method_list = ['NoLookup', 'Backward','OnlyBackward','Forward'],
         already_exists = True):
 
@@ -153,8 +153,8 @@ def create_similarity_interval(
         from_interval_size='1W',
         sim_threshold = 0.995,
         work_year = '2008',
-        sim_folder_name = "SIM_995"
-        ):
+        sim_folder_name = "SIM_995"):
+
     time_interval_list = build_interval_list(
         work_year=work_year,
         frequency=from_interval_size,
@@ -329,9 +329,9 @@ def fill_df_dict_with_doc(
 
 
 def create_per_interval_per_lookup_df_dict(
-        work_interval_freq_list=['1W', '2W', '1M', '2M', 'SIM', 'SIM_995'],
+        work_interval_freq_list=['1W', '2W', '1M', '2M', 'SIM', 'SIM_995','SIM_TXT_UP_DOWN','SIM_TXT_UP','SIM_TXT_DOWN'],
         lookup_method_list=['NoLookup', 'Backward', 'OnlyBackward', 'Forward'],
-        already_exists=False):
+        already_exists=True):
 
     work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv',
                           sep='\t', index_col=False)
@@ -388,9 +388,87 @@ def create_per_interval_per_lookup_df_dict(
         with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/df_per_interval_dict.json', 'w') as f:
             f.write(str(res_dict))
 
+def create_text_manipulated_interval(
+        from_interval='SIM',
+        work_year='2008',
+        sim_folder_name="SIM_",
+        limit_to_clueweb_len = True,
+        fill_to_clueweb_len = True
+        ):
+
+
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/'
+
+    processed_docs_input_path = os.path.join(
+        processed_docs_folder, from_interval)
+    stopword_list = get_stopword_list()
+
+    for file_name in os.listdir(processed_docs_input_path):
+        if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+            print(file_name)
+            sys.stdout.flush()
+            res_dict = {}
+            with open(os.path.join(processed_docs_input_path, file_name), 'r') as f:
+                doc_dict = ast.literal_eval(f.read())
+
+            for interval in doc_dict:
+                if doc_dict[interval] is not None:
+                    if interval == 'ClueWeb09':
+                        res_dict[interval] = doc_dict[interval]
+                    else:
+                        build_snapshot_dict = False
+                        if limit_to_clueweb_len == True:
+                            if doc_dict[interval]['NumWords'] > doc_dict['ClueWeb09']['NumWords']:
+                                tmp_fulltext = doc_dict[interval]['Fulltext'].spilt(' ')
+                                tmp_fulltext = tmp_fulltext[:int(doc_dict['ClueWeb09']['NumWords'])]
+                                tmp_stem_list = doc_dict[interval]['StemList']
+                                tmp_cc_list = doc_dict[interval]['CCList']
+                                tmp_df_list = doc_dict[interval]['DfList']
+                                build_snapshot_dict = True
+                        if fill_to_clueweb_len == True:
+                            if doc_dict[interval]['NumWords'] < doc_dict['ClueWeb09']['NumWords']:
+                                tmp_fulltext = doc_dict['ClueWeb09']['Fulltext'].spilt(' ')
+                                tmp_fulltext = doc_dict[interval]['Fulltext'].spilt(' ') + tmp_fulltext[int(doc_dict[interval]['NumWords']):]
+                                tmp_stem_list = doc_dict[interval]['StemList'] + doc_dict['ClueWeb09']['StemList']
+                                tmp_cc_list = doc_dict[interval]['CCList'] + doc_dict['ClueWeb09']['CCList']
+                                tmp_df_list = doc_dict[interval]['DfList'] + doc_dict['ClueWeb09']['DfList']
+                                build_snapshot_dict = True
+                        if build_snapshot_dict == True:
+                            res_dict[interval] = create_full_doc_dict_from_fulltext(
+                                curr_fulltext_list=tmp_fulltext,
+                                concatenated_stem_list=tmp_stem_list,
+                                concatenated_df_list=tmp_df_list,
+                                concatenated_cc_list=tmp_cc_list,
+                                stopword_list=stopword_list)
+                        else:
+                            res_dict[interval] = doc_dict[interval]
+                else:
+                    res_dict[interval] = None
+
+            with open(os.path.join(os.path.join(processed_docs_folder, sim_folder_name), file_name), 'w') as f:
+                f.write(str(res_dict))
+
+
+create_text_manipulated_interval(
+    sim_folder_name="SIM_TXT_UP_DOWN",
+    limit_to_clueweb_len=True,
+    fill_to_clueweb_len=True)
+create_text_manipulated_interval(
+    sim_folder_name="SIM_TXT_UP",
+    limit_to_clueweb_len=True,
+    fill_to_clueweb_len=False)
+create_text_manipulated_interval(
+    sim_folder_name="SIM_TXT_DOWN",
+    limit_to_clueweb_len=False,
+    fill_to_clueweb_len=True)
+
+
 # create_similarity_interval()
-# create_stats_data_frame_for_snapshot_changes()
-# create_per_interval_per_lookup_cc_dict()
+create_stats_data_frame_for_snapshot_changes(sim_folder_name="SIM_TXT_UP_DOWN")
+create_stats_data_frame_for_snapshot_changes(sim_folder_name="SIM_TXT_UP")
+create_stats_data_frame_for_snapshot_changes(sim_folder_name="SIM_TXT_DOWN")
+
+create_per_interval_per_lookup_cc_dict()
 
 # check_for_txt_len_problem()
 # merge_covered_df_with_file()
