@@ -370,7 +370,7 @@ def create_full_doc_dict_from_fulltext(
 
     res_dict['Fulltext'] = res_dict['Fulltext'][:-1]
 
-    for stem in res_dict['StemList']:
+    for stem in res_dict['StemList'][1:]:
         res_dict['TfList'].append(res_dict['TfDict'][stem])
         res_dict['CCList'].append(concatenated_cc_list[concatenated_stem_list.index(stem)])
         res_dict['DfList'].append(concatenated_df_list[concatenated_stem_list.index(stem)])
