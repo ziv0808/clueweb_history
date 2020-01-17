@@ -419,7 +419,7 @@ def create_text_manipulated_interval(
                         build_snapshot_dict = False
                         if limit_to_clueweb_len == True:
                             if doc_dict[interval]['NumWords'] > doc_dict['ClueWeb09']['NumWords']:
-                                tmp_fulltext = doc_dict[interval]['Fulltext'].spilt(' ')
+                                tmp_fulltext = doc_dict[interval]['Fulltext'].split(' ')
                                 tmp_fulltext = tmp_fulltext[:int(doc_dict['ClueWeb09']['NumWords'])]
                                 tmp_stem_list = doc_dict[interval]['StemList']
                                 tmp_cc_list = doc_dict[interval]['CCList']
@@ -427,8 +427,8 @@ def create_text_manipulated_interval(
                                 build_snapshot_dict = True
                         if fill_to_clueweb_len == True:
                             if doc_dict[interval]['NumWords'] < doc_dict['ClueWeb09']['NumWords']:
-                                tmp_fulltext = doc_dict['ClueWeb09']['Fulltext'].spilt(' ')
-                                tmp_fulltext = doc_dict[interval]['Fulltext'].spilt(' ') + tmp_fulltext[int(doc_dict[interval]['NumWords']):]
+                                tmp_fulltext = doc_dict['ClueWeb09']['Fulltext'].split(' ')
+                                tmp_fulltext = doc_dict[interval]['Fulltext'].split(' ') + tmp_fulltext[int(doc_dict[interval]['NumWords']):]
                                 tmp_stem_list = doc_dict[interval]['StemList'] + doc_dict['ClueWeb09']['StemList']
                                 tmp_cc_list = doc_dict[interval]['CCList'] + doc_dict['ClueWeb09']['CCList']
                                 tmp_df_list = doc_dict[interval]['DfList'] + doc_dict['ClueWeb09']['DfList']
