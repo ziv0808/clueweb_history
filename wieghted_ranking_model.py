@@ -9,7 +9,7 @@ from utils import *
 
 DEBUG = False
 BM25 = True
-DISTRIBUTE_MISSING_WIEGHTS = True
+DISTRIBUTE_MISSING_WIEGHTS = False
 RESULT_FILES_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
 
 class WeightedListRanker():
@@ -22,7 +22,8 @@ class WeightedListRanker():
             start_month = 1,
             amount_of_snapshot_limit = 1,
             test_set_queries = [],
-            filter_params =None):
+            filter_params =None,
+            is_bm25 = False):
 
         self.interval_list = build_interval_list(
             work_year=work_year,
@@ -30,7 +31,7 @@ class WeightedListRanker():
             add_clueweb=True,
             start_month=start_month)
         self.affix = ""
-        if BM25 == True:
+        if is_bm25 == True:
             self.affix = "BM25_"
 
         addition = ""
@@ -60,7 +61,7 @@ class WeightedListRanker():
             self.test_set_q[i] = '0'*(3-len(str(self.test_set_q[i]))) + str(self.test_set_q[i])
 
         self.pre_process_data(rank_or_score=rank_or_score)
-
+        self.log_affix = str(test_set_queries[0]) + '_' + str(test_set_queries[1]) + "_"
 
     def save_log(self):
         with open(os.path.join(self.save_dirname, "Log_" + self.save_files_suffix ), 'a') as f:
@@ -69,7 +70,7 @@ class WeightedListRanker():
         self.run_log = ""
 
     def add_to_log(self, strng):
-        self.run_log += strng + '\n'
+        self.run_log += self.log_affix + strng + '\n'
 
     def pre_process_data(
             self,
@@ -306,8 +307,9 @@ if __name__=="__main__":
     start_month = int(sys.argv[4])
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[5])
     filter_params = ast.literal_eval(sys.argv[6])
-    start_test_q = int(sys.argv[7])
-    end_test_q = int(sys.argv[8])
+    is_bm25 = ast.literal_eval(sys.argv[7])
+    start_test_q = int(sys.argv[8])
+    end_test_q = int(sys.argv[9])
 
     weighted_list_object = WeightedListRanker(
         work_year=work_year,
