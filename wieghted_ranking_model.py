@@ -319,7 +319,8 @@ if __name__=="__main__":
         start_month=start_month,
         amount_of_snapshot_limit=amount_of_snapshot_limit,
         test_set_queries=[start_test_q, end_test_q],
-        filter_params=filter_params)
+        filter_params=filter_params,
+        is_bm25=is_bm25)
     print("Object Created...")
     sys.stdout.flush()
     if DEBUG == True:
