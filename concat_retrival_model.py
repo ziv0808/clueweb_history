@@ -182,8 +182,8 @@ if __name__=='__main__':
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[3])
     retrival_model = sys.argv[4]
     run_cv = ast.literal_eval(sys.argv[5])
-    start_test_q = int(sys.argv[5])
-    end_test_q = int(sys.argv[6])
+    start_test_q = int(sys.argv[6])
+    end_test_q = int(sys.argv[7])
 
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/concat_model_res/'
