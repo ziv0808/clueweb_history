@@ -181,6 +181,7 @@ if __name__=='__main__':
     interval_start_month = int(sys.argv[2])
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[3])
     retrival_model = sys.argv[4]
+    run_cv = ast.literal_eval(sys.argv[5])
     start_test_q = int(sys.argv[5])
     end_test_q = int(sys.argv[6])
 
@@ -203,87 +204,111 @@ if __name__=='__main__':
     query_to_doc_mapping_df = create_query_to_doc_mapping_df()
     stemmed_queries_df = create_stemmed_queries_df()
 
-    test_set_q = list(range(start_test_q, end_test_q + 1))
-    stemmed_queries_df['IsTest'] = stemmed_queries_df['QueryNum'].apply(lambda x: 1 if x in test_set_q else 0)
-    test_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 1].copy()
-    stemmed_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 0]
+    if run_cv == True:
+        test_set_q = list(range(start_test_q, end_test_q + 1))
+        stemmed_queries_df['IsTest'] = stemmed_queries_df['QueryNum'].apply(lambda x: 1 if x in test_set_q else 0)
+        test_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 1].copy()
+        stemmed_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 0]
 
-    filter_params_options = {
-        "Sim_Upper" : [None, 0.999, 0.99, 0.98, 0.97, 0.95],
-        "Sim_Lower" : [None, 0.5, 0.6, 0.7, 0.8, 0.82, 0.83, 0.85, 0.87],
-        "TxtDiff_Upper" : [None, 1000, 2000, 3000, 5000],
-        "TxtDiff_Lower" : [None, -1000, -2000, -3000, -5000],
-        "%TxtDiff_Upper" : [None,0.4,0.5, 0.6, 0.8],
-        "%TxtDiff_Lower" : [None, -0.4, -0.5, -0.6, -0.8]}
+        filter_params_options = {
+            "Sim_Upper" : [None, 0.999, 0.99, 0.98, 0.97, 0.95],
+            "Sim_Lower" : [None, 0.5, 0.6, 0.7, 0.8, 0.82, 0.83, 0.85, 0.87],
+            "TxtDiff_Upper" : [None, 1000, 2000, 3000, 5000],
+            "TxtDiff_Lower" : [None, -1000, -2000, -3000, -5000],
+            "%TxtDiff_Upper" : [None,0.4,0.5, 0.6, 0.8],
+            "%TxtDiff_Lower" : [None, -0.4, -0.5, -0.6, -0.8]}
 
-    curr_filter_params = {
-        "Sim_Upper": None,
-        "Sim_Lower": None,
-        "TxtDiff_Upper": None,
-        "TxtDiff_Lower": None,
-        "%TxtDiff_Upper": None,
-        "%TxtDiff_Lower": None}
-    best_params = None
-    best_map = 0.0
-    for param_kind in [ "Sim_Lower", "%TxtDiff_Lower", "TxtDiff_Lower", "%TxtDiff_Upper","Sim_Upper", "TxtDiff_Upper"]:
-        print (param_kind )
-        sys.stdout.flush()
-        best = None
-        for param_option in filter_params_options[param_kind]:
-            curr_filter_params[param_kind] = param_option
-            if (param_option is None) and (param_kind != "Sim_Lower"):
-                continue
-            addition = ""
-            if interval_start_month != 1:
-                addition = "_" + str(interval_start_month) + "SM_"
-
-            print('Interval Freq: ' + frequency)
-
-            interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=interval_start_month)
-            # retrieve necessary dataframes
-
-            big_df = test_queries(
-                stemmed_queries_df=stemmed_queries_df,
-                query_to_doc_mapping_df=query_to_doc_mapping_df,
-                interval_list=interval_list,
-                processed_docs_folder=processed_docs_folder,
-                cc_dict=cc_dict,
-                params=params,
-                curr_filter_params=curr_filter_params,
-                amount_of_snapshot_limit=amount_of_snapshot_limit,
-                retrival_model=retrival_model)
-
-            with open(os.path.join(save_folder,affix + frequency + '_' + addition + "_Results.txt"), 'w') as f:
-                f.write(convert_df_to_trec(big_df))
-
-            res_dict = get_ranking_effectiveness_for_res_file(file_path=save_folder,filename=affix +frequency + '_' + addition + "_Results.txt")
-            print(affix + addition + " " + str(curr_filter_params))
-            print(affix + addition + " " + "SCORE : " + str(res_dict))
+        curr_filter_params = {
+            "Sim_Upper": None,
+            "Sim_Lower": None,
+            "TxtDiff_Upper": None,
+            "TxtDiff_Lower": None,
+            "%TxtDiff_Upper": None,
+            "%TxtDiff_Lower": None}
+        best_params = None
+        best_map = 0.0
+        for param_kind in [ "Sim_Lower", "%TxtDiff_Lower", "TxtDiff_Lower", "%TxtDiff_Upper","Sim_Upper", "TxtDiff_Upper"]:
+            print (param_kind )
             sys.stdout.flush()
-            if res_dict['Map'] > best_map:
-                best_map = res_dict['Map']
-                best = param_option
-                best_params = curr_filter_params
+            best = None
+            for param_option in filter_params_options[param_kind]:
+                curr_filter_params[param_kind] = param_option
+                if (param_option is None) and (param_kind != "Sim_Lower"):
+                    continue
+                addition = ""
+                if interval_start_month != 1:
+                    addition = "_" + str(interval_start_month) + "SM_"
 
-        curr_filter_params[param_kind] = best
+                print('Interval Freq: ' + frequency)
 
-    print(affix + addition + " Best Train " + "SCORE : " + str(best_map))
-    big_df = test_queries(
-        stemmed_queries_df=test_queries_df,
-        query_to_doc_mapping_df=query_to_doc_mapping_df,
-        interval_list=interval_list,
-        processed_docs_folder=processed_docs_folder,
-        cc_dict=cc_dict,
-        params=params,
-        curr_filter_params=best_params,
-        amount_of_snapshot_limit=amount_of_snapshot_limit,
-        retrival_model=retrival_model)
+                interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=interval_start_month)
+                # retrieve necessary dataframes
 
-    with open(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.txt"), 'w') as f:
-        f.write(convert_df_to_trec(big_df))
+                big_df = test_queries(
+                    stemmed_queries_df=stemmed_queries_df,
+                    query_to_doc_mapping_df=query_to_doc_mapping_df,
+                    interval_list=interval_list,
+                    processed_docs_folder=processed_docs_folder,
+                    cc_dict=cc_dict,
+                    params=params,
+                    curr_filter_params=curr_filter_params,
+                    amount_of_snapshot_limit=amount_of_snapshot_limit,
+                    retrival_model=retrival_model)
 
-    res_dict = get_ranking_effectiveness_for_res_file(file_path=save_folder,
-                                                      filename=affix + frequency + '_' + addition + "_Results.txt")
-    print(affix + addition + " TEST : " + str(curr_filter_params))
-    print(affix + addition + " TEST : " + "SCORE : " + str(res_dict))
-    sys.stdout.flush()
+                with open(os.path.join(save_folder,affix + frequency + '_' + addition + "_Results.txt"), 'w') as f:
+                    f.write(convert_df_to_trec(big_df))
+
+                res_dict = get_ranking_effectiveness_for_res_file(file_path=save_folder,filename=affix +frequency + '_' + addition + "_Results.txt")
+                print(affix + addition + " " + str(curr_filter_params))
+                print(affix + addition + " " + "SCORE : " + str(res_dict))
+                sys.stdout.flush()
+                if res_dict['Map'] > best_map:
+                    best_map = res_dict['Map']
+                    best = param_option
+                    best_params = curr_filter_params
+
+            curr_filter_params[param_kind] = best
+
+        print(affix + addition + " Best Train " + "SCORE : " + str(best_map))
+        big_df = test_queries(
+            stemmed_queries_df=test_queries_df,
+            query_to_doc_mapping_df=query_to_doc_mapping_df,
+            interval_list=interval_list,
+            processed_docs_folder=processed_docs_folder,
+            cc_dict=cc_dict,
+            params=params,
+            curr_filter_params=best_params,
+            amount_of_snapshot_limit=amount_of_snapshot_limit,
+            retrival_model=retrival_model)
+
+        with open(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.txt"), 'w') as f:
+            f.write(convert_df_to_trec(big_df))
+
+        res_dict = get_ranking_effectiveness_for_res_file(file_path=save_folder,
+                                                          filename=affix + frequency + '_' + addition + "_Results.txt")
+        print(affix + addition + " TEST : " + str(curr_filter_params))
+        print(affix + addition + " TEST : " + "SCORE : " + str(res_dict))
+        sys.stdout.flush()
+
+    else:
+        addition = ""
+        if interval_start_month != 1:
+            addition = "_" + str(interval_start_month) + "SM_"
+        interval_list = build_interval_list('2008', frequency, add_clueweb=True, start_month=interval_start_month)
+        big_df = test_queries(
+            stemmed_queries_df=stemmed_queries_df,
+            query_to_doc_mapping_df=query_to_doc_mapping_df,
+            interval_list=interval_list,
+            processed_docs_folder=processed_docs_folder,
+            cc_dict=cc_dict,
+            params=params,
+            curr_filter_params={},
+            amount_of_snapshot_limit=amount_of_snapshot_limit,
+            retrival_model=retrival_model)
+
+        with open(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.txt"), 'w') as f:
+            f.write(convert_df_to_trec(big_df))
+
+        res_dict = get_ranking_effectiveness_for_res_file(file_path=save_folder,
+                                                          filename=affix + frequency + '_' + addition + "_Results.txt")
+        print(affix + addition + " " + "SCORE : " + str(res_dict))
