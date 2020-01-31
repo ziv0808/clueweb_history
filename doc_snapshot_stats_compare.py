@@ -100,7 +100,7 @@ if __name__=='__main__':
     stop_word_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Stop_Words'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/' + interval_freq +'/'
     query_stem_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Query_Words'
-    query_to_doc_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered_50_per_query.tsv'
+    query_to_doc_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'
 
     df_query_to_doc = pd.read_csv(query_to_doc_file, sep = '\t', index_col= False)
     df_query_stems = pd.read_csv(query_stem_file, sep = '\t', index_col= False)
