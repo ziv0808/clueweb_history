@@ -209,7 +209,7 @@ if __name__=='__main__':
             with open(os.path.join(save_folder, file_name + '.json'), 'w') as f:
                 f.write(str(doc_json))
 
-    summary_df.to_csv('mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + interval_freq + '.tsv', sep ='\t', index= False)
+    summary_df.to_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + interval_freq + '.tsv', sep ='\t', index= False)
     # doc_json = create_doc_json('','clueweb09-en0000-68-11648')
     # with open('test.txt', 'w') as f:
     #     f.write(doc_json)

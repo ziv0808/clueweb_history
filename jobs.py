@@ -273,7 +273,7 @@ def create_stats_data_frame_for_snapshot_changes(
 
 
 def create_tf_dict_for_processed_docs(
-        work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM', 'SIM_995'],
+        work_interval_freq_list = ['2W','1W', '1M', '2M'],# 'SIM', 'SIM_995'],
         work_year = '2008'):
 
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
@@ -449,26 +449,51 @@ def create_text_manipulated_interval(
                 f.write(str(res_dict))
 
 
-create_text_manipulated_interval(
-    sim_folder_name="SIM_TXT_UP_DOWN",
-    limit_to_clueweb_len=True,
-    fill_to_clueweb_len=True)
-create_text_manipulated_interval(
-    sim_folder_name="SIM_TXT_UP",
-    limit_to_clueweb_len=True,
-    fill_to_clueweb_len=False)
-create_text_manipulated_interval(
-    sim_folder_name="SIM_TXT_DOWN",
-    limit_to_clueweb_len=False,
-    fill_to_clueweb_len=True)
+
+
+if __name__ == '__main__':
+    operation = sys.argv[1]
+    if operation == 'TFDict':
+        interval_freq_list = ast.literal_eval(sys.argv[2])
+        create_tf_dict_for_processed_docs(work_interval_freq_list=interval_freq_list)
+    elif operation == 'CCDict':
+        interval_freq_list = ast.literal_eval(sys.argv[2])
+        already_exists = ast.literal_eval(sys.argv[3])
+        create_per_interval_per_lookup_cc_dict(work_interval_freq_list=interval_freq_list, already_exists=already_exists)
+    elif operation == 'DFDict':
+        interval_freq_list = ast.literal_eval(sys.argv[2])
+        already_exists = ast.literal_eval(sys.argv[3])
+        create_per_interval_per_lookup_df_dict(work_interval_freq_list=interval_freq_list,
+                                               already_exists=already_exists)
+    elif operation == 'StatsDF':
+        sim_folder_name = sys.argv[2]
+        create_stats_data_frame_for_snapshot_changes(sim_folder_name=sim_folder_name)
+
+    elif operation == 'SimInterva':
+        from_int_size = sys.argv[2]
+        sim_threshold = float(sys.argv[3])
+        sim_folder_name = sys.argv[4]
+        create_similarity_interval(from_interval_size=from_int_size,sim_threshold=sim_threshold,sim_folder_name=sim_folder_name)
+# create_text_manipulated_interval(
+#     sim_folder_name="SIM_TXT_UP_DOWN",
+#     limit_to_clueweb_len=True,
+#     fill_to_clueweb_len=True)
+# create_text_manipulated_interval(
+#     sim_folder_name="SIM_TXT_UP",
+#     limit_to_clueweb_len=True,
+#     fill_to_clueweb_len=False)
+# create_text_manipulated_interval(
+#     sim_folder_name="SIM_TXT_DOWN",
+#     limit_to_clueweb_len=False,
+#     fill_to_clueweb_len=True)
 
 
 # create_similarity_interval()
-create_stats_data_frame_for_snapshot_changes(sim_folder_name="SIM_TXT_UP_DOWN")
-create_stats_data_frame_for_snapshot_changes(sim_folder_name="SIM_TXT_UP")
-create_stats_data_frame_for_snapshot_changes(sim_folder_name="SIM_TXT_DOWN")
+# create_stats_data_frame_for_snapshot_changes(sim_folder_name="SIM_TXT_UP_DOWN")
+# create_stats_data_frame_for_snapshot_changes(sim_folder_name="SIM_TXT_UP")
+# create_stats_data_frame_for_snapshot_changes(sim_folder_name="SIM_TXT_DOWN")
 
-create_per_interval_per_lookup_cc_dict()
+# create_per_interval_per_lookup_cc_dict()
 
 # check_for_txt_len_problem()
 # merge_covered_df_with_file()
@@ -490,4 +515,4 @@ create_per_interval_per_lookup_cc_dict()
 #                 print (stem + " " + str(curr_json[interval]['TfList'][i]))
 
 # create_tf_dict_for_processed_docs()
-create_per_interval_per_lookup_df_dict()
+# create_per_interval_per_lookup_df_dict()
