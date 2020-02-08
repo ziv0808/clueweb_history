@@ -268,6 +268,7 @@ def create_stats_data_frame_for_snapshot_changes(
                                                       str(clueweb_from_document_stem_diff),per_term_query_ratio_mean,
                                                       len(query_to_stem_mapping[query_num])]
                         next_index += 1
+                prev_interval = interval
     summary_df.to_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + sim_folder_name + '.tsv',
                             sep='\t', index=False)
 
