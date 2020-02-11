@@ -259,10 +259,16 @@ def create_stats_data_frame_for_snapshot_changes(
                     if docno in query_to_docno_mapping[query_num]:
                         query_word_num = 0
                         per_term_query_ratio_mean = 0.0
-                        for j in range(len(doc_json[interval]['StemList'])):
-                            if doc_json[interval]['StemList'][j] in query_to_stem_mapping[query_num]:
-                                query_word_num += doc_json[interval]['TfList'][j]
-                                per_term_query_ratio_mean += float(doc_json[interval]['TfList'][j])/txt_len
+                        if 'TfDict' in doc_json[interval]:
+                            for term_ in query_to_stem_mapping[query_num]:
+                                if term_ in doc_json[interval]['TfDict']:
+                                    query_word_num += doc_json[interval]['TfDict'][term_]
+                                    per_term_query_ratio_mean += float(doc_json[interval]['TfDict'][term_]) / txt_len
+                        else:
+                            for j in range(len(doc_json[interval]['StemList'])):
+                                if doc_json[interval]['StemList'][j] in query_to_stem_mapping[query_num]:
+                                    query_word_num += doc_json[interval]['TfList'][j]
+                                    per_term_query_ratio_mean += float(doc_json[interval]['TfList'][j])/txt_len
                         per_term_query_ratio_mean = per_term_query_ratio_mean/float(len(query_to_stem_mapping[query_num]))
                         summary_df.loc[next_index] = [docno, interval, prev_interval, query_num,
                                                       txt_len, num_stop_words, query_word_num, entropy,
@@ -496,7 +502,7 @@ def create_snapshot_changes_stats_plots(
     print(no_clueweb_df['SimToClueWeb'].mean())
     print("Med not ClueWeb09 SimToClueWeb:")
     print(no_clueweb_df['SimToClueWeb'].median())
-
+    sys.stdout.flush()
     all_docno_and_queries_df = work_df[['Docno', 'QueryNum']].drop_duplicates()
     only_clueweb_num = 0
 
@@ -624,10 +630,12 @@ if __name__ == '__main__':
     if operation == 'TFDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
         create_tf_dict_for_processed_docs(work_interval_freq_list=interval_freq_list)
+
     elif operation == 'CCDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
         already_exists = ast.literal_eval(sys.argv[3])
         create_per_interval_per_lookup_cc_dict(work_interval_freq_list=interval_freq_list, already_exists=already_exists)
+
     elif operation == 'DFDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
         already_exists = ast.literal_eval(sys.argv[3])
@@ -642,7 +650,7 @@ if __name__ == '__main__':
         sim_threshold = float(sys.argv[3])
         sim_folder_name = sys.argv[4]
         create_similarity_interval(from_interval_size=from_int_size,sim_threshold=sim_threshold,sim_folder_name=sim_folder_name)
-        
+
     elif operation == 'PlotStatsDF':
         filename = sys.argv[2]
         create_snapshot_changes_stats_plots(filename=filename)
