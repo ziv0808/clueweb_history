@@ -628,8 +628,10 @@ def create_snapshot_changes_stats_plots(
 def plot_retrival_stats(
         lookup_method,
         interval_freq,
-        comp_queries_list,
-        filename):
+        filename,
+        comp_queries_list=[195, 193, 188, 180, 177, 161, 144, 59, 51, 45, 36, 34, 32, 29, 11, 10,
+                           9, 2, 78, 4, 167, 69, 166, 33, 164, 18, 182, 17, 98, 124, 48]
+        ):
 
     work_df = pd.read_csv(
         os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/', filename), sep='\t',
