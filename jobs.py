@@ -625,6 +625,68 @@ def create_snapshot_changes_stats_plots(
             plt.savefig(measure + filename + "_Precentage_Difference_per_interval_For_Paper.png", dpi=300)
 
 
+def plot_retrival_stats(
+        lookup_method,
+        interval_freq,
+        comp_queries_list,
+        filename):
+
+    work_df = pd.read_csv(
+        os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/', filename), sep='\t',
+        index_col=False)
+    work_df['IsCompQuery'] = work_df['Query_Num'].apply(lambda x: 1 if x in comp_queries_list else 0)
+    if interval_freq.startswith('SIM'):
+        work_df['Interval'] = work_df['Interval'].apply(lambda x: 0 if x == 'ClueWeb09' else int(x))
+
+    save_df = pd.DataFrame({})
+    for measure in ['Map', 'P@5', 'P@10', 'Overlap@5_ClueWeb', 'Overlap@5_Last', 'RBO_0.95_Ext_ClueWeb',
+                    'RBO_0.975_Ext_ClueWeb', 'RBO_0.99_Ext_ClueWeb', 'RBO_0.95_Ext_Last', 'RBO_0.975_Ext_Last',
+                    'RBO_0.99_Ext_Last']:
+        plt.cla()
+        plt.clf()
+        plot_df = work_df[['Interval', measure]].groupby(['Interval']).mean()
+        plot_df.rename(columns={measure: 'ALL'}, inplace=True)
+        plot_df_ = work_df[work_df['IsCompQuery'] == 1][['Interval', measure]].groupby(['Interval']).mean()
+        plot_df_.rename(columns={measure: 'Comp Queries'}, inplace=True)
+        plot_df = pd.merge(
+            plot_df,
+            plot_df_,
+            left_index=True,
+            right_index=True)
+        plot_df_ = work_df[work_df['IsCompQuery'] == 0][['Interval', measure]].groupby(['Interval']).mean()
+        plot_df_.rename(columns={measure: 'Non Comp'}, inplace=True)
+        plot_df = pd.merge(
+            plot_df,
+            plot_df_,
+            left_index=True,
+            right_index=True)
+        measure = measure.replace('Ext_', '')
+
+        plot_df.plot(kind='bar')
+        plt.xlabel('Interval')
+        plt.tick_params(axis='x', labelsize=6)
+        plt.xticks(rotation=45)
+        plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        plt.subplots_adjust(right=0.75, bottom=0.15)
+
+        plt.ylabel(measure)
+        plt.title(lookup_method + " Mean " + measure)
+
+        plt.savefig(filename.replace('.tsv', '') + measure + "_per_interval.png", dpi=300)
+        for col in list(plot_df.columns):
+            plot_df.rename(columns={col: measure + ' ' + col}, inplace=True)
+        if save_df.empty == True:
+            save_df = plot_df
+        else:
+            save_df = pd.merge(
+                save_df,
+                plot_df,
+                left_index=True,
+                right_index=True)
+    # save_df.to_csv(os.path.join('plot_df', afix + interval_freq + '_' + lookup_method + addition + '_Retrival_Stats.tsv'),
+    #                sep='\t')
+
+
 if __name__ == '__main__':
     operation = sys.argv[1]
     if operation == 'TFDict':
@@ -655,6 +717,20 @@ if __name__ == '__main__':
         filename = sys.argv[2]
         create_snapshot_changes_stats_plots(filename=filename)
 
+    elif operation == 'PlotAllRetStats':
+        for filename in os.listdir('/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/'):
+            if filename.endswith('.tsv'):
+                file_lookup = ""
+                for lookup in ["NoLookup", "OnlyBackward", "Backward", "Forward"]:
+                    if lookup in filename:
+                        file_lookup = lookup
+                        break
+                int_freq = ""
+                for freq in ["1W", "2W", "1M", "2M", "SIM"]:
+                    if filename.startswith(freq) or filename.replace("BM25_","").startswith(freq):
+                        int_freq = freq
+                        break
+                plot_retrival_stats(filename=filename, interval_freq=int_freq, lookup_method=file_lookup)
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
