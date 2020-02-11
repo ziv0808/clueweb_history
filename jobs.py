@@ -639,9 +639,7 @@ def plot_retrival_stats(
         work_df['Interval'] = work_df['Interval'].apply(lambda x: 0 if x == 'ClueWeb09' else int(x))
 
     save_df = pd.DataFrame({})
-    for measure in ['Map', 'P@5', 'P@10', 'Overlap@5_ClueWeb', 'Overlap@5_Last', 'RBO_0.95_Ext_ClueWeb',
-                    'RBO_0.975_Ext_ClueWeb', 'RBO_0.99_Ext_ClueWeb', 'RBO_0.95_Ext_Last', 'RBO_0.975_Ext_Last',
-                    'RBO_0.99_Ext_Last']:
+    for measure in ['Map', 'P@5', 'P@10']:
         plt.cla()
         plt.clf()
         plot_df = work_df[['Interval', measure]].groupby(['Interval']).mean()
