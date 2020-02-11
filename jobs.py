@@ -453,7 +453,7 @@ def create_text_manipulated_interval(
                 f.write(str(res_dict))
 
 
-def create_snapshot_changes_stats(
+def create_snapshot_changes_stats_plots(
         filename='Summay_snapshot_stats_1W.tsv',
         comp_queries_list=[195, 193, 188, 180, 177, 161, 144, 59, 51, 45, 36, 34, 32, 29, 11, 10,
                            9, 2, 78, 4, 167, 69, 166, 33, 164, 18, 182, 17, 98, 124, 48],
@@ -461,7 +461,7 @@ def create_snapshot_changes_stats(
         for_paper=True):
     filename_for_save = filename.replace('.tsv', '').replace('Summay_snapshot_stats_', '')
 
-    work_df = pd.read_csv(os.path.join('dfs', filename), sep='\t', index_col=False)
+    work_df = pd.read_csv(os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/', filename), sep='\t', index_col=False)
     if only_relevant_docs == True:
         rel_df = pd.read_csv('qrels_adhoc_relevant_docs.tsv', sep='\t', index_col=False)
         rel_df['Relevance'] = rel_df['Relevance'].apply(lambda x: int(x))
@@ -538,7 +538,7 @@ def create_snapshot_changes_stats(
 
     exact_mathch_df = work_df[work_df['Interval'] != 'ClueWeb09'].copy()
     exact_mathch_df = exact_mathch_df[exact_mathch_df['SimToClueWeb'] == 1.0][['Docno']].drop_duplicates()
-    exact_mathch_df.to_csv(filename.replace('.tsv', '_Exact_matched_docnos.tsv'), sep='\t', index=False)
+    # exact_mathch_df.to_csv(filename.replace('.tsv', '_Exact_matched_docnos.tsv'), sep='\t', index=False)
     print("Num of one snapshot:")
     print(only_clueweb_num)
     print("Num of Exact Match:")
@@ -601,7 +601,7 @@ def create_snapshot_changes_stats(
             plt.title("Mean " + measure)
 
         plt.savefig(measure + filename + "_Precentage_Difference_per_interval.png", dpi=300)
-        plot_df.to_csv(os.path.join('plot_df', filename_for_save + '_' + measure + '.tsv'), sep='\t')
+        # plot_df.to_csv(os.path.join('plot_df', filename_for_save + '_' + measure + '.tsv'), sep='\t')
         if for_paper == True:
             plt.cla()
             plt.clf()
@@ -642,7 +642,12 @@ if __name__ == '__main__':
         sim_threshold = float(sys.argv[3])
         sim_folder_name = sys.argv[4]
         create_similarity_interval(from_interval_size=from_int_size,sim_threshold=sim_threshold,sim_folder_name=sim_folder_name)
-# create_text_manipulated_interval(
+        
+    elif operation == 'PlotStatsDF':
+        filename = sys.argv[2]
+        create_snapshot_changes_stats_plots(filename=filename)
+
+        # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
 #     fill_to_clueweb_len=True)
