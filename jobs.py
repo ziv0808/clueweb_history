@@ -728,6 +728,8 @@ if __name__ == '__main__':
                     if filename.startswith(freq) or filename.replace("BM25_","").startswith(freq):
                         int_freq = freq
                         break
+                if int_freq == "" or file_lookup == "":
+                    raise  Exception("Prob!")
                 plot_retrival_stats(filename=filename, interval_freq=int_freq, lookup_method=file_lookup)
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
