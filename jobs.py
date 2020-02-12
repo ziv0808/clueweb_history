@@ -481,8 +481,8 @@ def create_snapshot_changes_stats_plots(
         filename = filename.replace('.tsv', '_Relvant_only.tsv')
         filename_for_save += '_Relvant_only'
     # calc ratio measures
-    work_df['QueryTermsRatio'] = work_df.apply(lambda row: row['QueryWords'] / (row['TextLen'] - row['QueryWords']), axis=1)
-    work_df['StopwordsRatio'] = work_df.apply(lambda row: row['#Stopword'] / (row['TextLen'] - row['#Stopword']), axis=1)
+    work_df['QueryTermsRatio'] = work_df.apply(lambda row: row['QueryWords'] / float(row['TextLen'] - row['QueryWords']), axis=1)
+    work_df['StopwordsRatio'] = work_df.apply(lambda row: row['#Stopword'] / float(row['TextLen'] - row['#Stopword']), axis=1)
     no_clueweb_df = work_df[work_df['Interval'] != 'ClueWeb09'].copy()
     clueweb_df = work_df[work_df['Interval'] == 'ClueWeb09'].copy()
 
