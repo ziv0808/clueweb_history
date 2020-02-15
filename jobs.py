@@ -874,7 +874,7 @@ if __name__ == '__main__':
         filename = sys.argv[2]
         interval_freq = sys.argv[3]
         lookup_method = sys.argv[4]
-        plot_stats_vs_winner_plots_for_wl_file(filename=filename,interval_freq=interval_freq, lookup_method=lookup_method)
+        plot_stats_vs_winner_plots_for_wl_file(file_name=filename,interval_freq=interval_freq, lookup_method=lookup_method)
 
     elif operation == 'PlotAllRetStats':
         for filename in os.listdir('/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/'):
