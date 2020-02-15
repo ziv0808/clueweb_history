@@ -629,8 +629,7 @@ def plot_retrival_stats(
         lookup_method,
         interval_freq,
         filename,
-        comp_queries_list=[195, 193, 188, 180, 177, 161, 144, 59, 51, 45, 36, 34, 32, 29, 11, 10,
-                           9, 2, 78, 4, 167, 69, 166, 33, 164, 18, 182, 17, 98, 124, 48]
+        comp_queries_list=ccc
         ):
 
     work_df = pd.read_csv(
@@ -687,6 +686,159 @@ def plot_retrival_stats(
     #                sep='\t')
 
 
+def plot_stats_vs_winner_plots_for_wl_file(
+        file_name,
+        comp_queries_list=[195, 193, 188, 180, 177, 161, 144, 59, 51, 45, 36, 34, 32, 29, 11, 10,
+                           9, 2, 78, 4, 167, 69, 166, 33, 164, 18, 182, 17, 98, 124, 48],
+        interval_freq='2M',
+        lookup_method='NoLookup',
+        only_relevant_docs=False,
+        for_paper=True):
+
+
+    work_df = pd.read_csv(file_name, sep='\t', index_col=False)
+
+    if only_relevant_docs == True:
+        rel_df = pd.read_csv('qrels_adhoc_relevant_docs.tsv', sep='\t', index_col=False)
+        rel_df['Relevance'] = rel_df['Relevance'].apply(lambda x: int(x))
+        rel_df = rel_df[rel_df['Relevance'] > 0]
+        work_df = pd.merge(
+            work_df,
+            rel_df[['Docno', 'Query']].rename(columns={'Query': 'QueryNum'}),
+            on=['Docno', 'QueryNum'],
+            how='inner')
+        print("Len after relevant filter " + str(len(work_df)))
+        file_name = file_name.replace('.tsv', '_Relvant_only.tsv')
+
+    winner_df = work_df[work_df['Winner'] == True]
+    non_winner_df = work_df[work_df['Winner'] == False]
+
+    work_df['IsCompQuery'] = work_df['QueryNum'].apply(lambda x: 1 if x in comp_queries_list else 0)
+    comp_df = work_df[work_df['IsCompQuery'] == 1]
+    comp_winner_df = comp_df[comp_df['Winner'] == True]
+    comp_non_winner_df = comp_df[comp_df['Winner'] == False]
+
+    plt.cla()
+    plt.clf()
+
+    # add non/winner df docnos round zero scores
+    # add won in round 0 df to plot
+    round_0_winner_df = work_df[work_df['Round'] == 0]
+    round_0_winner_df = round_0_winner_df[round_0_winner_df['Winner'] == True]
+    for index, row in round_0_winner_df.iterrows():
+        winner_doc_df = work_df[work_df['Docno'] == row['Docno']].copy()
+        winner_doc_df = winner_doc_df[winner_doc_df['QueryNum'] == row['QueryNum']]
+        winner_doc_df = winner_doc_df[winner_doc_df['Round'] < row['Round']]
+        round_0_winner_df = round_0_winner_df.append(winner_doc_df, ignore_index=True)
+
+    comp_round_0_winner_df = comp_df[comp_df['Round'] == 0]
+    comp_round_0_winner_df = comp_round_0_winner_df[comp_round_0_winner_df['Winner'] == True]
+    for index, row in comp_round_0_winner_df.iterrows():
+        winner_doc_df = comp_df[comp_df['Docno'] == row['Docno']].copy()
+        winner_doc_df = winner_doc_df[winner_doc_df['QueryNum'] == row['QueryNum']]
+        winner_doc_df = winner_doc_df[winner_doc_df['Round'] < row['Round']]
+        comp_round_0_winner_df = comp_round_0_winner_df.append(winner_doc_df, ignore_index=True)
+
+    winner_df = work_df[work_df['Trend'] == 'W']
+    winner_docs = list(winner_df['Docno'].drop_duplicates())
+    round_0_w_df = work_df[work_df['Round'] == 0]
+    round_0_w_df['filter'] = round_0_w_df['Docno'].apply(lambda x: True if x not in winner_docs else False)
+    round_0_w_df = round_0_w_df[round_0_w_df['filter'] == False]
+    del round_0_w_df['filter']
+    winner_df = winner_df.append(round_0_w_df, ignore_index=True)
+
+    non_winner_df = work_df[work_df['Trend'] == 'L']
+    loser_docs = list(non_winner_df['Docno'].drop_duplicates())
+    round_0_l_df = work_df[work_df['Round'] == 0]
+    round_0_l_df['filter'] = round_0_l_df['Docno'].apply(lambda x: True if x not in loser_docs else False)
+    round_0_l_df = round_0_l_df[round_0_l_df['filter'] == False]
+    del round_0_l_df['filter']
+    non_winner_df = non_winner_df.append(round_0_l_df, ignore_index=True)
+
+    comp_winner_df = comp_df[comp_df['Trend'] == 'W']
+    winner_docs = list(comp_winner_df['Docno'].drop_duplicates())
+    round_0_w_df = comp_df[comp_df['Round'] == 0]
+    round_0_w_df['filter'] = round_0_w_df['Docno'].apply(lambda x: True if x not in winner_docs else False)
+    round_0_w_df = round_0_w_df[round_0_w_df['filter'] == False]
+    del round_0_w_df['filter']
+    comp_winner_df = comp_winner_df.append(round_0_w_df, ignore_index=True)
+
+    comp_non_winner_df = comp_df[comp_df['Trend'] == 'L']
+    loser_docs = list(comp_non_winner_df['Docno'].drop_duplicates())
+    round_0_l_df = comp_df[comp_df['Round'] == 0]
+    round_0_l_df['filter'] = round_0_l_df['Docno'].apply(lambda x: True if x not in loser_docs else False)
+    round_0_l_df = round_0_l_df[round_0_l_df['filter'] == False]
+    del round_0_l_df['filter']
+    comp_non_winner_df = comp_non_winner_df.append(round_0_l_df, ignore_index=True)
+
+    n_plots = 2
+    f, axarr = plt.subplots(n_plots, n_plots)
+    idx_r = 0
+    idx_c = 0
+    for measure in ['Sim_PW', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy']:  # Sim_PW
+        plot_df = winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='b', label='ALL_Up')
+        plot_df = non_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='b', linestyle='--', label='ALL_Down')
+        plot_df = round_0_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='b', linestyle=':', label='ALL_Winner',
+                                 alpha=0.7)
+
+        plot_df = comp_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='r', label='Comp_Up')
+        plot_df = comp_non_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='r', linestyle='--', label='Comp_Down')
+        plot_df = comp_round_0_winner_df[['Round', measure]].groupby(['Round']).mean()
+        plot_df = plot_df.reset_index()
+        axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='r', linestyle=':', label='Comp_Winner',
+                                 alpha=0.7)
+        axarr[idx_r, idx_c].set_title(measure)
+
+        if idx_r == (n_plots - 1):
+            idx_r = 0
+            idx_c += 1
+            continue
+
+        idx_r += 1
+
+    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.subplots_adjust(right=0.75)
+    print(file_name)
+    plt.savefig(file_name.replace('.tsv', '_WL.png'), dpi=300)
+    if for_paper == True:
+        n_plots = 2
+        f, axarr = plt.subplots(n_plots, n_plots)
+        idx_r = 0
+        idx_c = 0
+        for measure in ['Sim_PW', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy']:  # Sim_PW
+            plot_df = winner_df[['Round', measure]].groupby(['Round']).mean()
+            plot_df = plot_df.reset_index()
+            axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='b', marker='o', label='H', alpha=0.7)
+            plot_df = non_winner_df[['Round', measure]].groupby(['Round']).mean()
+            plot_df = plot_df.reset_index()
+            axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='r', marker='o', label='L', alpha=0.7)
+            plot_df = round_0_winner_df[['Round', measure]].groupby(['Round']).mean()
+            plot_df = plot_df.reset_index()
+            axarr[idx_r, idx_c].plot(plot_df['Round'], plot_df[measure], color='k', marker='o', label='W',
+                                     alpha=0.7)
+            axarr[idx_r, idx_c].set_title(measure.replace("_", ""), fontsize=10)
+            axarr[idx_r, idx_c].tick_params(axis='x', labelsize=6)
+            if idx_r == (n_plots - 1):
+                idx_r = 0
+                idx_c += 1
+                continue
+
+            idx_r += 1
+        plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        plt.subplots_adjust(right=0.75)
+        plt.savefig(interval_freq + "_" + lookup_method + "_WL_STATS.png", dpi=300)
+
+
 if __name__ == '__main__':
     operation = sys.argv[1]
     if operation == 'TFDict':
@@ -716,6 +868,12 @@ if __name__ == '__main__':
     elif operation == 'PlotStatsDF':
         filename = sys.argv[2]
         create_snapshot_changes_stats_plots(filename=filename)
+
+    elif operation == 'PlotWLDF':
+        filename = sys.argv[2]
+        interval_freq = sys.argv[3]
+        lookup_method = sys.argv[4]
+        plot_stats_vs_winner_plots_for_wl_file(filename=filename,interval_freq=interval_freq, lookup_method=lookup_method)
 
     elif operation == 'PlotAllRetStats':
         for filename in os.listdir('/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/'):
