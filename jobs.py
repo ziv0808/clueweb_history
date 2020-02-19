@@ -210,8 +210,15 @@ def create_similarity_interval(
 
 def create_stats_data_frame_for_snapshot_changes(
         work_year='2008',
-        sim_folder_name="SIM"):
-    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+        sim_folder_name="SIM",
+        inner_fold = ""):
+
+    if inner_fold == "":
+        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+    else:
+        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/2008/'
+
+    # processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
     summary_df = pd.DataFrame(
         columns=['Docno', 'Interval', 'PrevValidInterval', 'QueryNum', 'TextLen', '#Stopword', 'QueryWords',
                  'Entropy', 'SimToClueWeb', 'SimToPrev', 'SimToClosePrev',
@@ -862,7 +869,8 @@ if __name__ == '__main__':
                                                already_exists=already_exists)
     elif operation == 'StatsDF':
         sim_folder_name = sys.argv[2]
-        create_stats_data_frame_for_snapshot_changes(sim_folder_name=sim_folder_name)
+        inner_fold      = sys.argv[3]
+        create_stats_data_frame_for_snapshot_changes(sim_folder_name=sim_folder_name, inner_fold=inner_fold)
 
     elif operation == 'SimInterva':
         from_int_size = sys.argv[2]
