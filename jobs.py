@@ -156,7 +156,8 @@ def create_similarity_interval(
         from_interval_size='1W',
         sim_threshold = 0.995,
         work_year = '2008',
-        sim_folder_name = "SIM_995"):
+        sim_folder_name = "SIM_995",
+        inner_fold  = ""):
 
     time_interval_list = build_interval_list(
         work_year=work_year,
@@ -168,7 +169,10 @@ def create_similarity_interval(
         frequency="SIM",
         add_clueweb= True)
 
-    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+    if inner_fold == "":
+        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+    else:
+        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/2008/'
 
     for file_name in os.listdir(os.path.join(processed_docs_folder, from_interval_size)):
         if file_name.startswith('clueweb09') and file_name.endswith('.json'):
@@ -875,6 +879,12 @@ if __name__ == '__main__':
         interval_freq = sys.argv[3]
         lookup_method = sys.argv[4]
         plot_stats_vs_winner_plots_for_wl_file(file_name=filename,interval_freq=interval_freq, lookup_method=lookup_method)
+
+    elif operation == "SIMInterval":
+        sim_thresold = float(sys.argv[2])
+        sim_folder_name = sys.argv[3]
+        inner_fold = sys.argv[4]
+        create_similarity_interval(sim_threshold=sim_thresold,sim_folder_name=sim_folder_name, inner_fold=inner_fold)
 
     elif operation == 'PlotAllRetStats':
         for filename in os.listdir('/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/'):
