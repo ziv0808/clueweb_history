@@ -963,11 +963,11 @@ if __name__ == '__main__':
 
     elif operation == 'SWCCDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
-        add_stopword_stats_to_cc_dict(work_interval_freq_list=interval_freq_list)
+        add_stopword_stats_to_cc_dict(interval_freq_list=interval_freq_list)
 
     elif operation == 'SWDFDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
-        add_stopword_stats_to_df_dict(work_interval_freq_list=interval_freq_list)
+        add_stopword_stats_to_df_dict(interval_freq_list=interval_freq_list)
 
     elif operation == 'StatsDF':
         sim_folder_name = sys.argv[2]
