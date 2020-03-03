@@ -13,7 +13,8 @@ def score_doc_for_query(
         query_stem_dict,
         cc_dict,
         doc_dict,
-        mue):
+        mue,
+        sw_rmv):
 
     kl_score = 0.0
     work_stem_list = list(query_stem_dict.keys())
@@ -40,13 +41,20 @@ def score_doc_for_query(
             query_tf = query_stem_dict[stem]
 
         stem_q_prob = float(query_tf)/sum(list(query_stem_dict.values()))
-
-        stem_d_proba = get_word_diriclet_smoothed_probability(
-            tf_in_doc = doc_stem_tf,
-            doc_len = doc_dict['NumWords'],
-            collection_count_for_word=cc_dict[stem],
-            collection_len=cc_dict['ALL_TERMS_COUNT'],
-            mue=mue)
+        if sw_rmv == True:
+            stem_d_proba = get_word_diriclet_smoothed_probability(
+                tf_in_doc=doc_stem_tf,
+                doc_len=(doc_dict['NumWords'] - doc_dict['NumStopWords']),
+                collection_count_for_word=cc_dict[stem],
+                collection_len=(cc_dict['ALL_TERMS_COUNT'] - cc_dict['ALL_SW_COUNT']),
+                mue=mue)
+        else:
+            stem_d_proba = get_word_diriclet_smoothed_probability(
+                tf_in_doc = doc_stem_tf,
+                doc_len = doc_dict['NumWords'],
+                collection_count_for_word=cc_dict[stem],
+                collection_len=cc_dict['ALL_TERMS_COUNT'],
+                mue=mue)
 
         kl_score += (-1)*stem_q_prob*(math.log((stem_q_prob/stem_d_proba) , 2))
 
@@ -63,7 +71,8 @@ def get_scored_df_for_query(
         cc_dict,
         mue,
         amount_of_snapshot_limit,
-        filter_params):
+        filter_params,
+        sw_rmv):
 
     res_df= pd.DataFrame(columns = ['Query_ID','Iteration', 'Docno', 'Rank', 'Score', 'Method'])
     next_index = 0
@@ -91,7 +100,8 @@ def get_scored_df_for_query(
             query_stem_dict=query_dict,
             cc_dict=cc_dict,
             doc_dict=doc_interval_dict,
-            mue=mue)
+            mue=mue,
+            sw_rmv=sw_rmv)
         res_df.loc[next_index] = ["0"*(3 - len(str(query_num)))+ str(query_num), 'Q0', docno, 0, doc_score, 'indri']
         next_index += 1
     if res_df.empty == False:
@@ -106,7 +116,8 @@ if __name__=='__main__':
     interval_start_month = int(sys.argv[3])
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[4])
     filter_params = ast.literal_eval(sys.argv[5])
-    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
+    sw_rmv = ast.literal_eval(sys.argv[6])
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+INNER_FOLD+'/2008/' +frequency + '/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
     addition = ""
     print('Interval Feaq: ' + frequency)
@@ -120,6 +131,9 @@ if __name__=='__main__':
 
     if filter_params is not None and len(filter_params) > 0:
         addition += create_filter_params_txt_addition(filter_params)
+
+    if sw_rmv == True:
+        addition += "_SW_RMV"
 
     mue = 1000.0
     interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=interval_start_month)
@@ -158,7 +172,8 @@ if __name__=='__main__':
                 cc_dict=cc_dict[interval_list[j]],
                 mue=mue,
                 amount_of_snapshot_limit=amount_of_snapshot_limit,
-                filter_params=filter_params)
+                filter_params=filter_params,
+                sw_rmv=sw_rmv)
 
             with open(os.path.join(save_folder, str(query_num) + "_" + frequency + '_' + str(interval_list[j] + "_" + interval_lookup_method + addition +"_Results.txt")), 'w') as f:
                 f.write(convert_df_to_trec(res_df))

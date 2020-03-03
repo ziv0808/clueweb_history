@@ -14,7 +14,8 @@ def score_doc_for_query(
         df_dict,
         doc_dict,
         k1,
-        b):
+        b,
+        sw_rmv):
 
     bm25_score = 0.0
     work_stem_list = list(query_stem_dict.keys())
@@ -31,7 +32,10 @@ def score_doc_for_query(
 
 
         idf = math.log(df_dict['ALL_DOCS_COUNT'] / float(df_dict[stem]) , 10)
-        stem_d_proba = (doc_stem_tf * (k1 + 1)) / (doc_stem_tf + k1*((1-b) + b*(float(doc_dict['NumWords'])/df_dict['AVG_DOC_LEN']) ))
+        if sw_rmv == True:
+            stem_d_proba = (doc_stem_tf * (k1 + 1)) / (doc_stem_tf + k1 * ((1 - b) + b * (float(doc_dict['NumWords'] - doc_dict['NumStopWords']) / df_dict['AVG_DOC_LEN_NO_SW'])))
+        else:
+            stem_d_proba = (doc_stem_tf * (k1 + 1)) / (doc_stem_tf + k1*((1-b) + b*(float(doc_dict['NumWords'])/df_dict['AVG_DOC_LEN']) ))
 
         bm25_score += idf * stem_d_proba
 
@@ -49,7 +53,8 @@ def get_scored_df_for_query(
         k1,
         b,
         amount_of_snapshot_limit,
-        filter_params):
+        filter_params,
+        sw_rmv):
 
     res_df= pd.DataFrame(columns = ['Query_ID','Iteration', 'Docno', 'Rank', 'Score', 'Method'])
     next_index = 0
@@ -78,7 +83,8 @@ def get_scored_df_for_query(
             df_dict=df_dict,
             doc_dict=doc_interval_dict,
             k1=k1,
-            b=b)
+            b=b,
+            sw_rmv=sw_rmv)
         res_df.loc[next_index] = ["0"*(3 - len(str(query_num)))+ str(query_num), 'Q0', docno, 0, doc_score, 'indri']
         next_index += 1
     if res_df.empty == False:
@@ -93,7 +99,8 @@ if __name__=='__main__':
     interval_start_month = int(sys.argv[3])
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[4])
     filter_params = ast.literal_eval(sys.argv[5])
-    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
+    sw_rmv = ast.literal_eval(sys.argv[6])
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+INNER_FOLD+'/2008/' +frequency + '/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
     addition = ""
     print('Interval Feaq: ' + frequency)
@@ -107,6 +114,9 @@ if __name__=='__main__':
 
     if filter_params is not None and len(filter_params) > 0:
         addition += create_filter_params_txt_addition(filter_params)
+
+    if sw_rmv == True:
+        addition += "_SW_RMV"
 
     k1 = 1
     b = 0.5
@@ -147,7 +157,8 @@ if __name__=='__main__':
                 k1=k1,
                 b=b,
                 amount_of_snapshot_limit=amount_of_snapshot_limit,
-                filter_params=filter_params)
+                filter_params=filter_params,
+                sw_rmv=sw_rmv)
 
             with open(os.path.join(save_folder, 'BM25_' + str(query_num) + "_" + frequency + '_' + str(interval_list[j] + "_" + interval_lookup_method + addition +"_Results.txt")), 'w') as f:
                 f.write(convert_df_to_trec(res_df))

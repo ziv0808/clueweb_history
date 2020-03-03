@@ -8,7 +8,7 @@ from scipy import spatial
 
 TREC_EVAL_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
 QRELS_FILE_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
-
+INNER_FOLD = '50_per_q'
 
 def build_interval_list(
         work_year,
@@ -175,7 +175,7 @@ def create_stemmed_queries_df(
     return pd.read_csv(stemmed_query_file, sep = '\t', index_col = False)
 
 def create_query_to_doc_mapping_df(
-        query_to_doc_mapping_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'):
+        query_to_doc_mapping_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+INNER_FOLD+'/all_urls_no_spam_filtered.tsv'):
     return pd.read_csv(query_to_doc_mapping_file, sep = '\t', index_col = False)
 
 def convert_str_to_bool(strng):
@@ -226,7 +226,7 @@ def get_ranking_effectiveness_for_res_file(
     return {'Map': map, 'P_5': p_5, 'P_10': p_10}
 
 def create_per_interval_cc_dict(
-        cc_dict_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/cc_per_interval_dict.json',
+        cc_dict_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+INNER_FOLD+'/cc_per_interval_dict.json',
         interval_freq = None,
         lookup_method = None):
 
@@ -241,7 +241,7 @@ def create_per_interval_cc_dict(
 
 
 def create_per_interval_df_dict(
-        cc_dict_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/df_per_interval_dict.json',
+        cc_dict_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+INNER_FOLD+'/df_per_interval_dict.json',
         interval_freq=None,
         lookup_method=None):
 
