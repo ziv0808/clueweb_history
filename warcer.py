@@ -122,7 +122,8 @@ def create_warc_record(
 def create_warc_files_for_time_interval(
         destination_folder,
         time_interval,
-        data_folder):
+        data_folder,
+        work_year):
 
     num_of_records_in_interval = 0
     folder_files_hirarcy_dict = {}
@@ -158,7 +159,7 @@ def create_warc_files_for_time_interval(
             print("Creating Warc For " +folder_name + '-' + file_name)
             warc_str = ""
             warc_info_id = str(uuid.uuid1())
-            warc_date = "2009-03-65T08:43:19-0800"
+            warc_date = str(int(work_year)+1) + "-03-65T08:43:19-0800"
             warc_str += create_warc_head(
                     warc_date=warc_date,
                     warc_info_id=warc_info_id)
@@ -213,7 +214,8 @@ if __name__ == '__main__':
         num_records, lost_records = create_warc_files_for_time_interval(
             destination_folder=destination_folder,
             time_interval=interval,
-            data_folder=data_folder)
+            data_folder=data_folder,
+            work_year=work_year)
 
         summary_df.loc[next_index] = [interval, num_records, lost_records]
         next_index += 1
