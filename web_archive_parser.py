@@ -9,8 +9,9 @@ import pandas as pd
 
 def get_history_links_for_url_web_api(
         docno,
-        url):
-    web_archive_main_url = "http://web.archive.org/cdx/search/cdx?url=" + url + "&output=txt&from=" + str(RUN_YEAR) + "&to=" + str(RUN_YEAR)
+        url,
+        run_year):
+    web_archive_main_url = "http://web.archive.org/cdx/search/cdx?url=" + url + "&output=txt&from=" + str(run_year) + "&to=" + str(run_year)
     for i in range(10):
         try:
             response = requests.get(web_archive_main_url)
@@ -38,18 +39,19 @@ def get_history_links_for_url_web_api(
 
 
 if __name__=='__main__':
-    RUN_YEAR = int(sys.argv[1])
-    init_query = int(sys.argv[2])
-    end_query = int(sys.argv[3])
-    print("Run Year: " + str(RUN_YEAR))
+    run_year = int(sys.argv[1])
+    url_file_sufix = sys.argv[2]
+    init_query = int(sys.argv[3])
+    end_query = int(sys.argv[4])
+    print("Run Year: " + str(run_year))
     print("From Query : " + str(init_query))
     print("Till Query : " + str(end_query))
     sys.stdout.flush()
     LOAD_FILE = None#"/lv_local/home/zivvasilisky/ziv/data/history_snapshots_2008.json"
-    save_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/data/history_snapshots/" + str(RUN_YEAR) + "/"
+    save_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/data/history_snapshots/" + str(run_year) + "/"
 
 
-    work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv', sep = '\t', index_col = False)
+    work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered'+url_file_sufix+'.tsv', sep = '\t', index_col = False)
     if LOAD_FILE is not None:
         with open(LOAD_FILE, 'r') as f:
             ref_json = json.load(f)
@@ -84,11 +86,11 @@ if __name__=='__main__':
         if row['Docno'] not in processed_json:
             try:
                 num_new_processed += 1
-                curr_json = get_history_links_for_url_web_api(row['Docno'] ,row['Url'])
+                curr_json = get_history_links_for_url_web_api(row['Docno'] ,row['Url'],run_year)
             except Exception as e:
                 try:
                     print(e)
-                    curr_json = get_history_links_for_url_web_api(row['Docno'], row['Url'])
+                    curr_json = get_history_links_for_url_web_api(row['Docno'], row['Url'],run_year)
                 except Exception as e:
                     print('Url:' + str(row['Url']) + " Needs retry")
                     work_df.set_value(index, 'Remark', "Needs Retry")
@@ -112,7 +114,7 @@ if __name__=='__main__':
         if num_processed % 3 == 0:
             print("Num Processed: " + str(num_processed))
             sys.stdout.flush()
-    work_df.to_csv(save_path + "all_urls_exrtacted_" + str(RUN_YEAR) + '_' + str(init_query) + '_' + str(end_query) + '.tsv', sep = '\t', index= False)
+    work_df.to_csv(save_path + "all_urls_exrtacted_" + str(run_year) + '_' + str(init_query) + '_' + str(end_query) + '.tsv', sep = '\t', index= False)
 
 
 
