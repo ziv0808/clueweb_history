@@ -116,8 +116,9 @@ def handle_docno_retrival(
 
 if __name__=='__main__':
     work_year = sys.argv[1]
-    init_query = int(sys.argv[2])
-    end_query = int(sys.argv[3])
+    url_file_sufix = sys.argv[2]
+    init_query = int(sys.argv[3])
+    end_query = int(sys.argv[4])
     print("Run Year: " + str(work_year))
     print("From Query : " + str(init_query))
     print("Till Query : " + str(end_query))
@@ -133,7 +134,7 @@ if __name__=='__main__':
     filename = os.path.join(resource_path, "history_snapshots_" + work_year + ".json")
     snapshot_files_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/data/history_snapshots/" + str(work_year) + "/"
 
-    work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv', sep='\t',
+    work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered'+url_file_sufix+'.tsv', sep='\t',
                           index_col=False)
     work_df['QueryInt'] = work_df['QueryNum'].apply(lambda x: int(x))
     work_df = work_df[work_df['QueryInt'] >= init_query]
