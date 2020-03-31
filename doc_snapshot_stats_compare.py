@@ -96,11 +96,16 @@ if __name__=='__main__':
     work_year = sys.argv[1]
     interval_freq = sys.argv[2]
     similarity_to_clueweb_threshold = 0.05
+    if work_year == '2011':
+        query_to_doc_file_addition = "_cw12"
+    else:
+        query_to_doc_file_addition = ""
+
     doc_vector_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/document_vectors/' + work_year + '/'
     stop_word_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Stop_Words'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/' + interval_freq +'/'
     query_stem_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Query_Words'
-    query_to_doc_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered.tsv'
+    query_to_doc_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/all_urls_no_spam_filtered'+query_to_doc_file_addition+'.tsv'
 
     df_query_to_doc = pd.read_csv(query_to_doc_file, sep = '\t', index_col= False)
     df_query_stems = pd.read_csv(query_stem_file, sep = '\t', index_col= False)
@@ -132,7 +137,7 @@ if __name__=='__main__':
 
     print(stopword_list, len(stopword_list))
     for file_name in os.listdir(doc_vector_folder):
-        if file_name.startswith('clueweb09') and not file_name.endswith('.json'):
+        if file_name.startswith('clueweb') and not file_name.endswith('.json'):
             print (file_name)
             sys.stdout.flush()
             doc_json = create_doc_json(doc_vector_folder, file_name, stopword_list)
@@ -179,7 +184,7 @@ if __name__=='__main__':
                 sim_to_close_prev   = None
                 if prev_interval is not None:
                     sim_to_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
-                    if (pd.to_datetime(interval.replace('ClueWeb09', '2009-01-01')) - pd.to_datetime(prev_interval)).days <= 31:
+                    if (pd.to_datetime(interval.replace('ClueWeb09', str(int(work_year)+1)+'-01-01')) - pd.to_datetime(prev_interval)).days <= 31:
                         sim_to_close_prev = calc_cosine(doc_json[interval]['TfIdf'], doc_json[prev_interval]['TfIdf'])
                 curr_document_stem_set = set(doc_json[interval]['StemList'])
                 clueweb_document_stem_set = set(doc_json['ClueWeb09']['StemList'])
