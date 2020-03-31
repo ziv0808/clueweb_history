@@ -170,12 +170,12 @@ def create_similarity_interval(
         add_clueweb= True)
 
     if inner_fold == "":
-        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+work_year+'/'
     else:
-        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/2008/'
+        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/'+work_year+'/'
 
     for file_name in os.listdir(os.path.join(processed_docs_folder, from_interval_size)):
-        if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+        if file_name.startswith('clueweb') and file_name.endswith('.json'):
             with open(os.path.join(os.path.join(processed_docs_folder, from_interval_size),file_name), 'r') as f:
                 doc_dict = ast.literal_eval(f.read())
             print(file_name)
@@ -214,9 +214,9 @@ def create_stats_data_frame_for_snapshot_changes(
         inner_fold = ""):
 
     if inner_fold == "":
-        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+work_year+'/'
     else:
-        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/2008/'
+        processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/'+work_year+'/'
 
     # processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
     summary_df = pd.DataFrame(
@@ -243,7 +243,7 @@ def create_stats_data_frame_for_snapshot_changes(
 
     interval_ordered_list = build_interval_list(work_year, sim_folder_name, add_clueweb=True)
     for file_name in os.listdir(os.path.join(processed_docs_folder, sim_folder_name)):
-        if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+        if file_name.startswith('clueweb') and file_name.endswith('.json'):
             with open(os.path.join(os.path.join(processed_docs_folder, sim_folder_name), file_name), 'r') as f:
                 doc_json = ast.literal_eval(f.read())
             print(file_name)
@@ -297,13 +297,13 @@ def create_tf_dict_for_processed_docs(
         work_interval_freq_list = ['2W','1W', '1M', '2M'],# 'SIM', 'SIM_995'],
         work_year = '2008'):
 
-    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/'
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+work_year+'/'
 
     for interval_freq in work_interval_freq_list:
         print(interval_freq)
         sys.stdout.flush()
         for file_name in os.listdir(os.path.join(processed_docs_folder, interval_freq)):
-            if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+            if file_name.startswith('clueweb') and file_name.endswith('.json'):
                 with open(os.path.join(os.path.join(processed_docs_folder, interval_freq), file_name), 'r') as f:
                     doc_dict = ast.literal_eval(f.read())
                 print(file_name)
@@ -425,7 +425,7 @@ def create_text_manipulated_interval(
     stopword_list = get_stopword_list()
 
     for file_name in os.listdir(processed_docs_input_path):
-        if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+        if file_name.startswith('clueweb') and file_name.endswith('.json'):
             print(file_name)
             sys.stdout.flush()
             res_dict = {}
@@ -899,7 +899,8 @@ def add_stopword_stats_to_cc_dict(
 def add_stopword_stats_to_df_dict(
         interval_freq_list,
         lookup_method_list=['NoLookup', 'Backward', 'OnlyBackward', 'Forward'],
-        inner_fold='50_per_q'):
+        inner_fold='50_per_q',
+        work_year='2008'):
 
     with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/df_per_interval_dict.json', 'r') as f:
         res_dict = ast.literal_eval(f.read())
@@ -908,11 +909,11 @@ def add_stopword_stats_to_df_dict(
         print(interval_freq)
         sys.stdout.flush()
         curr_interval_list = build_interval_list(
-            work_year='2008',
+            work_year=work_year,
             frequency=interval_freq,
             add_clueweb=True)
         processed_docs_path = os.path.join(
-            '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/2008/',
+            '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/'+work_year+'/',
             interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
@@ -921,7 +922,7 @@ def add_stopword_stats_to_df_dict(
                 res_dict[interval_freq][lookup_method][interval]['AVG_DOC_LEN_NO_SW'] = 0
 
             for file_name in os.listdir(processed_docs_path):
-                if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+                if file_name.startswith('clueweb') and file_name.endswith('.json'):
                     print(file_name)
                     sys.stdout.flush()
                     with open(os.path.join(processed_docs_path, file_name), 'r') as f:
@@ -948,7 +949,8 @@ if __name__ == '__main__':
     operation = sys.argv[1]
     if operation == 'TFDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
-        create_tf_dict_for_processed_docs(work_interval_freq_list=interval_freq_list)
+        work_year = sys.argv[3]
+        create_tf_dict_for_processed_docs(work_interval_freq_list=interval_freq_list, work_year=work_year )
 
     elif operation == 'CCDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
@@ -974,11 +976,11 @@ if __name__ == '__main__':
         inner_fold      = sys.argv[3]
         create_stats_data_frame_for_snapshot_changes(sim_folder_name=sim_folder_name, inner_fold=inner_fold)
 
-    elif operation == 'SimInterva':
-        from_int_size = sys.argv[2]
-        sim_threshold = float(sys.argv[3])
-        sim_folder_name = sys.argv[4]
-        create_similarity_interval(from_interval_size=from_int_size,sim_threshold=sim_threshold,sim_folder_name=sim_folder_name)
+    # elif operation == 'SimInterva':
+    #     from_int_size = sys.argv[2]
+    #     sim_threshold = float(sys.argv[3])
+    #     sim_folder_name = sys.argv[4]
+    #     create_similarity_interval(from_interval_size=from_int_size,sim_threshold=sim_threshold,sim_folder_name=sim_folder_name)
 
     elif operation == 'PlotStatsDF':
         filename = sys.argv[2]
@@ -994,7 +996,8 @@ if __name__ == '__main__':
         sim_thresold = float(sys.argv[2])
         sim_folder_name = sys.argv[3]
         inner_fold = sys.argv[4]
-        create_similarity_interval(sim_threshold=sim_thresold,sim_folder_name=sim_folder_name, inner_fold=inner_fold)
+        work_year = sys.argv[5]
+        create_similarity_interval(sim_threshold=sim_thresold,sim_folder_name=sim_folder_name, inner_fold=inner_fold, work_year=work_year)
 
     elif operation == 'PlotAllRetStats':
         for filename in os.listdir('/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/'):
