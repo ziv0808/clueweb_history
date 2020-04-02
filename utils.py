@@ -6,9 +6,14 @@ import pandas as pd
 from scipy import spatial
 
 
+WORK_YEAR = '2011'
 TREC_EVAL_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
-QRELS_FILE_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
-INNER_FOLD = '50_per_q'
+if WORK_YEAR == '2011':
+    QRELS_FILE_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
+else:
+    QRELS_FILE_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
+
+INNER_FOLD = 'cw12'
 
 def build_interval_list(
         work_year,
@@ -172,7 +177,14 @@ def convert_query_to_tf_dict(
 
 def create_stemmed_queries_df(
         stemmed_query_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Query_Words'):
-    return pd.read_csv(stemmed_query_file, sep = '\t', index_col = False)
+    df = pd.read_csv(stemmed_query_file, sep = '\t', index_col = False)
+    df['QueryInt'] = df['QueryNum'].apply(lambda x: int(x))
+    if WORK_YEAR == '2011':
+        df = df[df['QueryInt'] > 200]
+    else:
+        df = df[df['QueryInt'] <= 200]
+    del df['QueryInt']
+    return df
 
 def create_query_to_doc_mapping_df(
         query_to_doc_mapping_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+INNER_FOLD+'/all_urls_no_spam_filtered.tsv'):

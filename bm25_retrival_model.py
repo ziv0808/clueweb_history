@@ -100,7 +100,7 @@ if __name__=='__main__':
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[4])
     filter_params = ast.literal_eval(sys.argv[5])
     sw_rmv = ast.literal_eval(sys.argv[6])
-    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+INNER_FOLD+'/2008/' +frequency + '/'
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+INNER_FOLD+'/'+WORK_YEAR+'/' +frequency + '/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
     addition = ""
     print('Interval Feaq: ' + frequency)
@@ -120,7 +120,7 @@ if __name__=='__main__':
 
     k1 = 1
     b = 0.5
-    interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=interval_start_month)
+    interval_list = build_interval_list(WORK_YEAR, frequency, add_clueweb = True, start_month=interval_start_month)
     # retrieve necessary dataframes
     query_to_doc_mapping_df = create_query_to_doc_mapping_df()
     stemmed_queries_df = create_stemmed_queries_df()

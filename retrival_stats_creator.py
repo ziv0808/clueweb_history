@@ -141,8 +141,6 @@ def create_retrieval_stats(
         addition = None):
 
     query_retrn_files_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ranked_docs/'
-    trec_eval_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
-    qrels_file_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
     afix_addition = ""
     if is_bm25 == True:
         afix_addition = "BM25_"
@@ -158,13 +156,13 @@ def create_retrieval_stats(
         if amount_of_snapshot_limit is not None and amount_of_snapshot_limit > 1:
             addition += "_SnapLimit_" + str(amount_of_snapshot_limit)
 
-    interval_list = build_interval_list('2008', interval_freq, add_clueweb=True, start_month=interval_start_month)
+    interval_list = build_interval_list(WORK_YEAR, interval_freq, add_clueweb=True, start_month=interval_start_month)
 
     last_not_clueweb_interval = interval_list[len(interval_list) - 2]
     for interval in interval_list:
         eval_file_path = os.path.join(os.path.dirname(query_retrn_files_path[:-1]), afix_addition + interval + '_' + interval_freq + '_' + interval_lookup_method + addition +'_Results_evaluation.txt')
         # if not os.path.exists(eval_file_path):
-        bashCommand = trec_eval_path + ' -q ' + qrels_file_path + ' ' + \
+        bashCommand = TREC_EVAL_PATH + ' -q ' + QRELS_FILE_PATH + ' ' + \
                       eval_file_path.replace('_evaluation', '') + ' > ' + eval_file_path
         output = subprocess.check_output(['bash', '-c', bashCommand])
 
