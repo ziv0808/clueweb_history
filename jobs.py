@@ -858,8 +858,12 @@ def add_stopword_stats_to_cc_dict(
         inner_fold = '50_per_q',
         work_year = '2008'):
 
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/cc_per_interval_dict.json', 'r') as f:
-        res_dict = ast.literal_eval(f.read())
+    if inner_fold == "":
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/cc_per_interval_dict.json', 'r') as f:
+            res_dict = ast.literal_eval(f.read())
+    else:
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/cc_per_interval_dict.json', 'r') as f:
+            res_dict = ast.literal_eval(f.read())
 
     stopword_list = get_stopword_list()
     for interval_freq in interval_freq_list:
@@ -869,8 +873,13 @@ def add_stopword_stats_to_cc_dict(
             work_year=work_year,
             frequency=interval_freq,
             add_clueweb=True)
-        processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/'+work_year+'/',
-                                           interval_freq)
+        if inner_fold == "":
+            processed_docs_path = os.path.join(
+                '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/',
+                interval_freq)
+        else:
+            processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/'+work_year+'/',
+                                               interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
             sys.stdout.flush()
@@ -894,9 +903,12 @@ def add_stopword_stats_to_cc_dict(
                             for term in stopword_list:
                                 if term in curr_doc_instance['TfDict']:
                                     res_dict[interval_freq][lookup_method][curr_interval]['ALL_SW_COUNT'] += curr_doc_instance['TfDict'][term]
-
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/cc_per_interval_dict.json', 'w') as f:
-        f.write(str(res_dict))
+    if inner_fold == "":
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/cc_per_interval_dict.json', 'w') as f:
+            f.write(str(res_dict))
+    else:
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/cc_per_interval_dict.json', 'w') as f:
+            f.write(str(res_dict))
 
 
 def add_stopword_stats_to_df_dict(
@@ -905,8 +917,12 @@ def add_stopword_stats_to_df_dict(
         inner_fold='50_per_q',
         work_year='2008'):
 
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/df_per_interval_dict.json', 'r') as f:
-        res_dict = ast.literal_eval(f.read())
+    if inner_fold == "":
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/df_per_interval_dict.json', 'r') as f:
+            res_dict = ast.literal_eval(f.read())
+    else:
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/df_per_interval_dict.json', 'r') as f:
+            res_dict = ast.literal_eval(f.read())
 
     for interval_freq in interval_freq_list:
         print(interval_freq)
@@ -915,9 +931,14 @@ def add_stopword_stats_to_df_dict(
             work_year=work_year,
             frequency=interval_freq,
             add_clueweb=True)
-        processed_docs_path = os.path.join(
-            '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/'+work_year+'/',
-            interval_freq)
+        if inner_fold == "":
+            processed_docs_path = os.path.join(
+                '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/',
+                interval_freq)
+        else:
+            processed_docs_path = os.path.join(
+                '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/'+work_year+'/',
+                interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
             sys.stdout.flush()
@@ -944,9 +965,12 @@ def add_stopword_stats_to_df_dict(
                     res_dict[interval_freq][lookup_method][interval]['AVG_DOC_LEN_NO_SW'] = \
                     res_dict[interval_freq][lookup_method][interval]['AVG_DOC_LEN_NO_SW'] / float(
                         res_dict[interval_freq][lookup_method][interval]['ALL_DOCS_COUNT'])
-
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/df_per_interval_dict.json', 'w') as f:
-        f.write(str(res_dict))
+    if inner_fold == "":
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/df_per_interval_dict.json', 'w') as f:
+            f.write(str(res_dict))
+    else:
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/df_per_interval_dict.json', 'w') as f:
+            f.write(str(res_dict))
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -973,11 +997,15 @@ if __name__ == '__main__':
 
     elif operation == 'SWCCDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
-        add_stopword_stats_to_cc_dict(interval_freq_list=interval_freq_list)
+        inner_fold = sys.argv[3]
+        work_year = sys.argv[4]
+        add_stopword_stats_to_cc_dict(interval_freq_list=interval_freq_list, inner_fold=inner_fold,work_year=work_year)
 
     elif operation == 'SWDFDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
-        add_stopword_stats_to_df_dict(interval_freq_list=interval_freq_list)
+        inner_fold = sys.argv[3]
+        work_year = sys.argv[4]
+        add_stopword_stats_to_df_dict(interval_freq_list=interval_freq_list, inner_fold=inner_fold,work_year=work_year)
 
     elif operation == 'StatsDF':
         sim_folder_name = sys.argv[2]
