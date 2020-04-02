@@ -99,17 +99,18 @@ def fill_cc_dict_with_doc(
 
 def create_per_interval_per_lookup_cc_dict(
         work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM', 'SIM_995','SIM_TXT_UP_DOWN','SIM_TXT_UP','SIM_TXT_DOWN'],
-        lookup_method_list = ['NoLookup', 'Backward','OnlyBackward','Forward'],
-        already_exists = True):
+        lookup_method_list      = ['NoLookup', 'Backward','OnlyBackward','Forward'],
+        already_exists          = True,
+        work_year               = '2008'):
 
-    work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv', sep = '\t', index_col = False)
-    work_df = work_df[work_df['Interval']=='ClueWeb09']
+    # work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv', sep = '\t', index_col = False)
+    # work_df = work_df[work_df['Interval']=='ClueWeb09']
 
     if already_exists == False:
         res_dict = {}
         res_dict['ClueWeb09'] = {}
-        for index, row in work_df.iterrows():
-            res_dict['ClueWeb09'][row['Stem']] = int(row['CollectionCount'])
+        # for index, row in work_df.iterrows():
+        #     res_dict['ClueWeb09'][row['Stem']] = int(row['CollectionCount'])
     else:
         with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/cc_per_interval_dict.json', 'r') as f:
             res_dict = ast.literal_eval(f.read())
@@ -121,10 +122,10 @@ def create_per_interval_per_lookup_cc_dict(
             continue
         res_dict[interval_freq] = {}
         curr_interval_list = build_interval_list(
-                work_year='2008',
+                work_year=work_year,
                 frequency=interval_freq,
                 add_clueweb=True)
-        processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/', interval_freq)
+        processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+work_year+'/', interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
             sys.stdout.flush()
@@ -134,7 +135,7 @@ def create_per_interval_per_lookup_cc_dict(
                 res_dict[interval_freq][lookup_method][interval]['ALL_TERMS_COUNT'] = 0
 
             for file_name in os.listdir(processed_docs_path):
-                if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+                if file_name.startswith('clueweb') and file_name.endswith('.json'):
                     print(file_name)
                     sys.stdout.flush()
                     with open(os.path.join(processed_docs_path, file_name), 'r') as f:
@@ -352,17 +353,18 @@ def fill_df_dict_with_doc(
 def create_per_interval_per_lookup_df_dict(
         work_interval_freq_list=['1W', '2W', '1M', '2M', 'SIM', 'SIM_995','SIM_TXT_UP_DOWN','SIM_TXT_UP','SIM_TXT_DOWN'],
         lookup_method_list=['NoLookup', 'Backward', 'OnlyBackward', 'Forward'],
-        already_exists=True):
+        already_exists=True,
+        work_year = '2008'):
 
-    work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv',
-                          sep='\t', index_col=False)
-    work_df = work_df[work_df['Interval'] == 'ClueWeb09']
+    # work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv',
+    #                       sep='\t', index_col=False)
+    # work_df = work_df[work_df['Interval'] == 'ClueWeb09']
 
     if already_exists == False:
         res_dict = {}
         res_dict['ClueWeb09'] = {}
-        for index, row in work_df.iterrows():
-            res_dict['ClueWeb09'][row['Stem']] = 0
+        # for index, row in work_df.iterrows():
+        #     res_dict['ClueWeb09'][row['Stem']] = 0
     else:
         with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/df_per_interval_dict.json', 'r') as f:
             res_dict = ast.literal_eval(f.read())
@@ -374,11 +376,11 @@ def create_per_interval_per_lookup_df_dict(
             continue
         res_dict[interval_freq] = {}
         curr_interval_list = build_interval_list(
-            work_year='2008',
+            work_year=work_year,
             frequency=interval_freq,
             add_clueweb=True)
         processed_docs_path = os.path.join(
-            '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/', interval_freq)
+            '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+work_year+'/', interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
             sys.stdout.flush()
@@ -389,7 +391,7 @@ def create_per_interval_per_lookup_df_dict(
                 res_dict[interval_freq][lookup_method][interval]['AVG_DOC_LEN'] = 0.0
 
             for file_name in os.listdir(processed_docs_path):
-                if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+                if file_name.startswith('clueweb') and file_name.endswith('.json'):
                     print(file_name)
                     sys.stdout.flush()
                     with open(os.path.join(processed_docs_path, file_name), 'r') as f:
@@ -853,7 +855,8 @@ def plot_stats_vs_winner_plots_for_wl_file(
 def add_stopword_stats_to_cc_dict(
         interval_freq_list,
         lookup_method_list = ['NoLookup', 'Backward','OnlyBackward','Forward'],
-        inner_fold = '50_per_q'):
+        inner_fold = '50_per_q',
+        work_year = '2008'):
 
     with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/cc_per_interval_dict.json', 'r') as f:
         res_dict = ast.literal_eval(f.read())
@@ -863,10 +866,10 @@ def add_stopword_stats_to_cc_dict(
         print(interval_freq)
         sys.stdout.flush()
         curr_interval_list = build_interval_list(
-            work_year='2008',
+            work_year=work_year,
             frequency=interval_freq,
             add_clueweb=True)
-        processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/2008/',
+        processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '/'+work_year+'/',
                                            interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
@@ -875,7 +878,7 @@ def add_stopword_stats_to_cc_dict(
                 res_dict[interval_freq][lookup_method][interval]['ALL_SW_COUNT'] = 0
 
             for file_name in os.listdir(processed_docs_path):
-                if file_name.startswith('clueweb09') and file_name.endswith('.json'):
+                if file_name.startswith('clueweb') and file_name.endswith('.json'):
                     print(file_name)
                     sys.stdout.flush()
                     with open(os.path.join(processed_docs_path, file_name), 'r') as f:
@@ -955,13 +958,18 @@ if __name__ == '__main__':
     elif operation == 'CCDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
         already_exists = ast.literal_eval(sys.argv[3])
-        create_per_interval_per_lookup_cc_dict(work_interval_freq_list=interval_freq_list, already_exists=already_exists)
+        work_year = sys.argv[4]
+        create_per_interval_per_lookup_cc_dict(work_interval_freq_list=interval_freq_list,
+                                               already_exists=already_exists,
+                                               work_year=work_year)
 
     elif operation == 'DFDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
         already_exists = ast.literal_eval(sys.argv[3])
+        work_year = sys.argv[4]
         create_per_interval_per_lookup_df_dict(work_interval_freq_list=interval_freq_list,
-                                               already_exists=already_exists)
+                                               already_exists=already_exists,
+                                               work_year=work_year)
 
     elif operation == 'SWCCDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
