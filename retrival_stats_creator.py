@@ -178,7 +178,10 @@ def create_retrieval_stats(
                                          'RBO_0.975_Ext_Last','RBO_0.99_Res_Last', 'RBO_0.99_Min_Last',
                                          'RBO_0.99_Ext_Last'])
     next_index = 0
-    for query_num in range(1,201):
+    query_list = list(range(1,201))
+    if WORK_YEAR == '2011':
+        query_list = list(range(201, 301))
+    for query_num in query_list:
         no_res_list = []
         print('Query: ' + str(query_num))
         sys.stdout.flush()
