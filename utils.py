@@ -176,7 +176,8 @@ def convert_query_to_tf_dict(
     return query_dict
 
 def create_stemmed_queries_df(
-        stemmed_query_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Query_Words'):
+        stemmed_query_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Query_Words',
+        sw_rmv = False):
     df = pd.read_csv(stemmed_query_file, sep = '\t', index_col = False)
     df['QueryInt'] = df['QueryNum'].apply(lambda x: int(x))
     if WORK_YEAR == '2011':
@@ -184,7 +185,19 @@ def create_stemmed_queries_df(
     else:
         df = df[df['QueryInt'] <= 200]
     del df['QueryInt']
+    if sw_rmv == True:
+        sw_list = get_stopword_list()
+        df['QueryStems'] = df['QueryStems'].apply(lambda x: rmv_sw_from_string(x, sw_list))
     return df
+
+def rmv_sw_from_string(
+        strng,
+        sw_list):
+    new_strng = ""
+    for word in strng.split(' '):
+        if word not in sw_list:
+            new_strng += word + " "
+    return new_strng[:-1]
 
 def create_query_to_doc_mapping_df(
         query_to_doc_mapping_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+INNER_FOLD+'/all_urls_no_spam_filtered.tsv'):

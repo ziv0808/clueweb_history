@@ -139,7 +139,7 @@ if __name__=='__main__':
     interval_list = build_interval_list(WORK_YEAR, frequency, add_clueweb = True, start_month=interval_start_month)
     # retrieve necessary dataframes
     query_to_doc_mapping_df = create_query_to_doc_mapping_df()
-    stemmed_queries_df = create_stemmed_queries_df()
+    stemmed_queries_df = create_stemmed_queries_df(sw_rmv=sw_rmv)
     # create easy to use index for cc
     cc_dict = create_per_interval_cc_dict(interval_freq=frequency, lookup_method=interval_lookup_method)
 
