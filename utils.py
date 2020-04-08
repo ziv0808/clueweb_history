@@ -287,21 +287,26 @@ def get_ranking_effectiveness_for_res_file_for_all_query_groups(
     output = subprocess.check_output(['bash', '-c', bashCommand])
     output_lines = output.split('\n')
     res_dict = {}
+    res_dict['all'] = {}
     for line in output_lines[:-1]:
         splitted_line = line.split('\t')
         splitted_line = list(filter(None, splitted_line))
-        if int(splitted_line[1]) not in res_dict:
+        if (splitted_line[1] != 'all') and (int(splitted_line[1]) not in res_dict):
             res_dict[int(splitted_line[1])] = {}
         else:
+            if splitted_line[1] == 'all':
+                curr_q = 'all'
+            else:
+                curr_q = int(splitted_line[1])
             if splitted_line[0].replace(' ', '') == 'map':
                 map = float(splitted_line[2])
-                res_dict[int(splitted_line[1])]['Map'] = map
+                res_dict[curr_q]['Map'] = map
             elif splitted_line[0].replace(' ', '') == 'P_5':
                 p_5 = float(splitted_line[2])
-                res_dict[int(splitted_line[1])]['P_5'] = p_5
+                res_dict[curr_q]['P_5'] = p_5
             elif splitted_line[0].replace(' ', '') == 'P_10':
                 p_10 = float(splitted_line[2])
-                res_dict[int(splitted_line[1])]['P_10'] = p_10
+                res_dict[curr_q]['P_10'] = p_10
 
     return_res_dict = {}
     for q_list in CHECK_QUERIRES_LIST:
