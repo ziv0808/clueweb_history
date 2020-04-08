@@ -320,10 +320,10 @@ def get_ranking_effectiveness_for_res_file_for_all_query_groups(
                 return_res_dict[q_list_name]['Map'] += res_dict[query_num]['Map']
                 return_res_dict[q_list_name]['P_5'] += res_dict[query_num]['P_5']
                 return_res_dict[q_list_name]['P_10'] += res_dict[query_num]['P_10']
-
-        return_res_dict[q_list_name]['Map'] = return_res_dict[q_list_name]['Map'] / denom
-        return_res_dict[q_list_name]['P_5'] = return_res_dict[q_list_name]['P_5'] / denom
-        return_res_dict[q_list_name]['P_10'] = return_res_dict[q_list_name]['P_10'] / denom
+        if denom > 0:
+            return_res_dict[q_list_name]['Map'] = return_res_dict[q_list_name]['Map'] / denom
+            return_res_dict[q_list_name]['P_5'] = return_res_dict[q_list_name]['P_5'] / denom
+            return_res_dict[q_list_name]['P_10'] = return_res_dict[q_list_name]['P_10'] / denom
 
     return_res_dict['all'] = res_dict['all']
     return return_res_dict
