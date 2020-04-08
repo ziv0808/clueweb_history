@@ -13,7 +13,9 @@ def score_doc_for_query_lm(
         doc_dict,
         interval_list,
         params,
-        filter_params):
+        filter_params,
+        sw_rmv,
+        avg_global_params):
     mue = params['Mue']
     kl_score = 0.0
     work_stem_list = list(query_stem_dict.keys())
@@ -22,25 +24,42 @@ def score_doc_for_query_lm(
         doc_stem_tf = 0
         doc_len = 0
         active_intervals = 0.0
+        collection_len = 0.0
+        collection_count_for_word = 0.0
         for interval in interval_list:
             if verify_snapshot_for_doc(doc_dict,interval,filter_params) is not None:
-                doc_len += float(doc_dict[interval]['NumWords'])
+                if sw_rmv == True:
+                    doc_len += float(doc_dict[interval]['NumWords'] - doc_dict[interval]['NumStopWords'])
+                else:
+                    doc_len += float(doc_dict[interval]['NumWords'])
                 active_intervals += 1
                 if stem in doc_dict[interval]['TfDict']:
                     doc_stem_tf += float(doc_dict[interval]['TfDict'][stem])
+                if avg_global_params == True:
+                    if sw_rmv == True:
+                        collection_len += cc_dict[interval]['ALL_TERMS_COUNT'] - cc_dict[interval]['ALL_SW_COUNT']
+                    else:
+                        collection_len += cc_dict[interval]['ALL_TERMS_COUNT']
 
         query_tf = 0
         if stem in query_stem_dict:
             query_tf = query_stem_dict[stem]
 
         stem_q_prob = float(query_tf)/sum(list(query_stem_dict.values()))
+        if avg_global_params == False:
+            if sw_rmv == True:
+                collection_len = cc_dict['ClueWeb09']['ALL_TERMS_COUNT'] - cc_dict['ClueWeb09']['ALL_SW_COUNT']
+            else:
+                collection_len = cc_dict['ClueWeb09']['ALL_TERMS_COUNT']
+            collection_count_for_word = cc_dict['ClueWeb09'][stem]
 
         stem_d_proba = get_word_diriclet_smoothed_probability(
-            tf_in_doc = doc_stem_tf/active_intervals,
-            doc_len = doc_len/active_intervals,
-            collection_count_for_word=cc_dict[stem],
-            collection_len=cc_dict['ALL_TERMS_COUNT'],
+            tf_in_doc=doc_stem_tf / active_intervals,
+            doc_len=doc_len / active_intervals,
+            collection_count_for_word=collection_count_for_word,
+            collection_len=collection_len,
             mue=mue)
+
 
         kl_score += (-1)*stem_q_prob*(math.log((stem_q_prob/stem_d_proba) , 2))
 
@@ -53,7 +72,9 @@ def score_doc_for_query_bm25(
         doc_dict,
         interval_list,
         params,
-        filter_params):
+        filter_params,
+        sw_rmv,
+        avg_global_params):
     k1 = params['K1']
     b = params['b']
     bm25_score = 0.0
@@ -64,24 +85,39 @@ def score_doc_for_query_bm25(
         doc_len = 0.0
         avg_doc_len = 0.0
         active_intervals = 0.0
+        stem_df = 0.0
+        all_docs_count = 0.0
         for interval in interval_list:
             if verify_snapshot_for_doc(doc_dict,interval,filter_params) is not None:
-                doc_len += float(doc_dict[interval]['NumWords'])
-                avg_doc_len += df_dict[interval]['AVG_DOC_LEN']
+                if sw_rmv == True:
+                    doc_len += float(doc_dict[interval]['NumWords'] - doc_dict[interval]['NumStopWords'])
+                    avg_doc_len += df_dict[interval]['AVG_DOC_LEN_NO_SW']
+                else:
+                    doc_len += float(doc_dict[interval]['NumWords'])
+                    avg_doc_len += df_dict[interval]['AVG_DOC_LEN']
                 active_intervals += 1
                 if stem in doc_dict[interval]['TfDict']:
                     doc_stem_tf += float(doc_dict[interval]['TfDict'][stem])
 
-
-        if stem not in df_dict:
-            # raise Exception('Unexpected Situation')
-            df_dict[stem] = 1
+                if avg_global_params == True:
+                    if stem in df_dict[interval]:
+                        stem_df += df_dict[interval][stem]
+                    all_docs_count += df_dict[interval]['ALL_DOCS_COUNT']
 
         doc_stem_tf = doc_stem_tf/float(active_intervals)
         doc_len = doc_len/float(active_intervals)
         avg_doc_len = avg_doc_len/float(active_intervals)
-        all_docs_count = df_dict['ClueWeb09']['ALL_DOCS_COUNT']
-        stem_df =  df_dict['ClueWeb09'][stem]
+        if avg_global_params == False:
+            all_docs_count = df_dict['ClueWeb09']['ALL_DOCS_COUNT']
+            if stem in df_dict['ClueWeb09']:
+                stem_df = df_dict['ClueWeb09'][stem]
+            else:
+                stem_df = 1
+            if sw_rmv == True:
+                avg_doc_len = df_dict['ClueWeb09']['AVG_DOC_LEN_NO_SW']
+            else:
+                avg_doc_len = df_dict['ClueWeb09']['AVG_DOC_LEN']
+
         idf = math.log(all_docs_count / float(stem_df), 10)
         stem_d_proba = (doc_stem_tf * (k1 + 1)) / (
         doc_stem_tf + k1 * ((1 - b) + b * (float(doc_len) / avg_doc_len)))
@@ -102,7 +138,9 @@ def get_scored_df_for_query(
         params,
         filter_params,
         amount_of_snapshot_limit,
-        model):
+        model,
+        sw_rmv,
+        avg_global_params):
 
     res_df= pd.DataFrame(columns = ['Query_ID','Iteration', 'Docno', 'Rank', 'Score', 'Method'])
     next_index = 0
@@ -124,16 +162,20 @@ def get_scored_df_for_query(
                 doc_dict = doc_dict,
                 interval_list =interval_list,
                 params= params,
-                filter_params=filter_params)
+                filter_params=filter_params,
+                sw_rmv=sw_rmv,
+                avg_global_params=avg_global_params)
         else:
             # print(doc_interval_dict)
             doc_score = score_doc_for_query_lm(
                 query_stem_dict=query_dict,
-                cc_dict=cc_dict['ClueWeb09'],
+                cc_dict=cc_dict,
                 doc_dict=doc_dict,
                 interval_list=interval_list,
                 params=params,
-                filter_params=filter_params)
+                filter_params=filter_params,
+                sw_rmv=sw_rmv,
+                avg_global_params=avg_global_params)
         res_df.loc[next_index] = ["0"*(3 - len(str(query_num)))+ str(query_num), 'Q0', docno, 0, doc_score, 'indri']
         next_index += 1
 
@@ -151,7 +193,9 @@ def test_queries(
     params,
     curr_filter_params,
     amount_of_snapshot_limit,
-    retrival_model):
+    retrival_model,
+    sw_rmv,
+    avg_global_params):
 
     big_df = pd.DataFrame({})
     for index, row in stemmed_queries_df.iterrows():
@@ -170,7 +214,9 @@ def test_queries(
             params=params,
             filter_params=curr_filter_params,
             amount_of_snapshot_limit=amount_of_snapshot_limit,
-            model=retrival_model)
+            model=retrival_model,
+            sw_rmv=sw_rmv,
+            avg_global_params=avg_global_params)
 
         big_df = big_df.append(res_df, ignore_index=True)
 
@@ -181,13 +227,21 @@ if __name__=='__main__':
     interval_start_month = int(sys.argv[2])
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[3])
     retrival_model = sys.argv[4]
-    run_cv = ast.literal_eval(sys.argv[5])
-    start_test_q = int(sys.argv[6])
-    end_test_q = int(sys.argv[7])
+    sw_rmv = ast.literal_eval(sys.argv[5])
+    avg_global_params = ast.literal_eval(sys.argv[6])
+    filter_params = ast.literal_eval(sys.argv[7]) # no meaning if run_cv is True
+    run_cv = ast.literal_eval(sys.argv[8])
 
-    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/2008/' +frequency + '/'
+    if run_cv == True:
+        start_test_q = int(sys.argv[9])
+        end_test_q = int(sys.argv[10])
+        affix = str(start_test_q) + '_' + str(end_test_q) + "_"
+    else:
+        affix = ""
+
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+INNER_FOLD+'/'+WORK_YEAR+'/' +frequency + '/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/concat_model_res/'
-    affix = str(start_test_q) + '_' + str(end_test_q) + "_"
+
     if retrival_model == 'BM25':
         cc_dict = create_per_interval_df_dict(interval_freq=frequency, lookup_method='NoLookup')
         params = {'K1' : 1 , 'b' : 0.5}
@@ -202,7 +256,7 @@ if __name__=='__main__':
         raise Exception("Unknown model")
 
     query_to_doc_mapping_df = create_query_to_doc_mapping_df()
-    stemmed_queries_df = create_stemmed_queries_df()
+    stemmed_queries_df = create_stemmed_queries_df(sw_rmv=sw_rmv)
 
     if run_cv == True:
         test_set_q = list(range(start_test_q, end_test_q + 1))
@@ -241,7 +295,7 @@ if __name__=='__main__':
 
                 print('Interval Freq: ' + frequency)
 
-                interval_list = build_interval_list('2008', frequency, add_clueweb = True, start_month=interval_start_month)
+                interval_list = build_interval_list(WORK_YEAR, frequency, add_clueweb = True, start_month=interval_start_month)
                 # retrieve necessary dataframes
 
                 big_df = test_queries(
@@ -253,7 +307,9 @@ if __name__=='__main__':
                     params=params,
                     curr_filter_params=curr_filter_params,
                     amount_of_snapshot_limit=amount_of_snapshot_limit,
-                    retrival_model=retrival_model)
+                    retrival_model=retrival_model,
+                    sw_rmv=sw_rmv,
+                    avg_global_params=avg_global_params)
 
                 with open(os.path.join(save_folder,affix + frequency + '_' + addition + "_Results.txt"), 'w') as f:
                     f.write(convert_df_to_trec(big_df))
@@ -279,7 +335,9 @@ if __name__=='__main__':
             params=params,
             curr_filter_params=best_params,
             amount_of_snapshot_limit=amount_of_snapshot_limit,
-            retrival_model=retrival_model)
+            retrival_model=retrival_model,
+            sw_rmv=sw_rmv,
+            avg_global_params=avg_global_params)
 
         with open(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.txt"), 'w') as f:
             f.write(convert_df_to_trec(big_df))
@@ -294,7 +352,17 @@ if __name__=='__main__':
         addition = ""
         if interval_start_month != 1:
             addition = "_" + str(interval_start_month) + "SM_"
-        interval_list = build_interval_list('2008', frequency, add_clueweb=True, start_month=interval_start_month)
+
+        if filter_params is not None and len(filter_params) > 0:
+            addition += create_filter_params_txt_addition(filter_params)
+
+        if sw_rmv == True:
+            addition += "_SW_RMV"
+
+        if avg_global_params == True:
+            addition += '_AVG_GP'
+
+        interval_list = build_interval_list(WORK_YEAR, frequency, add_clueweb=True, start_month=interval_start_month)
         big_df = test_queries(
             stemmed_queries_df=stemmed_queries_df,
             query_to_doc_mapping_df=query_to_doc_mapping_df,
@@ -304,11 +372,20 @@ if __name__=='__main__':
             params=params,
             curr_filter_params={},
             amount_of_snapshot_limit=amount_of_snapshot_limit,
-            retrival_model=retrival_model)
+            retrival_model=retrival_model,
+            sw_rmv=sw_rmv,
+            avg_global_params=avg_global_params)
 
         with open(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.txt"), 'w') as f:
             f.write(convert_df_to_trec(big_df))
 
-        res_dict = get_ranking_effectiveness_for_res_file(file_path=save_folder,
+        res_dict = get_ranking_effectiveness_for_res_file_for_all_query_groups(file_path=save_folder,
                                                           filename=affix + frequency + '_' + addition + "_Results.txt")
         print(affix + addition + " " + "SCORE : " + str(res_dict))
+        summary_df = pd.DataFrame(columns=['QueryGroup','Map', 'P_5', 'P_10'])
+        next_idx = 0
+        for key in res_dict:
+            summary_df.loc[next_idx] = [key, res_dict[key]['Map'], res_dict[key]['P_5'], res_dict[key]['P_10']]
+            next_idx += 1
+        sum_file_name =  WORK_YEAR + '_' + INNER_FOLD + '_' + affix + frequency + '_' + addition + '.tsv'
+        summary_df.to_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/results/concat_model_summary/' + sum_file_name, sep = '\t', index = False)

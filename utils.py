@@ -14,6 +14,34 @@ else:
     QRELS_FILE_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
 
 INNER_FOLD = 'cw12'
+QUERY_ENETITY_LIST = [1, 2, 5, 6, 7, 12, 15, 16, 21, 22, 23, 29, 31, 36, 37, 39, 41, 44, 46, 48, 52,
+                      54, 56, 62, 65, 67, 68, 71, 72, 80, 81, 84, 85, 86, 97, 100, 101, 102, 103, 104,
+                      105, 107, 108, 109, 110, 111, 114, 115, 116, 122, 123, 124, 126, 127, 129, 136,
+                      138, 139, 140, 141, 142, 143, 148, 149, 150, 151, 152, 157, 159, 163, 168, 171, 183,
+                      190, 191, 196, 197, 198, 200, 201, 202, 203, 207, 212, 215, 216, 219, 220, 221, 223,
+                      228, 230, 231, 232, 234, 237, 238, 239, 243, 245, 246, 250, 254, 256, 257, 259,
+                      260, 264, 269, 270, 271, 273, 275, 276, 281, 282, 283, 285, 288, 290, 291]
+QUERY_ENETITY_LIST_MANUAL = [1,2,5,15,16,21,22,23,27,35,39,41,44,46,48,54,56,60,62,
+                           65,71,73,81,85,97,101,102,103,104,105,107,108,109,110,
+                           112,114,115,116,122,127,129,130,140,142,148,149,150,156,159,
+                           163,167,171,180,183,186,187,190,191,192,197,198,200]
+
+QUERY_PERSON_LOC_ORG_LIST = [1, 5, 6, 7, 12, 15, 16, 21, 22, 23, 31, 36, 37, 39, 41, 44,
+                             48, 52, 54, 56, 62, 65, 67, 68, 71, 72, 80, 81, 84, 85, 86,
+                             97, 100, 101, 102, 103, 104, 105, 107, 108, 109, 110, 111, 114,
+                             115, 116, 122, 123, 126, 127, 129, 136, 138, 139, 140, 141, 142, 143,
+                             148, 149, 150, 152, 157, 159, 163, 168, 171, 183, 190, 191, 196, 197,
+                             198, 200, 201, 202, 203, 207, 212, 215, 216, 219, 220, 221, 223, 230,
+                             232, 234, 237, 238, 239, 243, 246, 250, 254, 256, 257, 259, 264, 269,
+                             270, 273, 281, 282, 283, 285, 288, 290, 291]
+
+QUERY_PERSON_LOC_ORG_LIST_MANUAL = [1, 2, 5, 15, 16,21,22,23, 27, 35, 39, 41, 44, 46, 48, 54, 56, 60, 62,
+                                    71, 73, 81, 85, 97, 101, 102, 103, 104, 105, 107, 108, 109, 110,
+                                    114, 115, 116, 122, 127, 129, 130, 140, 142, 148, 149, 150, 156,
+                                    159, 163 ,167, 171, 180, 183, 187, 190,191,192, 197,198,200]
+
+CHECK_QUERIRES_LIST = [(QUERY_ENETITY_LIST, 'QUERY_ENETITY_LIST'),(QUERY_ENETITY_LIST_MANUAL, 'QUERY_ENETITY_LIST_MANUAL'),
+                        (QUERY_PERSON_LOC_ORG_LIST, 'QUERY_PERSON_LOC_ORG_LIST'),(QUERY_PERSON_LOC_ORG_LIST_MANUAL, 'QUERY_PERSON_LOC_ORG_LIST_MANUAL') ]
 
 def build_interval_list(
         work_year,
@@ -249,6 +277,51 @@ def get_ranking_effectiveness_for_res_file(
                 p_10 = float(splitted_line[2])
 
     return {'Map': map, 'P_5': p_5, 'P_10': p_10}
+
+def get_ranking_effectiveness_for_res_file_for_all_query_groups(
+        file_path,
+        filename):
+    bashCommand = TREC_EVAL_PATH + ' -q ' + QRELS_FILE_PATH + ' ' + \
+                  os.path.join(file_path, filename)
+
+    output = subprocess.check_output(['bash', '-c', bashCommand])
+    output_lines = output.split('\n')
+    res_dict = {}
+    for line in output_lines[:-1]:
+        splitted_line = line.split('\t')
+        splitted_line = list(filter(None, splitted_line))
+        if int(splitted_line[1]) not in res_dict:
+            res_dict[int(splitted_line[1])] = {}
+        else:
+            if splitted_line[0].replace(' ', '') == 'map':
+                map = float(splitted_line[2])
+                res_dict[int(splitted_line[1])]['Map'] = map
+            elif splitted_line[0].replace(' ', '') == 'P_5':
+                p_5 = float(splitted_line[2])
+                res_dict[int(splitted_line[1])]['P_5'] = p_5
+            elif splitted_line[0].replace(' ', '') == 'P_10':
+                p_10 = float(splitted_line[2])
+                res_dict[int(splitted_line[1])]['P_10'] = p_10
+
+    return_res_dict = {}
+    for q_list in CHECK_QUERIRES_LIST:
+        q_list_name = q_list[1]
+        query_list = q_list[0]
+        return_res_dict[q_list_name] = {'Map': 0.0, 'P_5': 0.0, 'P_10': 0.0}
+        denom = 0.0
+        for query_num in query_list:
+            if query_num in res_dict:
+                denom += 1
+                return_res_dict[q_list_name]['Map'] += res_dict[query_num]['Map']
+                return_res_dict[q_list_name]['P_5'] += res_dict[query_num]['P_5']
+                return_res_dict[q_list_name]['P_10'] += res_dict[query_num]['P_10']
+
+        return_res_dict[q_list_name]['Map'] = return_res_dict[q_list_name]['Map'] / denom
+        return_res_dict[q_list_name]['P_5'] = return_res_dict[q_list_name]['P_5'] / denom
+        return_res_dict[q_list_name]['P_10'] = return_res_dict[q_list_name]['P_10'] / denom
+
+    return_res_dict['all'] = res_dict['all']
+    return return_res_dict
 
 def create_per_interval_cc_dict(
         cc_dict_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+INNER_FOLD+'/cc_per_interval_dict.json',
