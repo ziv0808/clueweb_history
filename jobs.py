@@ -103,14 +103,18 @@ def create_per_interval_per_lookup_cc_dict(
         already_exists          = True,
         work_year               = '2008'):
 
-    # work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv', sep = '\t', index_col = False)
-    # work_df = work_df[work_df['Interval']=='ClueWeb09']
+    work_df = create_stemmed_queries_df()
+    if work_year != WORK_YEAR:
+        raise Exception('work_year not equal to WORK_YEAR')
 
     if already_exists == False:
         res_dict = {}
-        res_dict['ClueWeb09'] = {}
-        # for index, row in work_df.iterrows():
-        #     res_dict['ClueWeb09'][row['Stem']] = int(row['CollectionCount'])
+        res_dict['RefDict'] = {}
+        for index, row in work_df.iterrows():
+            query_stems = row['QueryStems'].split(' ')
+            for stem in query_stems:
+                if stem != '':
+                    res_dict['RefDict'][stem] = 0
     else:
         with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/cc_per_interval_dict.json', 'r') as f:
             res_dict = ast.literal_eval(f.read())
@@ -145,7 +149,7 @@ def create_per_interval_per_lookup_cc_dict(
                         interval_list=curr_interval_list,
                         interval_freq=interval_freq,
                         cc_dict = res_dict,
-                        word_ref_dict = res_dict['ClueWeb09'],
+                        word_ref_dict = res_dict['RefDict'],
                         doc_dict = doc_dict,
                         lookup = lookup_method)
 
@@ -356,15 +360,18 @@ def create_per_interval_per_lookup_df_dict(
         already_exists=True,
         work_year = '2008'):
 
-    # work_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/StemsCollectionCountsAllIntervals.tsv',
-    #                       sep='\t', index_col=False)
-    # work_df = work_df[work_df['Interval'] == 'ClueWeb09']
+    work_df = create_stemmed_queries_df()
+    if work_year != WORK_YEAR:
+        raise Exception('work_year not equal to WORK_YEAR')
 
     if already_exists == False:
         res_dict = {}
-        res_dict['ClueWeb09'] = {}
-        # for index, row in work_df.iterrows():
-        #     res_dict['ClueWeb09'][row['Stem']] = 0
+        res_dict['RefDict'] = {}
+        for index, row in work_df.iterrows():
+            query_stems = row['QueryStems'].split(' ')
+            for stem in query_stems:
+                if stem != '':
+                    res_dict['RefDict'][stem] = 0
     else:
         with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/df_per_interval_dict.json', 'r') as f:
             res_dict = ast.literal_eval(f.read())
@@ -401,7 +408,7 @@ def create_per_interval_per_lookup_df_dict(
                         interval_list=curr_interval_list,
                         interval_freq=interval_freq,
                         df_dict=res_dict,
-                        word_ref_dict=res_dict['ClueWeb09'],
+                        word_ref_dict=res_dict['RefDict'],
                         doc_dict=doc_dict,
                         lookup=lookup_method)
             for interval in curr_interval_list:

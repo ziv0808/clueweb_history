@@ -43,9 +43,7 @@ def score_doc_for_query_lm(
                     if stem in cc_dict[interval]:
                         collection_count_for_word += cc_dict[interval][stem]
 
-        query_tf = 0
-        if stem in query_stem_dict:
-            query_tf = query_stem_dict[stem]
+        query_tf = query_stem_dict[stem]
 
         stem_q_prob = float(query_tf)/sum(list(query_stem_dict.values()))
         if avg_global_params == False:
