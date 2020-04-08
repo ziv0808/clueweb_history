@@ -40,6 +40,8 @@ def score_doc_for_query_lm(
                         collection_len += cc_dict[interval]['ALL_TERMS_COUNT'] - cc_dict[interval]['ALL_SW_COUNT']
                     else:
                         collection_len += cc_dict[interval]['ALL_TERMS_COUNT']
+                    if stem in cc_dict[interval]:
+                        collection_count_for_word += cc_dict[interval][stem]
 
         query_tf = 0
         if stem in query_stem_dict:
@@ -370,7 +372,7 @@ if __name__=='__main__':
             processed_docs_folder=processed_docs_folder,
             cc_dict=cc_dict,
             params=params,
-            curr_filter_params={},
+            curr_filter_params=filter_params,
             amount_of_snapshot_limit=amount_of_snapshot_limit,
             retrival_model=retrival_model,
             sw_rmv=sw_rmv,
