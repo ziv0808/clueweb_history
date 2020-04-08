@@ -101,7 +101,8 @@ def create_per_interval_per_lookup_cc_dict(
         work_interval_freq_list = ['1W', '2W', '1M', '2M', 'SIM', 'SIM_995','SIM_TXT_UP_DOWN','SIM_TXT_UP','SIM_TXT_DOWN'],
         lookup_method_list      = ['NoLookup', 'Backward','OnlyBackward','Forward'],
         already_exists          = True,
-        work_year               = '2008'):
+        work_year               = '2008',
+        inner_fold              = None):
 
     work_df = create_stemmed_queries_df()
     if work_year != WORK_YEAR:
@@ -129,7 +130,7 @@ def create_per_interval_per_lookup_cc_dict(
                 work_year=work_year,
                 frequency=interval_freq,
                 add_clueweb=True)
-        processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+work_year+'/', interval_freq)
+        processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+inner_fold+'/'+work_year+'/', interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
             sys.stdout.flush()
@@ -358,7 +359,8 @@ def create_per_interval_per_lookup_df_dict(
         work_interval_freq_list=['1W', '2W', '1M', '2M', 'SIM', 'SIM_995','SIM_TXT_UP_DOWN','SIM_TXT_UP','SIM_TXT_DOWN'],
         lookup_method_list=['NoLookup', 'Backward', 'OnlyBackward', 'Forward'],
         already_exists=True,
-        work_year = '2008'):
+        work_year = '2008',
+        inner_fold= None):
 
     work_df = create_stemmed_queries_df()
     if work_year != WORK_YEAR:
@@ -387,7 +389,7 @@ def create_per_interval_per_lookup_df_dict(
             frequency=interval_freq,
             add_clueweb=True)
         processed_docs_path = os.path.join(
-            '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+work_year+'/', interval_freq)
+            '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+inner_fold+'/'+work_year+'/', interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
             sys.stdout.flush()
@@ -990,17 +992,21 @@ if __name__ == '__main__':
         interval_freq_list = ast.literal_eval(sys.argv[2])
         already_exists = ast.literal_eval(sys.argv[3])
         work_year = sys.argv[4]
+        inner_fold = sys.argv[5]
         create_per_interval_per_lookup_cc_dict(work_interval_freq_list=interval_freq_list,
                                                already_exists=already_exists,
-                                               work_year=work_year)
+                                               work_year=work_year,
+                                               inner_fold=inner_fold)
 
     elif operation == 'DFDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
         already_exists = ast.literal_eval(sys.argv[3])
         work_year = sys.argv[4]
+        inner_fold = sys.argv[5]
         create_per_interval_per_lookup_df_dict(work_interval_freq_list=interval_freq_list,
                                                already_exists=already_exists,
-                                               work_year=work_year)
+                                               work_year=work_year,
+                                               inner_fold=inner_fold)
 
     elif operation == 'SWCCDict':
         interval_freq_list = ast.literal_eval(sys.argv[2])
