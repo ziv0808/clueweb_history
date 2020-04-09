@@ -1023,7 +1023,8 @@ if __name__ == '__main__':
     elif operation == 'StatsDF':
         sim_folder_name = sys.argv[2]
         inner_fold      = sys.argv[3]
-        create_stats_data_frame_for_snapshot_changes(sim_folder_name=sim_folder_name, inner_fold=inner_fold)
+        work_year       = sys.argv[4]
+        create_stats_data_frame_for_snapshot_changes(sim_folder_name=sim_folder_name, inner_fold=inner_fold, work_year=work_year)
 
     # elif operation == 'SimInterva':
     #     from_int_size = sys.argv[2]
