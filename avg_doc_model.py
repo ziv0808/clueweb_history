@@ -56,7 +56,7 @@ def score_doc_for_query_bm25(
         doc_len = float(doc_dict['NumWords'])
 
         all_docs_count = df_dict['ALL_DOCS_COUNT']
-        if stem in df_dict['ClueWeb09']:
+        if stem in df_dict:
             stem_df = df_dict[stem]
         else:
             raise Exception('Problem!')
@@ -369,12 +369,13 @@ if __name__=='__main__':
                             file_path=save_folder + 'inner_res/',
                             filename=curr_file_name)
                     weight_list = weight_list / np.sum(weight_list)
+                    weight_list = weight_list*(1-cw_interval_weight)
                     weight_list[-1] = cw_interval_weight
                     print(affix + addition + " " + str(weight_list))
                     print(affix + addition + " " + "SCORE : " + str(res_dict))
                     sys.stdout.flush()
 
-                    insert_row = weight_list + [res_dict['Map'], res_dict['P_5'], res_dict['P_10']]
+                    insert_row = list(weight_list) + [res_dict['Map'], res_dict['P_5'], res_dict['P_10']]
                     cv_summary_df.loc[next_idx] = insert_row
                     next_idx += 1
             cv_summary_df.to_csv(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.tsv"), sep = '\t', index=False)
