@@ -206,7 +206,7 @@ def create_weights_matrix(
         cw_interval_weight):
 
     tmp_weights_df = all_weights_df * weight_list
-    normalize_factor = np.sum(tmp_weights_df, axis=1)
+    normalize_factor = np.sum(tmp_weights_df.values, axis=1)
     normalize_factor = normalize_factor.reshape((len(tmp_weights_df), 1))
     tmp_weights_df = tmp_weights_df / normalize_factor
 
@@ -234,7 +234,7 @@ def create_cc_df_dict(
                 df_cc_dict[key_] = np.sum(tmp_mtrx)
             elif retrival_model == 'BM25':
                 df_cc_dict[key_] = 0.0
-                for val_ in list(np.sum(tmp_mtrx).values):
+                for val_ in list(tmp_mtrx.values):
                     if val_ > 0.0:
                         df_cc_dict[key_] += 1
     return df_cc_dict
