@@ -32,10 +32,10 @@ def score_doc_for_query(
 
 
         idf = math.log(df_dict['ALL_DOCS_COUNT'] / float(df_dict[stem]) , 10)
-        if sw_rmv == True:
-            stem_d_proba = (doc_stem_tf * (k1 + 1)) / (doc_stem_tf + k1 * ((1 - b) + b * (float(doc_dict['NumWords'] - doc_dict['NumStopWords']) / df_dict['AVG_DOC_LEN_NO_SW'])))
-        else:
-            stem_d_proba = (doc_stem_tf * (k1 + 1)) / (doc_stem_tf + k1*((1-b) + b*(float(doc_dict['NumWords'])/df_dict['AVG_DOC_LEN']) ))
+        # if sw_rmv == True:
+        #     stem_d_proba = (doc_stem_tf * (k1 + 1)) / (doc_stem_tf + k1 * ((1 - b) + b * (float(doc_dict['NumWords'] - doc_dict['NumStopWords']) / df_dict['AVG_DOC_LEN_NO_SW'])))
+        # else:
+        stem_d_proba = (doc_stem_tf * (k1 + 1)) / (doc_stem_tf + k1*((1-b) + b*(float(doc_dict['NumWords'])/df_dict['AVG_DOC_LEN']) ))
 
         bm25_score += idf * stem_d_proba
 

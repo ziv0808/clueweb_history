@@ -28,18 +28,18 @@ def score_doc_for_query_lm(
         collection_count_for_word = 0.0
         for interval in interval_list:
             if verify_snapshot_for_doc(doc_dict,interval,filter_params) is not None:
-                if sw_rmv == True:
-                    doc_len += float(doc_dict[interval]['NumWords'] - doc_dict[interval]['NumStopWords'])
-                else:
-                    doc_len += float(doc_dict[interval]['NumWords'])
+                # if sw_rmv == True:
+                #     doc_len += float(doc_dict[interval]['NumWords'] - doc_dict[interval]['NumStopWords'])
+                # else:
+                doc_len += float(doc_dict[interval]['NumWords'])
                 active_intervals += 1
                 if stem in doc_dict[interval]['TfDict']:
                     doc_stem_tf += float(doc_dict[interval]['TfDict'][stem])
                 if avg_global_params == True:
-                    if sw_rmv == True:
-                        collection_len += cc_dict[interval]['ALL_TERMS_COUNT'] - cc_dict[interval]['ALL_SW_COUNT']
-                    else:
-                        collection_len += cc_dict[interval]['ALL_TERMS_COUNT']
+                    # if sw_rmv == True:
+                    #     collection_len += cc_dict[interval]['ALL_TERMS_COUNT'] - cc_dict[interval]['ALL_SW_COUNT']
+                    # else:
+                    collection_len += cc_dict[interval]['ALL_TERMS_COUNT']
                     if stem in cc_dict[interval]:
                         collection_count_for_word += cc_dict[interval][stem]
 
@@ -47,10 +47,10 @@ def score_doc_for_query_lm(
 
         stem_q_prob = float(query_tf)/sum(list(query_stem_dict.values()))
         if avg_global_params == False:
-            if sw_rmv == True:
-                collection_len = cc_dict['ClueWeb09']['ALL_TERMS_COUNT'] - cc_dict['ClueWeb09']['ALL_SW_COUNT']
-            else:
-                collection_len = cc_dict['ClueWeb09']['ALL_TERMS_COUNT']
+            # if sw_rmv == True:
+            #     collection_len = cc_dict['ClueWeb09']['ALL_TERMS_COUNT'] - cc_dict['ClueWeb09']['ALL_SW_COUNT']
+            # else:
+            collection_len = cc_dict['ClueWeb09']['ALL_TERMS_COUNT']
             collection_count_for_word = cc_dict['ClueWeb09'][stem]
 
         stem_d_proba = get_word_diriclet_smoothed_probability(
@@ -89,12 +89,12 @@ def score_doc_for_query_bm25(
         all_docs_count = 0.0
         for interval in interval_list:
             if verify_snapshot_for_doc(doc_dict,interval,filter_params) is not None:
-                if sw_rmv == True:
-                    doc_len += float(doc_dict[interval]['NumWords'] - doc_dict[interval]['NumStopWords'])
-                    avg_doc_len += df_dict[interval]['AVG_DOC_LEN_NO_SW']
-                else:
-                    doc_len += float(doc_dict[interval]['NumWords'])
-                    avg_doc_len += df_dict[interval]['AVG_DOC_LEN']
+                # if sw_rmv == True:
+                #     doc_len += float(doc_dict[interval]['NumWords'] - doc_dict[interval]['NumStopWords'])
+                #     avg_doc_len += df_dict[interval]['AVG_DOC_LEN_NO_SW']
+                # else:
+                doc_len += float(doc_dict[interval]['NumWords'])
+                avg_doc_len += df_dict[interval]['AVG_DOC_LEN']
                 active_intervals += 1
                 if stem in doc_dict[interval]['TfDict']:
                     doc_stem_tf += float(doc_dict[interval]['TfDict'][stem])
@@ -113,10 +113,10 @@ def score_doc_for_query_bm25(
                 stem_df = df_dict['ClueWeb09'][stem]
             else:
                 stem_df = 1
-            if sw_rmv == True:
-                avg_doc_len = df_dict['ClueWeb09']['AVG_DOC_LEN_NO_SW']
-            else:
-                avg_doc_len = df_dict['ClueWeb09']['AVG_DOC_LEN']
+            # if sw_rmv == True:
+            #     avg_doc_len = df_dict['ClueWeb09']['AVG_DOC_LEN_NO_SW']
+            # else:
+            avg_doc_len = df_dict['ClueWeb09']['AVG_DOC_LEN']
 
         idf = math.log(all_docs_count / float(stem_df), 10)
         stem_d_proba = (doc_stem_tf * (k1 + 1)) / (

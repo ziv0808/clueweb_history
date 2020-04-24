@@ -41,20 +41,20 @@ def score_doc_for_query(
             query_tf = query_stem_dict[stem]
 
         stem_q_prob = float(query_tf)/sum(list(query_stem_dict.values()))
-        if sw_rmv == True:
-            stem_d_proba = get_word_diriclet_smoothed_probability(
-                tf_in_doc=doc_stem_tf,
-                doc_len=(doc_dict['NumWords'] - doc_dict['NumStopWords']),
-                collection_count_for_word=cc_dict[stem],
-                collection_len=(cc_dict['ALL_TERMS_COUNT'] - cc_dict['ALL_SW_COUNT']),
-                mue=mue)
-        else:
-            stem_d_proba = get_word_diriclet_smoothed_probability(
-                tf_in_doc = doc_stem_tf,
-                doc_len = doc_dict['NumWords'],
-                collection_count_for_word=cc_dict[stem],
-                collection_len=cc_dict['ALL_TERMS_COUNT'],
-                mue=mue)
+        # if sw_rmv == True:
+        #     stem_d_proba = get_word_diriclet_smoothed_probability(
+        #         tf_in_doc=doc_stem_tf,
+        #         doc_len=(doc_dict['NumWords'] - doc_dict['NumStopWords']),
+        #         collection_count_for_word=cc_dict[stem],
+        #         collection_len=(cc_dict['ALL_TERMS_COUNT'] - cc_dict['ALL_SW_COUNT']),
+        #         mue=mue)
+        # else:
+        stem_d_proba = get_word_diriclet_smoothed_probability(
+            tf_in_doc = doc_stem_tf,
+            doc_len = doc_dict['NumWords'],
+            collection_count_for_word=cc_dict[stem],
+            collection_len=cc_dict['ALL_TERMS_COUNT'],
+            mue=mue)
 
         kl_score += (-1)*stem_q_prob*(math.log((stem_q_prob/stem_d_proba) , 2))
 

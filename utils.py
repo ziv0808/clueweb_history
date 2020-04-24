@@ -488,7 +488,35 @@ def create_full_doc_dict_from_fulltext(
     return res_dict
 
 
+def create_decaying_wieghts_list(
+        interval_list,
+        decaying_factor,
+        skip_idx_list,
+        reverse):
+    # create decaying weights for the interval list without skiped indexes
+    p = len(interval_list) - len(skip_idx_list)
+    wieght_list = [0.0] * len(interval_list)
+    k = 0.0
+    if reverse == True:
+        k = float(p - 1)
+    for i in range(len(wieght_list)):
+        if i not in skip_idx_list:
+            wieght_list[i] = (1.0 - k * (decaying_factor / float(p)))
+            if reverse == True:
+                k -= 1
+            else:
+                k += 1
 
+    return pd.np.array(wieght_list)
 
-
+def create_uniform_wieghts_list(
+        interval_list,
+        skip_idx_list):
+    # create uniform weights for the interval list without skiped indexes
+    denominator = float(len(interval_list) - len(skip_idx_list))
+    wieght_list = [0.0] * len(interval_list)
+    for i in range(len(wieght_list)):
+        if i not in skip_idx_list:
+            wieght_list[i] = 1.0 / denominator
+    return pd.np.array(wieght_list)
 
