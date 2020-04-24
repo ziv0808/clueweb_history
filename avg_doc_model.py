@@ -270,8 +270,8 @@ if __name__=='__main__':
     amount_of_snapshot_limit = ast.literal_eval(sys.argv[3])
     retrival_model = sys.argv[4]
     sw_rmv = ast.literal_eval(sys.argv[5])
-    filter_params = ast.literal_eval(sys.argv[7])
-    run_cv = ast.literal_eval(sys.argv[8])
+    filter_params = ast.literal_eval(sys.argv[6])
+    run_cv = ast.literal_eval(sys.argv[7])
 
     # if run_cv == True:
     #     start_test_q = int(sys.argv[9])
