@@ -981,6 +981,90 @@ def add_stopword_stats_to_df_dict(
         with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/df_per_interval_dict.json', 'w') as f:
             f.write(str(res_dict))
 
+def plot_interesting_stats_for_avg_model_results(
+        frequency,
+        retrival_model,
+        interval_start_month,
+        filter_params,
+        sw_rmv):
+    affix =""
+    if retrival_model == 'BM25':
+        affix += "BM25_"
+
+    elif retrival_model == 'LM':
+        affix += ""
+    else:
+        raise Exception("Unknown model")
+
+    addition = ""
+    if interval_start_month != 1:
+        addition = "_" + str(interval_start_month) + "SM_"
+
+    if filter_params is not None and len(filter_params) > 0:
+        addition += create_filter_params_txt_addition(filter_params)
+
+    if sw_rmv == True:
+        addition += "_SW_RMV"
+
+    save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res/'
+
+    cv_summary_df = pd.read_csv(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.tsv"), sep='\t',
+                         index_col=False)
+    interval_list = build_interval_list(WORK_YEAR, frequency, add_clueweb=True, start_month=interval_start_month)
+
+    corr_plot_df = pd.DataFrame(columns = ['Interval','Map','P@5','P@10'])
+    next_idx = 0
+    for interval in interval_list:
+        insert_row = [interval]
+        insert_row.append(cv_summary_df[interval].corr(cv_summary_df['Map']))
+        insert_row.append(cv_summary_df[interval].corr(cv_summary_df['P@5']))
+        insert_row.append(cv_summary_df[interval].corr(cv_summary_df['P@10']))
+        corr_plot_df.loc[next_idx] = insert_row
+        next_idx += 1
+
+    corr_plot_df.set_index('Interval')
+    corr_plot_df.plot(kind='bar')
+    plt.xlabel('Interval')
+    plt.tick_params(axis='x', labelsize=6)
+    plt.xticks(rotation=45)
+    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.subplots_adjust(right=0.75, bottom=0.15)
+    plt.ylabel('Correlation')
+    plt.title("Interval Effectivness Corr")
+    plt.savefig( affix + frequency + '_' + addition + "_Per_Inteval_effectiness_corr.png", dpi=300)
+
+    cw_df = cv_summary_df[['ClueWeb09','Map','P@5','P@10']].groupby(['ClueWeb09']).mean()
+    cw_df[['Map']].plot(kind='bar')
+    plt.xlabel('ClueWeb Weight Value')
+    plt.ylim((cw_df['Map'].min() - 0.02, None))
+    plt.tick_params(axis='x', labelsize=6)
+    plt.xticks(rotation=45)
+    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.subplots_adjust(right=0.75, bottom=0.15)
+    plt.ylabel('Mean Map Over All Non ClueWeb Weight Vals')
+    plt.savefig(affix + frequency + '_' + addition + "_Map_Per_CW_Weight.png", dpi=300)
+
+    cw_df[['P@5']].plot(kind='bar')
+    plt.xlabel('ClueWeb Weight Value')
+    plt.ylim((cw_df['P@5'].min() - 0.02, None))
+    plt.tick_params(axis='x', labelsize=6)
+    plt.xticks(rotation=45)
+    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.subplots_adjust(right=0.75, bottom=0.15)
+    plt.ylabel('Mean P@5 Over All Non ClueWeb Weight Vals')
+    plt.savefig(affix + frequency + '_' + addition + "_P_5_Per_CW_Weight.png", dpi=300)
+
+    cw_df[['P@10']].plot(kind='bar')
+    plt.xlabel('ClueWeb Weight Value')
+    plt.ylim((cw_df['P@10'].min() - 0.02, None))
+    plt.tick_params(axis='x', labelsize=6)
+    plt.xticks(rotation=45)
+    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.subplots_adjust(right=0.75, bottom=0.15)
+    plt.ylabel('Mean P@10 Over All Non ClueWeb Weight Vals')
+    plt.savefig(affix + frequency + '_' + addition + "_P_10_Per_CW_Weight.png", dpi=300)
+
+
 if __name__ == '__main__':
     operation = sys.argv[1]
     if operation == 'TFDict':
@@ -1048,6 +1132,20 @@ if __name__ == '__main__':
         inner_fold = sys.argv[4]
         work_year = sys.argv[5]
         create_similarity_interval(sim_threshold=sim_thresold,sim_folder_name=sim_folder_name, inner_fold=inner_fold, work_year=work_year)
+
+    elif operation == "AvgModelStats":
+        frequency = sys.argv[2]
+        retrival_model = sys.argv[3]
+        interval_start_month = int(sys.argv[4])
+        filter_params= ast.literal_eval(sys.argv[5])
+        sw_rmv = ast.literal_eval(sys.argv[6])
+
+        plot_interesting_stats_for_avg_model_results(
+            frequency=frequency,
+            retrival_model=retrival_model,
+            interval_start_month=interval_start_month,
+            filter_params=filter_params,
+            sw_rmv=sw_rmv)
 
     elif operation == 'PlotAllRetStats':
         for filename in os.listdir('/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/'):
