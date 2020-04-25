@@ -264,6 +264,47 @@ def make_weight_list_options(
             weight_list_options.append(weight_list)
     return weight_list_options
 
+def run_test_on_config(
+        weight_list,
+        tmp_weights_df,
+        stemmed_queries_df,
+        query_to_doc_mapping_df,
+        all_global_params_dict,
+        retrival_model,
+        params,
+        save_folder,
+        affix,
+        frequency,
+        addition,
+        cw_interval_weight):
+    df_cc_dict = create_cc_df_dict(
+        tmp_weights_df=tmp_weights_df,
+        all_global_params_dict=all_global_params_dict,
+        retrival_model=retrival_model)
+
+    big_df = test_queries(
+        stemmed_queries_df=stemmed_queries_df,
+        query_to_doc_mapping_df=query_to_doc_mapping_df,
+        cc_dict=df_cc_dict,
+        params=params,
+        retrival_model=retrival_model,
+        tmp_weight_df=tmp_weights_df,
+        all_global_params_dict=all_global_params_dict)
+
+    cur_time = str(datetime.datetime.now())
+    curr_file_name = cur_time.replace(' ', '_') + '_' + affix + frequency + '_' + addition + "_Results.txt"
+    with open(os.path.join(save_folder + 'inner_res/', curr_file_name), 'w') as f:
+        f.write(convert_df_to_trec(big_df))
+
+    res_dict = get_ranking_effectiveness_for_res_file(
+        file_path=save_folder + 'inner_res/',
+        filename=curr_file_name)
+    weight_list = weight_list / np.sum(weight_list)
+    weight_list = weight_list * (1 - cw_interval_weight)
+    weight_list[-1] = cw_interval_weight
+
+    return res_dict, weight_list
+
 if __name__=='__main__':
     frequency = sys.argv[1]
     interval_start_month = int(sys.argv[2])
@@ -273,12 +314,12 @@ if __name__=='__main__':
     filter_params = ast.literal_eval(sys.argv[6])
     run_cv = ast.literal_eval(sys.argv[7])
 
-    # if run_cv == True:
-    #     start_test_q = int(sys.argv[9])
-    #     end_test_q = int(sys.argv[10])
-    #     affix = str(start_test_q) + '_' + str(end_test_q) + "_"
-    # else:
-    affix = ""
+    if run_cv == True:
+        start_test_q = int(sys.argv[8])
+        end_test_q = int(sys.argv[9])
+        affix = str(start_test_q) + '_' + str(end_test_q) + "_"
+    else:
+        affix = ""
 
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+INNER_FOLD+'/'+WORK_YEAR+'/' +frequency + '/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res/'
@@ -321,16 +362,18 @@ if __name__=='__main__':
             amount_of_snapshot_limit=amount_of_snapshot_limit
             )
 
-        # test_set_q = list(range(start_test_q, end_test_q + 1))
-        # stemmed_queries_df['IsTest'] = stemmed_queries_df['QueryNum'].apply(lambda x: 1 if x in test_set_q else 0)
-        # test_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 1].copy()
-        # stemmed_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 0]
+        test_set_q = list(range(start_test_q, end_test_q + 1))
+        stemmed_queries_df['IsTest'] = stemmed_queries_df['QueryNum'].apply(lambda x: 1 if x in test_set_q else 0)
+        test_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 1].copy()
+        stemmed_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 0]
 
         all_weights_df = all_global_params_dict['NumWords'].copy()
         all_weights_df = all_weights_df.applymap(lambda x: 0 if pd.np.isnan(x) else 1)
         for element in all_global_params_dict:
             all_global_params_dict[element] = all_global_params_dict[element].applymap(lambda x: 0.0 if np.isnan(x) else x)
 
+        best_map = 0.0
+        best_config = {'WList' : None, 'WDf' : None}
         for i in range(len(interval_list) - 1):
             for cw_interval_weight in wieght_for_last_interval_options:
                 ignore_idxs = list(range(i))
@@ -346,31 +389,20 @@ if __name__=='__main__':
                         weight_list=weight_list,
                         cw_interval_weight=cw_interval_weight)
 
-                    df_cc_dict = create_cc_df_dict(
+                    res_dict, weight_list = run_test_on_config(
+                        weight_list=weight_list,
                         tmp_weights_df=tmp_weights_df,
-                        all_global_params_dict=all_global_params_dict,
-                        retrival_model=retrival_model)
-
-                    big_df = test_queries(
                         stemmed_queries_df=stemmed_queries_df,
                         query_to_doc_mapping_df=query_to_doc_mapping_df,
-                        cc_dict=df_cc_dict,
-                        params=params,
+                        all_global_params_dict=all_global_params_dict,
                         retrival_model=retrival_model,
-                        tmp_weight_df=tmp_weights_df,
-                        all_global_params_dict=all_global_params_dict)
+                        params=params,
+                        save_folder=save_folder,
+                        affix=affix,
+                        frequency=frequency,
+                        addition=addition,
+                        cw_interval_weight=cw_interval_weight)
 
-                    cur_time = str(datetime.datetime.now())
-                    curr_file_name = cur_time.replace(' ', '_') + '_' + affix + frequency + '_' + addition + "_Results.txt"
-                    with open(os.path.join(save_folder + 'inner_res/',curr_file_name), 'w') as f:
-                        f.write(convert_df_to_trec(big_df))
-
-                    res_dict = get_ranking_effectiveness_for_res_file(
-                            file_path=save_folder + 'inner_res/',
-                            filename=curr_file_name)
-                    weight_list = weight_list / np.sum(weight_list)
-                    weight_list = weight_list*(1-cw_interval_weight)
-                    weight_list[-1] = cw_interval_weight
                     print(affix + addition + " " + str(weight_list))
                     print(affix + addition + " " + "SCORE : " + str(res_dict))
                     sys.stdout.flush()
@@ -378,6 +410,63 @@ if __name__=='__main__':
                     insert_row = list(weight_list) + [res_dict['Map'], res_dict['P_5'], res_dict['P_10']]
                     cv_summary_df.loc[next_idx] = insert_row
                     next_idx += 1
+
+                    if res_dict['Map'] > best_map:
+                        best_map = res_dict['Map']
+                        best_config['WList'] = weight_list
+                        best_config['WDf'] = tmp_weights_df
+
             cv_summary_df.to_csv(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.tsv"), sep = '\t', index=False)
+        # test the benchmark case - only last interval
+        tmp_weights_df = tmp_weights_df.applymap(lambda x: 0.0)
+        tmp_weights_df['ClueWeb09'] = 1.0
+        weight_list = np.array([0.0] * len(weight_list))
+        weight_list[-1] = 1.0
+        res_dict, weight_list = run_test_on_config(
+            weight_list=weight_list,
+            tmp_weights_df=tmp_weights_df,
+            stemmed_queries_df=stemmed_queries_df,
+            query_to_doc_mapping_df=query_to_doc_mapping_df,
+            all_global_params_dict=all_global_params_dict,
+            retrival_model=retrival_model,
+            params=params,
+            save_folder=save_folder,
+            affix=affix,
+            frequency=frequency,
+            addition=addition,
+            cw_interval_weight=1.0)
+        print(affix + addition + " " + str(weight_list))
+        print(affix + addition + " " + "SCORE : " + str(res_dict))
+        sys.stdout.flush()
+
+        insert_row = list(weight_list) + [res_dict['Map'], res_dict['P_5'], res_dict['P_10']]
+        cv_summary_df.loc[next_idx] = insert_row
+        next_idx += 1
+
+        if res_dict['Map'] > best_map:
+            best_map = res_dict['Map']
+            best_config['WList'] = weight_list
+            best_config['WDf'] = tmp_weights_df
+
+        # run on test set
+        res_dict, weight_list = run_test_on_config(
+            weight_list=best_config['WList'],
+            tmp_weights_df=best_config['WDf'],
+            stemmed_queries_df=test_queries_df,
+            query_to_doc_mapping_df=query_to_doc_mapping_df,
+            all_global_params_dict=all_global_params_dict,
+            retrival_model=retrival_model,
+            params=params,
+            save_folder=save_folder,
+            affix=affix,
+            frequency=frequency,
+            addition=addition,
+            cw_interval_weight=best_config['WList'][-1])
+
+        insert_row = list(best_config['WList']) + [res_dict['Map'], res_dict['P_5'], res_dict['P_10']]
+        cv_summary_df.loc[next_idx] = insert_row
+        next_idx += 1
+        cv_summary_df.to_csv(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.tsv"), sep='\t',
+                             index=False)
     else:
         pass
