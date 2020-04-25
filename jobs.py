@@ -1021,6 +1021,7 @@ def plot_interesting_stats_for_avg_model_results(
         insert_row.append(cv_summary_df[interval].corr(cv_summary_df['P@10']))
         corr_plot_df.loc[next_idx] = insert_row
         next_idx += 1
+    print(cv_summary_df.corr())
 
     corr_plot_df.set_index('Interval')
     corr_plot_df.plot(kind='bar')
