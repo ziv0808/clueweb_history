@@ -462,7 +462,7 @@ if __name__=='__main__':
             frequency=frequency,
             addition=addition,
             cw_interval_weight=best_config['WList'][-1])
-
+        # last row is the test result
         insert_row = list(best_config['WList']) + [res_dict['Map'], res_dict['P_5'], res_dict['P_10']]
         cv_summary_df.loc[next_idx] = insert_row
         next_idx += 1
