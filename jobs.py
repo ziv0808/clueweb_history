@@ -1011,6 +1011,8 @@ def plot_interesting_stats_for_avg_model_results(
     cv_test_df = pd.DataFrame({})
     for filename in os.listdir(save_folder):
         if filename.endswith('_'+affix + frequency + '_' + addition + "_Results.tsv"):
+            if retrival_model == 'LM' and 'BM25' in filename:
+                continue
             print(filename)
             cv_summary_df_tmp = pd.read_csv(os.path.join(save_folder, filename), sep='\t',
                                  index_col=False)
