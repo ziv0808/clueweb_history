@@ -1007,23 +1007,31 @@ def plot_interesting_stats_for_avg_model_results(
         addition += "_SW_RMV"
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res/'
+    cv_summary_df = pd.DataFrame({})
+    cv_test_df = pd.DataFrame({})
+    for filename in os.listdir(save_folder):
+        if filename.endswith('_'+affix + frequency + '_' + addition + "_Results.tsv"):
+            print(filename)
+            cv_summary_df_tmp = pd.read_csv(os.path.join(save_folder, filename), sep='\t',
+                                 index_col=False)
+            last_idx = list(cv_summary_df_tmp.index)[-1]
+            cv_test_df = cv_test_df.append(cv_summary_df_tmp.tail(1), ignore_index = True)
+            cv_summary_df_tmp.drop(last_idx, inplace = True)
+            cv_summary_df = cv_summary_df.append(cv_summary_df_tmp)
 
-    cv_summary_df = pd.read_csv(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.tsv"), sep='\t',
-                         index_col=False)
     interval_list = build_interval_list(WORK_YEAR, frequency, add_clueweb=True, start_month=interval_start_month)
 
     corr_plot_df = pd.DataFrame(columns = ['Interval','Map','P@5','P@10'])
     next_idx = 0
     for interval in interval_list:
-        insert_row = [interval]
+        insert_row = [interval.replace('ClueWeb09','ClueWeb')]
         insert_row.append(cv_summary_df[interval].corr(cv_summary_df['Map']))
         insert_row.append(cv_summary_df[interval].corr(cv_summary_df['P@5']))
         insert_row.append(cv_summary_df[interval].corr(cv_summary_df['P@10']))
         corr_plot_df.loc[next_idx] = insert_row
         next_idx += 1
-    print(cv_summary_df.corr())
 
-    corr_plot_df.set_index('Interval')
+    corr_plot_df.set_index('Interval', inplace = True)
     corr_plot_df.plot(kind='bar')
     plt.xlabel('Interval')
     plt.tick_params(axis='x', labelsize=6)
@@ -1064,6 +1072,32 @@ def plot_interesting_stats_for_avg_model_results(
     plt.subplots_adjust(right=0.75, bottom=0.15)
     plt.ylabel('Mean P@10 Over All Non ClueWeb Weight Vals')
     plt.savefig(affix + frequency + '_' + addition + "_P_10_Per_CW_Weight.png", dpi=300)
+
+    wieght_mean_df = cv_test_df[interval_list].mean()
+    wieght_std_df = cv_test_df[interval_list].std()
+
+    wieghts_plot_df = pd.DataFrame(columns = ['Interval', 'MeanWieght', 'StdWeight'])
+    next_idx = 0
+
+    for key in list(wieght_mean_df.keys()):
+        wieghts_plot_df.loc[next_idx] = [key.replace('ClueWeb09','ClueWeb'), wieght_mean_df[key], wieght_std_df[key]]
+        next_idx += 1
+
+    wieghts_plot_df.set_index('Interval', inplace = True)
+    wieghts_plot_df.plot(kind='bar')
+    plt.xlabel('Interval')
+    plt.title('Mean and Std CV Weights Per Interval')
+    plt.tick_params(axis='x', labelsize=6)
+    plt.xticks(rotation=45)
+    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.subplots_adjust(right=0.75, bottom=0.15)
+    plt.savefig(affix + frequency + '_' + addition + "_Test_Weights_per_interval.png", dpi=300)
+
+    res_df = cv_test_df[['Map','P@5','P@10']].mean()
+
+    fin_df = pd.DataFrame(columns = ['Map','P@5','P@10'])
+    fin_df.loc[0] = [res_df['Map'], res_df['P@5'], res_df['P@10']]
+    fin_df.to_csv(os.path.join(save_folder,affix + frequency + '_' + addition + "_Test_Results.tsv"), sep = '\t', index = False)
 
 
 if __name__ == '__main__':
