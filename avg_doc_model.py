@@ -212,6 +212,11 @@ def create_weights_matrix(
 
     tmp_weights_df = tmp_weights_df * (1.0 - cw_interval_weight)
     tmp_weights_df['ClueWeb09'] = [cw_interval_weight] * len(tmp_weights_df)
+    tmp_weights_df.fillna(0.0, inplace = True)
+    tmp_weights_df['Normalizer'] = list(normalize_factor.reshape((1,len(tmp_weights_df)))[0])
+    tmp_weights_df['ClueWeb09'] = tmp_weights_df.apply(lambda row: 1.0 if row['Normalizer'] == 0.0
+                                                        else row['ClueWeb09'], axis =1)
+    del tmp_weights_df['Normalizer']
     return tmp_weights_df
 
 def create_cc_df_dict(
@@ -412,6 +417,8 @@ if __name__=='__main__':
                     next_idx += 1
 
                     if res_dict['Map'] > best_map:
+                        if best_map == 0.0:
+                            tmp_weights_df.to_csv('test.tsv', sep = '\t')
                         best_map = res_dict['Map']
                         best_config['WList'] = weight_list
                         best_config['WDf'] = tmp_weights_df
