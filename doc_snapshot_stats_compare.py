@@ -97,7 +97,7 @@ if __name__=='__main__':
     interval_freq = sys.argv[2]
     similarity_to_clueweb_threshold = 0.05
     if work_year == '2011':
-        query_to_doc_file_addition = "_cw12"
+        query_to_doc_file_addition = "_cw12_1000_per_q"
     else:
         query_to_doc_file_addition = ""
 
