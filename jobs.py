@@ -130,7 +130,11 @@ def create_per_interval_per_lookup_cc_dict(
                 work_year=work_year,
                 frequency=interval_freq,
                 add_clueweb=True)
-        processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+inner_fold+'/'+work_year+'/', interval_freq)
+        if inner_fold == "":
+            processed_docs_path = os.path.join(
+                '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/', interval_freq)
+        else:
+            processed_docs_path = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+inner_fold+'/'+work_year+'/', interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
             sys.stdout.flush()
@@ -388,8 +392,13 @@ def create_per_interval_per_lookup_df_dict(
             work_year=work_year,
             frequency=interval_freq,
             add_clueweb=True)
-        processed_docs_path = os.path.join(
-            '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+inner_fold+'/'+work_year+'/', interval_freq)
+        if inner_fold == "" or inner_fold is None:
+            processed_docs_path = os.path.join(
+                '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + work_year + '/',
+                interval_freq)
+        else:
+            processed_docs_path = os.path.join(
+                '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+inner_fold+'/'+work_year+'/', interval_freq)
         for lookup_method in lookup_method_list:
             print(lookup_method)
             sys.stdout.flush()
