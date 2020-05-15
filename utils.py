@@ -13,7 +13,7 @@ if WORK_YEAR == '2011':
 else:
     QRELS_FILE_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
 
-INNER_FOLD = 'cw12'
+INNER_FOLD = 'cw12_1000_per_q'
 QUERY_ENETITY_LIST = [1, 2, 5, 6, 7, 12, 15, 16, 21, 22, 23, 29, 31, 36, 37, 39, 41, 44, 46, 48, 52,
                       54, 56, 62, 65, 67, 68, 71, 72, 80, 81, 84, 85, 86, 97, 100, 101, 102, 103, 104,
                       105, 107, 108, 109, 110, 111, 114, 115, 116, 122, 123, 124, 126, 127, 129, 136,

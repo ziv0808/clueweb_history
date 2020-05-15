@@ -473,7 +473,7 @@ if __name__=='__main__':
         insert_row = list(best_config['WList']) + [res_dict['Map'], res_dict['P_5'], res_dict['P_10']]
         cv_summary_df.loc[next_idx] = insert_row
         next_idx += 1
-        cv_summary_df.to_csv(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.tsv"), sep='\t',
+        cv_summary_df.to_csv(os.path.join(save_folder, affix + frequency + '_' + addition + '_' + WORK_YEAR +"_Results.tsv"), sep='\t',
                              index=False)
     else:
         pass
