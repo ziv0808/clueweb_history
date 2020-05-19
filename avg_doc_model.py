@@ -423,7 +423,7 @@ if __name__=='__main__':
                         best_config['WList'] = weight_list
                         best_config['WDf'] = tmp_weights_df
 
-            cv_summary_df.to_csv(os.path.join(save_folder, affix + frequency + '_' + addition + "_Results.tsv"), sep = '\t', index=False)
+            cv_summary_df.to_csv(os.path.join(save_folder, affix + frequency + '_' + addition + '_' + WORK_YEAR+ "_Results.tsv"), sep = '\t', index=False)
         # test the benchmark case - only last interval
         tmp_weights_df = tmp_weights_df.applymap(lambda x: 0.0)
         tmp_weights_df['ClueWeb09'] = 1.0

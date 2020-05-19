@@ -95,11 +95,12 @@ def build_text_and_tf(
 if __name__=='__main__':
     work_year = sys.argv[1]
     interval_freq = sys.argv[2]
+    query_to_doc_file_addition = sys.argv[3]
     similarity_to_clueweb_threshold = 0.05
-    if work_year == '2011':
-        query_to_doc_file_addition = "_cw12_1000_per_q"
-    else:
-        query_to_doc_file_addition = ""
+    # if work_year == '2011':
+    #     query_to_doc_file_addition = "_cw12_1000_per_q"
+    # else:
+    #     query_to_doc_file_addition = ""
 
     doc_vector_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/document_vectors/' + work_year + '/'
     stop_word_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Stop_Words'
@@ -214,7 +215,7 @@ if __name__=='__main__':
             with open(os.path.join(save_folder, file_name + '.json'), 'w') as f:
                 f.write(str(doc_json))
 
-    summary_df.to_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + interval_freq + '.tsv', sep ='\t', index= False)
+    summary_df.to_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Summay_snapshot_stats_' + interval_freq + '_' + work_year + '.tsv', sep ='\t', index= False)
     # doc_json = create_doc_json('','clueweb09-en0000-68-11648')
     # with open('test.txt', 'w') as f:
     #     f.write(doc_json)
