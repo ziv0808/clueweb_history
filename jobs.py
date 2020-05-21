@@ -1236,7 +1236,7 @@ if __name__ == '__main__':
         work_year = sys.argv[2]
         interval_freq = sys.argv[3]
         lookup_method = sys.argv[4]
-        retrieval_model = sys.argv[5]
+        retrival_model = sys.argv[5]
         calc_top_50_stats(work_year=work_year, interval_freq=interval_freq,
                                                lookup_method=lookup_method, retrival_model=retrival_model)
 
