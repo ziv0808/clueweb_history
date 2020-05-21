@@ -5,6 +5,7 @@ from utils import *
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
+from retrival_stats_creator import rbo, overlap
 
 def get_relevant_docs_df(
         qurls_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc'):
@@ -20,7 +21,8 @@ def get_relevant_docs_df(
         relevant_docs_df.loc[next_index] = [splitted_line[0], splitted_line[2], splitted_line[3]]
         next_index += 1
 
-    relevant_docs_df.to_csv(qurls_path.replace('.', '_') + '_relevant_docs.tsv', sep = '\t', index = False)
+    return relevant_docs_df
+    # relevant_docs_df.to_csv(qurls_path.replace('.', '_') + '_relevant_docs.tsv', sep = '\t', index = False)
 
 
 def merge_covered_df_with_file(
@@ -1110,6 +1112,64 @@ def plot_interesting_stats_for_avg_model_results(
     fin_df.loc[0] = [res_df['Map'], res_df['P@5'], res_df['P@10']]
     fin_df.to_csv(os.path.join(save_folder,affix + frequency + '_' + addition + "_Test_Results.tsv"), sep = '\t', index = False)
 
+def calc_top_50_stats(
+        work_year,
+        interval_freq,
+        lookup_method,
+        retrival_model):
+
+    res_files_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
+    interval_list = build_interval_list(work_year, frequency, add_clueweb=False, start_month=interval_start_month)
+
+    affix = ""
+    if retrival_model == 'BM25':
+        affix = "BM25_"
+    file_end = "_" + interval_freq + "_" + lookup_method + "_Results.txt"
+
+    if int(work_year) <= 2009:
+        qrel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc')
+    else:
+        qrel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc')
+
+    qrel_df['Relevance'] = qrel_df['Relevance'].apply(lambda x: 1 if x > 0 else 0)
+    summary_df = pd.DataFrame(columns = ['Interval', 'Query', 'P@50', 'Overlap','RBO_0.99','RBO_0.975','RBO_0.95'])
+    next_index = 0
+    bench_df = convert_trec_results_file_to_pandas_df(os.path.join(res_files_path, affix + 'ClueWeb09' + file_end))
+    all_q_list = list(bench_df['Query_ID'].drop_duplicates())
+    bench_df['Rank'] = bench_df['Rank'].apply(lambda x: int(x))
+    bench_df = bench_df[bench_df['Rank'] <= 50]
+
+    for interval in interval_list:
+        print(interval)
+        sys.stdout.flush()
+        curr_df = convert_trec_results_file_to_pandas_df(os.path.join(res_files_path, affix + interval + file_end))
+        curr_df['Rank'] = curr_df['Rank'].apply(lambda x: int(x))
+        curr_df = curr_df[curr_df['Rank'] <= 50]
+
+        for q in all_q_list:
+            tmp_q_df = curr_df[curr_df['Query_ID'] == q].copy()
+            tmp_b_df = bench_df[bench_df['Query_ID'] == q].copy()
+
+            tmp_overlap = overlap(list(tmp_b_df['Docno']),list(tmp_q_df['Docno']), 50)
+            rbo_0_99    = rbo(list(tmp_b_df['Docno']),list(tmp_q_df['Docno']), p=0.99)['ext']
+            rbo_0_975   = rbo(list(tmp_b_df['Docno']), list(tmp_q_df['Docno']), p=0.975)['ext']
+            rbo_0_95    = rbo(list(tmp_b_df['Docno']), list(tmp_q_df['Docno']), p=0.95)['ext']
+
+            tmp_rel_df = pd.merge(
+                tmp_q_df,
+                qrel_df.rename(columns = {'Query' : 'Query_ID'}),
+                on = ['Query_ID', 'Docno'],
+                how ='inner')
+
+            if tmp_rel_df.empty == True:
+                p_50 = 0.0
+            else:
+                p_50 = float(tmp_rel_df['Relevance'].sum()) / 50.0
+            summary_df.loc[next_index] = [interval, q, p_50, tmp_overlap,rbo_0_99,rbo_0_975,rbo_0_95 ]
+            next_index += 1
+
+    summary_df.to_csv(os.path.join(os.path.join(res_files_path,'top_50_data'), affix + 'Top_50_data' + file_end.replace('.txt','.tsv')), sep = '\t', index=False)
+
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -1171,6 +1231,14 @@ if __name__ == '__main__':
         interval_freq = sys.argv[3]
         lookup_method = sys.argv[4]
         plot_stats_vs_winner_plots_for_wl_file(file_name=filename,interval_freq=interval_freq, lookup_method=lookup_method)
+
+    elif operation == 'Top50Stats':
+        work_year = sys.argv[2]
+        interval_freq = sys.argv[3]
+        lookup_method = sys.argv[4]
+        retrieval_model = sys.argv[5]
+        calc_top_50_stats(work_year=work_year, interval_freq=interval_freq,
+                                               lookup_method=lookup_method, retrival_model=retrival_model)
 
     elif operation == "SIMInterval":
         sim_thresold = float(sys.argv[2])
