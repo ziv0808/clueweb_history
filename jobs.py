@@ -1185,9 +1185,9 @@ def create_multi_year_snapshot_file(
     for year in year_list:
         year_df_dict[year] = pd.read_csv(os.path.join(data_path, 'Summay_snapshot_stats_'+interval_freq+'_'+year+'.tsv'), sep ='\t', index_col =False)
         doc_query_df = doc_query_df.append(year_df_dict[year][['Docno','QueryNum']].drop_duplicates(), ignore_index = True)
-        year_df_dict[year]['QueryTermsRatio'] = year_df_dict[year].apply(lambda row: row['QueryWords'] / (row['TextLen'] - row['QueryWords']),
+        year_df_dict[year]['QueryTermsRatio'] = year_df_dict[year].apply(lambda row: row['QueryWords'] / float(row['TextLen'] - row['QueryWords']),
                                                    axis=1)
-        year_df_dict[year]['StopwordsRatio'] = year_df_dict[year].apply(lambda row: row['#Stopword'] / (row['TextLen'] - row['#Stopword']),
+        year_df_dict[year]['StopwordsRatio'] = year_df_dict[year].apply(lambda row: row['#Stopword'] / float(row['TextLen'] - row['#Stopword']),
                                               axis=1)
 
     fin_df = pd.DataFrame(columns = ['Interval', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb', 'QueryNum', 'Docno'])
