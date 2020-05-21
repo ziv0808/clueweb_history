@@ -1119,7 +1119,7 @@ def calc_top_50_stats(
         retrival_model):
 
     res_files_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
-    interval_list = build_interval_list(work_year, frequency, add_clueweb=False, start_month=interval_start_month)
+    interval_list = build_interval_list(work_year, interval_freq, add_clueweb=False)
 
     affix = ""
     if retrival_model == 'BM25':
