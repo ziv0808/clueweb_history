@@ -1196,6 +1196,8 @@ def create_multi_year_snapshot_file(
     for index, row in doc_query_df.iterrows():
         docno = row['Docno']
         query = row['QueryNum']
+        print(docno)
+        sys.stdout.flush()
         first = True
         tmp_doc_df = pd.DataFrame({})
         for year in list(reversed(year_list)):
