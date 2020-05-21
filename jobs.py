@@ -1170,6 +1170,86 @@ def calc_top_50_stats(
 
     summary_df.to_csv(os.path.join(os.path.join(res_files_path,'top_50_data'), affix + 'Top_50_data' + file_end.replace('.txt','.tsv')), sep = '\t', index=False)
 
+def create_multi_year_snapshot_file(
+        year_list,
+        last_interval,
+        interval_freq,
+        inner_fold):
+
+    data_path = "/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/"
+    if inner_fold != "":
+        data_path += inner_fold + "/"
+
+    year_df_dict = {}
+    doc_query_df = pd.DataFrame({})
+    for year in year_list:
+        year_df_dict[year] = pd.read_csv(os.path.join(data_path, 'Summay_snapshot_stats_'+interval_freq+'_'+year+'.tsv'), sep ='\t', index_col =False)
+        doc_query_df = doc_query_df.append(year_df_dict[year][['Docno','QueryNum']].drop_duplicates(), ignore_index = True)
+        year_df_dict[year]['QueryTermsRatio'] = year_df_dict[year].apply(lambda row: row['QueryWords'] / (row['TextLen'] - row['QueryWords']),
+                                                   axis=1)
+        year_df_dict[year]['StopwordsRatio'] = year_df_dict[year].apply(lambda row: row['#Stopword'] / (row['TextLen'] - row['#Stopword']),
+                                              axis=1)
+
+    fin_df = pd.DataFrame(columns = ['Interval', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb', 'QueryNum', 'Docno'])
+    next_index = 0
+    doc_query_df = doc_query_df.drop_duplicates()
+    for index, row in doc_query_df.iterrows():
+        docno = row['Docno']
+        query = row['QueryNum']
+        first = True
+        tmp_doc_df = pd.DataFrame({})
+        for year in list(reversed(year_list)):
+            tmp_doc_df_y = year_df_dict[year][year_df_dict[year]['Docno'] == docno].copy()
+            tmp_doc_df_y = tmp_doc_df_y[tmp_doc_df_y['QueryNum'] == query]
+            if first == True:
+                first = False
+                if last_interval is not None:
+                    tmp_doc_df_y['Filter'] = tmp_doc_df_y['Interval'].apply(lambda x: 1 if x > last_interval and x != 'ClueWeb09' else 0)
+                    tmp_doc_df_y = tmp_doc_df_y[tmp_doc_df_y['Filter'] == 0]
+                    del tmp_doc_df_y['Filter']
+            else:
+                tmp_doc_df_y = tmp_doc_df_y[tmp_doc_df_y['Interval'] != 'ClueWeb09']
+
+            tmp_doc_df = tmp_doc_df_y.append(tmp_doc_df, ignore_index = True)
+        if len(tmp_doc_df) > 1:
+            min_snap = (len(tmp_doc_df) - 1)*(-1)
+            bench_df = tmp_doc_df[tmp_doc_df['Interval'] == 'ClueWeb09']
+            bench_query_term_ratio = list(bench_df['QueryTermsRatio'])[0]
+            bench_stopword_ratio = list(bench_df['StopwordsRatio'])[0]
+            bench_entropy_ratio = list(bench_df['Entropy'])[0]
+            if bench_stopword_ratio == 0:
+                bench_stopword_ratio = 1.0
+            if bench_query_term_ratio == 0:
+                bench_query_term_ratio = 1.0
+            for index, row in tmp_doc_df.iterrows():
+                if row['Interval'] != 'ClueWeb09':
+                    if row['TextLen'] <= 2:
+                        query_term_ratio = pd.np.nan
+                        stopword_ratio = pd.np.nan
+                        entropy_ratio = pd.np.nan
+                        sim_cluweb = pd.np.nan
+
+                    else:
+                        query_term_ratio = (row['QueryTermsRatio'] - bench_query_term_ratio) / float(
+                            bench_query_term_ratio)
+                        stopword_ratio = (row['StopwordsRatio'] - bench_stopword_ratio) / float(bench_stopword_ratio)
+                        entropy_ratio = (row['Entropy'] - bench_entropy_ratio) / float(bench_entropy_ratio)
+                        sim_cluweb = row['SimToClueWeb']
+
+                    insert_row = [min_snap, query_term_ratio, stopword_ratio, entropy_ratio, sim_cluweb,
+                                  int(query), docno]
+                    min_snap += 1
+                    fin_df.loc[next_index] = insert_row
+                    next_index += 1
+    file_end = ""
+    if last_interval is not None:
+        file_end += last_interval
+    for year in year_list:
+        file_end += "_" + year
+    fin_df.to_csv(os.path.join(data_path, interval_freq + "_" +file_end + "United_summary.tsv"), sep = '\t', index = False)
+
+
+
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -1239,6 +1319,12 @@ if __name__ == '__main__':
         retrival_model = sys.argv[5]
         calc_top_50_stats(work_year=work_year, interval_freq=interval_freq,
                                                lookup_method=lookup_method, retrival_model=retrival_model)
+    elif operation == 'MultiYearFile':
+        year_list = ast.literal_eval(sys.argv[2])
+        last_interval = sys.argv[3]
+        interval_freq = sys.argv[4]
+        inner_fold = sys.argv[5]
+        create_multi_year_snapshot_file(year_list=year_list,last_interval=last_interval,interval_freq=interval_freq,inner_fold=inner_fold)
 
     elif operation == "SIMInterval":
         sim_thresold = float(sys.argv[2])
