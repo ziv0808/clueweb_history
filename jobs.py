@@ -1338,14 +1338,12 @@ def create_snapshot_changes_rev_vs_non_rel(
         interval_quantity_df.rename(columns = {'QueryNum': 'All'}),
         interval_rel_quantity_df.rename(columns = {'QueryNum': 'Relevant'}),
         left_index=True,
-        right_index=True,
-        how= 'left')
+        right_index=True)
     interval_quantity_df = pd.merge(
         interval_quantity_df.rename(columns={'QueryNum': 'All'}),
         interval_non_rel_quantity_df.rename(columns={'QueryNum': 'Non Relevant'}),
         left_index=True,
-        right_index=True,
-        how='left')
+        right_index=True)
     interval_quantity_df.fillna(0, inplace = True)
     plt.cla()
     plt.clf()
