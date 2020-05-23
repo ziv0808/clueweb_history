@@ -1252,6 +1252,152 @@ def create_multi_year_snapshot_file(
     fin_df.to_csv(os.path.join(data_path, interval_freq + "_" +file_end + "United_summary.tsv"), sep = '\t', index = False)
 
 
+def create_snapshot_changes_rev_vs_non_rel(
+        filename='Summay_snapshot_stats_1M.tsv',
+        work_year='2011',
+        preprocessed = False):
+
+    path_to_files = '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/'
+    filename_for_save = filename.replace('.tsv', '').replace('Summay_snapshot_stats_', '')
+    if preprocessed == False:
+        work_df = pd.read_csv(os.path.join(path_to_files, filename), sep='\t', index_col=False)
+        # calc ratio measures
+        work_df['QueryTermsRatio'] = work_df.apply(lambda row: row['QueryWords'] / float(row['TextLen'] - row['QueryWords']),
+                                                   axis=1)
+        work_df['StopwordsRatio'] = work_df.apply(lambda row: row['#Stopword'] / float(row['TextLen'] - row['#Stopword']),
+                                                  axis=1)
+
+        all_docno_and_queries_df = work_df[['Docno', 'QueryNum']].drop_duplicates()
+        only_clueweb_num = 0
+
+        summary_df = pd.DataFrame(
+            columns=['Interval', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb', 'QueryNum','Docno'])
+        next_index = 0
+
+        for index, row_ in all_docno_and_queries_df.iterrows():
+            doc_df = work_df[work_df['Docno'] == row_['Docno']].copy()
+            doc_df = doc_df[doc_df['QueryNum'] == row_['QueryNum']].copy()
+            if len(doc_df) == 1:
+                only_clueweb_num += 1
+                continue
+            bench_df = doc_df[doc_df['Interval'] == 'ClueWeb09']
+            bench_query_term_ratio = list(bench_df['QueryTermsRatio'])[0]
+            bench_stopword_ratio = list(bench_df['StopwordsRatio'])[0]
+            bench_entropy_ratio = list(bench_df['Entropy'])[0]
+            if bench_stopword_ratio == 0:
+                bench_stopword_ratio = 1.0
+            if bench_query_term_ratio == 0:
+                bench_query_term_ratio = 1.0
+            for index, row in doc_df.iterrows():
+                if row['Interval'] != 'ClueWeb09':
+                    interval = row['Interval']
+                    if row['TextLen'] <= 2:
+                        query_term_ratio = pd.np.nan
+                        stopword_ratio = pd.np.nan
+                        entropy_ratio = pd.np.nan
+                        sim_cluweb = pd.np.nan
+
+                    else:
+                        query_term_ratio = (row['QueryTermsRatio'] - bench_query_term_ratio) / float(bench_query_term_ratio)
+                        stopword_ratio = (row['StopwordsRatio'] - bench_stopword_ratio) / float(bench_stopword_ratio)
+                        entropy_ratio = (row['Entropy'] - bench_entropy_ratio) / float(bench_entropy_ratio)
+                        sim_cluweb = row['SimToClueWeb']
+
+                    insert_row = [interval, query_term_ratio, stopword_ratio, entropy_ratio, sim_cluweb, int(row_['QueryNum']),row_['Docno']]
+                    summary_df.loc[next_index] = insert_row
+                    next_index += 1
+    else:
+        summary_df = pd.read_csv(os.path.join(path_to_files, filename), sep='\t', index_col=False)
+    if int(work_year) >= '2010':
+        rel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc')
+    else:
+        rel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc')
+    rel_df['Relevance'] = rel_df['Relevance'].apply(lambda x: int(x))
+    summary_df = pd.merge(
+        summary_df,
+        rel_df[['Docno', 'Query', 'Relevance']].rename(columns={'Query': 'QueryNum'}),
+        on=['Docno', 'QueryNum'],
+        how='left')
+    summary_df['Relevance'] = summary_df['Relevance'].apply(lambda x: 0 if (pd.np.isnan(x) or x <= 0) else 1)
+
+    if 'SIM' in filename:
+        summary_df['Interval'] = summary_df['Interval'].apply(lambda x: 0 if x == 'ClueWeb09' else int(x))
+    else:
+        all_intervals = sorted(list(summary_df['Interval'].drop_duplicates()))
+        rename_dict = {}
+        i = 1
+        for interval in reversed(all_intervals):
+            rename_dict[interval] = (-1) * i
+            i += 1
+        summary_df['Interval'] = summary_df['Interval'].apply(lambda x: 0 if x == 'ClueWeb09' else rename_dict[x])
+
+    interval_quantity_df = summary_df[['Interval', 'QueryNum']].groupby(['Interval']).count()
+    interval_rel_quantity_df = summary_df[summary_df['Relevance'] == 1][['Interval', 'QueryNum']].groupby(['Interval']).count()
+    interval_non_rel_quantity_df = summary_df[summary_df['Relevance'] == 0][['Interval', 'QueryNum']].groupby(['Interval']).count()
+    interval_quantity_df = pd.merge(
+        interval_quantity_df.rename(columns = {'QueryNum': 'All'}),
+        interval_rel_quantity_df.rename(columns = {'QueryNum': 'Relevant'}),
+        left_index=True,
+        right_index=True,
+        how= 'left')
+    interval_quantity_df = pd.merge(
+        interval_quantity_df.rename(columns={'QueryNum': 'All'}),
+        interval_non_rel_quantity_df.rename(columns={'QueryNum': 'Non Relevant'}),
+        left_index=True,
+        right_index=True,
+        how='left')
+    interval_quantity_df.fillna(0, inplace = True)
+    plt.cla()
+    plt.clf()
+    interval_quantity_df.plot(kind='bar', color='r')
+    plt.legend(loc ='best')
+    plt.xlabel('Interval')
+    plt.tick_params(axis='x', labelsize=5)
+    plt.ylabel("#Snapshots")
+    plt.title("#Snapshots Per Interval")
+    plt.savefig(filename_for_save + "_Snapshots_per_interval.png", dpi=300)
+    # for data verification
+
+    for measure in ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb']:
+        plt.cla()
+        plt.clf()
+        plot_df = summary_df[['Interval', measure]].groupby(['Interval']).mean()
+        plot_df.rename(columns={measure: 'ALL'}, inplace=True)
+        plot_df_ = summary_df[summary_df['Relevance'] == 1][['Interval', measure]].groupby(['Interval']).mean()
+        plot_df_.rename(columns={measure: 'Relevant'}, inplace=True)
+        plot_df = pd.merge(
+            plot_df,
+            plot_df_,
+            left_index=True,
+            right_index=True)
+        plot_df_ = summary_df[summary_df['Relevance'] == 0][['Interval', measure]].groupby(['Interval']).mean()
+        plot_df_.rename(columns={measure: 'Non Relevant'}, inplace=True)
+        plot_df = pd.merge(
+            plot_df,
+            plot_df_,
+            left_index=True,
+            right_index=True)
+
+        plot_df.plot(kind='bar')
+        plt.xlabel('Interval')
+        plt.tick_params(axis='x', labelsize=6)
+        plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        plt.subplots_adjust(right=0.75, bottom=0.15)
+        if measure == 'QueryTermsRatio':
+            plt.ylabel("rqtr")
+        elif measure == 'StopwordsRatio':
+            plt.ylabel("rswr")
+        elif measure == 'Entropy':
+            plt.ylabel("rent")
+        plt.tick_params(axis='x', labelsize=10)
+        plt.xticks(rotation=0)
+        plt.savefig(measure + filename + "_Precentage_Difference_per_interval.png", dpi=300)
+        plot_df.to_csv(os.path.join('plot_df', filename_for_save + '_' + measure + '.tsv'), sep='\t')
+
+def top_50_data_plotter(
+        retrival_model,
+        interval_freq):
+    pass
 
 
 if __name__ == '__main__':
@@ -1299,15 +1445,15 @@ if __name__ == '__main__':
         work_year       = sys.argv[4]
         create_stats_data_frame_for_snapshot_changes(sim_folder_name=sim_folder_name, inner_fold=inner_fold, work_year=work_year)
 
-    # elif operation == 'SimInterva':
-    #     from_int_size = sys.argv[2]
-    #     sim_threshold = float(sys.argv[3])
-    #     sim_folder_name = sys.argv[4]
-    #     create_similarity_interval(from_interval_size=from_int_size,sim_threshold=sim_threshold,sim_folder_name=sim_folder_name)
-
     elif operation == 'PlotStatsDF':
         filename = sys.argv[2]
         create_snapshot_changes_stats_plots(filename=filename)
+
+    elif operation == 'PlotStatsDFRelVSNot':
+        filename = sys.argv[2]
+        work_year = sys.argv[3]
+        preprocessed = ast.literal_eval(sys.argv[4])
+        create_snapshot_changes_rev_vs_non_rel(filename=filename, work_year=work_year, preprocessed=preprocessed)
 
     elif operation == 'PlotWLDF':
         filename = sys.argv[2]
