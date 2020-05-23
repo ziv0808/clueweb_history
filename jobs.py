@@ -1314,6 +1314,7 @@ def create_snapshot_changes_rev_vs_non_rel(
         rel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc')
     rel_df['Relevance'] = rel_df['Relevance'].apply(lambda x: int(x))
     summary_df['QueryNum'] = summary_df['QueryNum'].apply(lambda x: int(x))
+    rel_df['Query'] = rel_df['Query'].apply(lambda x: int(x))
     summary_df = pd.merge(
         summary_df,
         rel_df[['Docno', 'Query', 'Relevance']].rename(columns={'Query': 'QueryNum'}),
