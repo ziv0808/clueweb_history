@@ -1320,7 +1320,7 @@ def create_snapshot_changes_rev_vs_non_rel(
         how='left')
     summary_df['Relevance'] = summary_df['Relevance'].apply(lambda x: 0 if (pd.np.isnan(x) or x <= 0) else 1)
 
-    if 'SIM' in filename:
+    if 'SIM' in filename or 'United_summary' in filename:
         summary_df['Interval'] = summary_df['Interval'].apply(lambda x: 0 if x == 'ClueWeb09' else int(x))
     else:
         all_intervals = sorted(list(summary_df['Interval'].drop_duplicates()))
