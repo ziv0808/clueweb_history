@@ -1396,7 +1396,35 @@ def create_snapshot_changes_rev_vs_non_rel(
 def top_50_data_plotter(
         retrival_model,
         interval_freq):
-    pass 
+
+    files_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/top_50_data/'
+    if retrival_model == 'BM25':
+        filename = 'BM25_Top_50_data_' + interval_freq + '_Backward_Results.tsv'
+    else:
+        filename = 'Top_50_data_' + interval_freq + '_Backward_Results.tsv'
+
+    work_df = pd.read_csv(os.path.join(files_path, filename), sep = '\t', index_col = False)
+
+    rbo_df = work_df[['Interval', 'RBO_0.99', 'RBO_0.975','RBO_0.95']].groupby(['Interval']).mean()
+    rbo_df.plot(kind='bar')
+    plt.xlabel('Interval')
+    plt.xlabel('Mean RBO')
+    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.subplots_adjust(right=0.75, bottom=0.15)
+    plt.tick_params(axis='x', labelsize=7)
+    plt.xticks(rotation=45)
+    plt.savefig('RBO_' + filename.replace(".tsv",".png"), dpi=300)
+
+    cw_df = pd.read_csv(os.path.join(files_path, 'ClueWb09_P_50__1M_Backward_Results.tsv'), sep = '\t', index_col = False)
+    p_50_df = work_df[['Interval', 'P@50']].append(cw_df[['Interval', 'P@50']], ignore_index=True)
+    p_50_df = p_50_df.groupby(['Interval']).mean()
+    p_50_df.plot(kind='bar')
+    plt.xlabel('Interval')
+    plt.xlabel('P@50')
+    plt.subplots_adjust( bottom=0.15)
+    plt.tick_params(axis='x', labelsize=7)
+    plt.xticks(rotation=45)
+    plt.savefig('P50_' + filename.replace(".tsv", ".png"), dpi=300)
 
 
 if __name__ == '__main__':
@@ -1447,6 +1475,11 @@ if __name__ == '__main__':
     elif operation == 'PlotStatsDF':
         filename = sys.argv[2]
         create_snapshot_changes_stats_plots(filename=filename)
+
+    elif operation == 'PlotTop50Data':
+        retrival_model = sys.argv[2]
+        interval_freq = sys.argv[3]
+        top_50_data_plotter(retrival_model=retrival_model,interval_freq=interval_freq)
 
     elif operation == 'PlotStatsDFRelVSNot':
         filename = sys.argv[2]
