@@ -1396,7 +1396,7 @@ def create_snapshot_changes_rev_vs_non_rel(
 def top_50_data_plotter(
         retrival_model,
         interval_freq):
-
+    pass 
 
 
 if __name__ == '__main__':
