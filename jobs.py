@@ -1349,11 +1349,12 @@ def create_snapshot_changes_rev_vs_non_rel(
     interval_quantity_df.fillna(0, inplace = True)
     plt.cla()
     plt.clf()
-    interval_quantity_df.plot(kind='bar', color='r')
+    interval_quantity_df.plot(kind='bar')
     plt.legend(loc ='best')
     plt.xlabel('Interval')
     plt.tick_params(axis='x', labelsize=5)
     plt.ylabel("#Snapshots")
+    plt.xticks(rotation=0)
     plt.title("#Snapshots Per Interval")
     plt.savefig(filename_for_save + "_Snapshots_per_interval.png", dpi=300)
     # for data verification
@@ -1380,7 +1381,6 @@ def create_snapshot_changes_rev_vs_non_rel(
 
         plot_df.plot(kind='bar')
         plt.xlabel('Interval')
-        plt.tick_params(axis='x', labelsize=6)
         plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
         plt.subplots_adjust(right=0.75, bottom=0.15)
         if measure == 'QueryTermsRatio':
@@ -1389,15 +1389,14 @@ def create_snapshot_changes_rev_vs_non_rel(
             plt.ylabel("rswr")
         elif measure == 'Entropy':
             plt.ylabel("rent")
-        plt.tick_params(axis='x', labelsize=10)
+        plt.tick_params(axis='x', labelsize=5)
         plt.xticks(rotation=0)
         plt.savefig(measure + filename + "_Precentage_Difference_per_interval.png", dpi=300)
-        plot_df.to_csv(os.path.join('plot_df', filename_for_save + '_' + measure + '.tsv'), sep='\t')
 
 def top_50_data_plotter(
         retrival_model,
         interval_freq):
-    pass
+
 
 
 if __name__ == '__main__':
