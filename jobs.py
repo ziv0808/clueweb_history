@@ -997,7 +997,8 @@ def plot_interesting_stats_for_avg_model_results(
         retrival_model,
         interval_start_month,
         filter_params,
-        sw_rmv):
+        sw_rmv,
+        work_year):
     affix =""
     if retrival_model == 'BM25':
         affix += "BM25_"
@@ -1021,7 +1022,7 @@ def plot_interesting_stats_for_avg_model_results(
     cv_summary_df = pd.DataFrame({})
     cv_test_df = pd.DataFrame({})
     for filename in os.listdir(save_folder):
-        if filename.endswith('_'+affix + frequency + '_' + addition + "_Results.tsv"):
+        if filename.endswith('_'+affix + frequency + '_' + addition + "_" + work_year+ "_Results.tsv"):
             if retrival_model == 'LM' and 'BM25' in filename:
                 continue
             print(filename)
@@ -1032,7 +1033,7 @@ def plot_interesting_stats_for_avg_model_results(
             cv_summary_df_tmp.drop(last_idx, inplace = True)
             cv_summary_df = cv_summary_df.append(cv_summary_df_tmp)
 
-    interval_list = build_interval_list(WORK_YEAR, frequency, add_clueweb=True, start_month=interval_start_month)
+    interval_list = build_interval_list(work_year, frequency, add_clueweb=True, start_month=interval_start_month)
 
     corr_plot_df = pd.DataFrame(columns = ['Interval','Map','P@5','P@10'])
     next_idx = 0
@@ -1053,7 +1054,7 @@ def plot_interesting_stats_for_avg_model_results(
     plt.subplots_adjust(right=0.75, bottom=0.15)
     plt.ylabel('Correlation')
     plt.title("Interval Effectivness Corr")
-    plt.savefig( affix + frequency + '_' + addition + "_Per_Inteval_effectiness_corr.png", dpi=300)
+    plt.savefig( affix + frequency + '_' + addition + "_" + work_year+ "_Per_Inteval_effectiness_corr.png", dpi=300)
 
     cw_df = cv_summary_df[['ClueWeb09','Map','P@5','P@10']].groupby(['ClueWeb09']).mean()
     cw_df[['Map']].plot(kind='bar')
@@ -1064,7 +1065,7 @@ def plot_interesting_stats_for_avg_model_results(
     plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.subplots_adjust(right=0.75, bottom=0.15)
     plt.ylabel('Mean Map Over All Non ClueWeb Weight Vals')
-    plt.savefig(affix + frequency + '_' + addition + "_Map_Per_CW_Weight.png", dpi=300)
+    plt.savefig(affix + frequency + '_' + addition +"_" + work_year+  "_Map_Per_CW_Weight.png", dpi=300)
 
     cw_df[['P@5']].plot(kind='bar')
     plt.xlabel('ClueWeb Weight Value')
@@ -1074,7 +1075,7 @@ def plot_interesting_stats_for_avg_model_results(
     plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.subplots_adjust(right=0.75, bottom=0.15)
     plt.ylabel('Mean P@5 Over All Non ClueWeb Weight Vals')
-    plt.savefig(affix + frequency + '_' + addition + "_P_5_Per_CW_Weight.png", dpi=300)
+    plt.savefig(affix + frequency + '_' + addition +"_" + work_year+  "_P_5_Per_CW_Weight.png", dpi=300)
 
     cw_df[['P@10']].plot(kind='bar')
     plt.xlabel('ClueWeb Weight Value')
@@ -1084,7 +1085,7 @@ def plot_interesting_stats_for_avg_model_results(
     plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.subplots_adjust(right=0.75, bottom=0.15)
     plt.ylabel('Mean P@10 Over All Non ClueWeb Weight Vals')
-    plt.savefig(affix + frequency + '_' + addition + "_P_10_Per_CW_Weight.png", dpi=300)
+    plt.savefig(affix + frequency + '_' + addition +"_" + work_year+  "_P_10_Per_CW_Weight.png", dpi=300)
 
     wieght_mean_df = cv_test_df[interval_list].mean()
     wieght_std_df = cv_test_df[interval_list].std()
@@ -1104,13 +1105,13 @@ def plot_interesting_stats_for_avg_model_results(
     plt.xticks(rotation=45)
     plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.subplots_adjust(right=0.75, bottom=0.15)
-    plt.savefig(affix + frequency + '_' + addition + "_Test_Weights_per_interval.png", dpi=300)
+    plt.savefig(affix + frequency + '_' + addition + "_" + work_year+ "_Test_Weights_per_interval.png", dpi=300)
 
     res_df = cv_test_df[['Map','P@5','P@10']].mean()
 
     fin_df = pd.DataFrame(columns = ['Map','P@5','P@10'])
     fin_df.loc[0] = [res_df['Map'], res_df['P@5'], res_df['P@10']]
-    fin_df.to_csv(os.path.join(save_folder,affix + frequency + '_' + addition + "_Test_Results.tsv"), sep = '\t', index = False)
+    fin_df.to_csv(os.path.join(save_folder,affix + frequency + '_' + addition + "_" + work_year+ "_Test_Results.tsv"), sep = '\t', index = False)
 
 def calc_top_50_stats(
         work_year,
@@ -1341,13 +1342,15 @@ if __name__ == '__main__':
         interval_start_month = int(sys.argv[4])
         filter_params= ast.literal_eval(sys.argv[5])
         sw_rmv = ast.literal_eval(sys.argv[6])
+        work_year = sys.argv[7]
 
         plot_interesting_stats_for_avg_model_results(
             frequency=frequency,
             retrival_model=retrival_model,
             interval_start_month=interval_start_month,
             filter_params=filter_params,
-            sw_rmv=sw_rmv)
+            sw_rmv=sw_rmv,
+            work_year=work_year)
 
     elif operation == 'PlotAllRetStats':
         for filename in os.listdir('/mnt/bi-strg3/v/zivvasilisky/ziv/results/retrival_stats/'):
