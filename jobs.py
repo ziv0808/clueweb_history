@@ -1255,12 +1255,17 @@ def create_multi_year_snapshot_file(
 def create_snapshot_changes_rev_vs_non_rel(
         filename='Summay_snapshot_stats_1M.tsv',
         work_year='2011',
+        inner_fold = "",
         preprocessed = False):
 
     path_to_files = '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/'
     filename_for_save = filename.replace('.tsv', '').replace('Summay_snapshot_stats_', '')
     if preprocessed == False:
-        work_df = pd.read_csv(os.path.join(path_to_files, filename), sep='\t', index_col=False)
+        if inner_fold != "" and inner_fold is not None:
+            work_df = pd.read_csv(os.path.join(path_to_files, os.path.join(inner_fold,filename)), sep='\t', index_col=False)
+        else:
+            work_df = pd.read_csv(os.path.join(path_to_files, filename), sep='\t', index_col=False)
+
         # calc ratio measures
         work_df['QueryTermsRatio'] = work_df.apply(lambda row: row['QueryWords'] / float(row['TextLen'] - row['QueryWords']),
                                                    axis=1)
@@ -1484,8 +1489,9 @@ if __name__ == '__main__':
     elif operation == 'PlotStatsDFRelVSNot':
         filename = sys.argv[2]
         work_year = sys.argv[3]
-        preprocessed = ast.literal_eval(sys.argv[4])
-        create_snapshot_changes_rev_vs_non_rel(filename=filename, work_year=work_year, preprocessed=preprocessed)
+        inner_fold = sys.argv[4]
+        preprocessed = ast.literal_eval(sys.argv[5])
+        create_snapshot_changes_rev_vs_non_rel(filename=filename, work_year=work_year, inner_fold=inner_fold, preprocessed=preprocessed)
 
     elif operation == 'PlotWLDF':
         filename = sys.argv[2]
