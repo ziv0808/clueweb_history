@@ -1427,6 +1427,7 @@ def top_50_data_plotter(
     plt.xlabel('Interval')
     plt.xlabel('P@50')
     plt.subplots_adjust( bottom=0.15)
+    plt.ylim((p_50_df['P@50'].min() - 0.02, None))
     plt.tick_params(axis='x', labelsize=7)
     plt.xticks(rotation=45)
     plt.savefig('P50_' + filename.replace(".tsv", ".png"), dpi=300)
