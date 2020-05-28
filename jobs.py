@@ -1435,6 +1435,38 @@ def top_50_data_plotter(
     plt.xticks(rotation=45)
     plt.savefig('P50_' + filename.replace(".tsv", ".png"), dpi=300)
 
+def per_query_coverage_ploter(
+        filename,
+        inner_fold):
+    path_to_files = '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/'
+    filename_for_save = filename.replace('.tsv', '').replace('Summay_snapshot_stats_', '')
+    if inner_fold != "" and inner_fold is not None:
+        work_df = pd.read_csv(os.path.join(path_to_files, os.path.join(inner_fold, filename)), sep='\t',
+                              index_col=False)
+    else:
+        work_df = pd.read_csv(os.path.join(path_to_files, filename), sep='\t', index_col=False)
+
+    work_df = work_df[work_df['Interval'] != 'ClueWeb09']
+    all_q = list(work_df['QueryNum'].drop_duplicates())
+    work_df = work_df[['Docno','QueryNum']].drop_duplicates()
+    work_df = work_df.groupby(['QueryNum']).count()
+
+    uncovered_q_num = 0
+    for q in all_q:
+        if q not in list(work_df.index):
+            work_df.loc[q] = [0]
+            uncovered_q_num += 1
+
+    work_df.plot(kind='bar')
+    plt.xlabel('Query')
+    plt.xlabel('#Covered Docs')
+    if uncovered_q_num > 0:
+        plt.title('#Covered Docs Per Query - ' + str(uncovered_q_num) + ' Uncovered')
+    plt.subplots_adjust(bottom=0.15)
+    plt.tick_params(axis='x', labelsize=7)
+    plt.xticks(rotation=45)
+    plt.savefig('Per_Query_Coverage_' + filename_for_save.replace(".tsv", ".png"), dpi=300)
+
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -1502,6 +1534,11 @@ if __name__ == '__main__':
         interval_freq = sys.argv[3]
         lookup_method = sys.argv[4]
         plot_stats_vs_winner_plots_for_wl_file(file_name=filename,interval_freq=interval_freq, lookup_method=lookup_method)
+
+    elif operation == 'PlotQueryCoverage':
+        filename = sys.argv[2]
+        inner_fold = sys.argv[3]
+        per_query_coverage_ploter(filename=filename, inner_fold=inner_fold)
 
     elif operation == 'Top50Stats':
         work_year = sys.argv[2]
