@@ -1312,7 +1312,10 @@ def create_snapshot_changes_rev_vs_non_rel(
                     summary_df.loc[next_index] = insert_row
                     next_index += 1
     else:
-        summary_df = pd.read_csv(os.path.join(path_to_files, filename), sep='\t', index_col=False)
+        if inner_fold != "" and inner_fold is not None:
+            summary_df = pd.read_csv(os.path.join(path_to_files, filename), sep='\t', index_col=False)
+        else:
+            summary_df = pd.read_csv(os.path.join(os.path.join(path_to_files,inner_fold), filename), sep='\t', index_col=False)
     if int(work_year) >= 2010:
         rel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc')
     else:
