@@ -1459,7 +1459,7 @@ def per_query_coverage_ploter(
 
     work_df.plot(kind='bar')
     plt.xlabel('Query')
-    plt.xlabel('#Covered Docs')
+    plt.ylabel('#Covered Docs')
     if uncovered_q_num > 0:
         plt.title('#Covered Docs Per Query - ' + str(uncovered_q_num) + ' Uncovered')
     plt.subplots_adjust(bottom=0.15)
