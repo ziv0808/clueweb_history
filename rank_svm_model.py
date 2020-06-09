@@ -190,7 +190,7 @@ def create_base_feature_file_for_configuration(
 if __name__ == '__main__':
     operation = sys.argv[1]
 
-    if operation == 'MultiYearFile':
+    if operation == 'BaseFeatureFile':
         year_list = ast.literal_eval(sys.argv[2])
         last_interval = sys.argv[3]
         interval_freq = sys.argv[4]
