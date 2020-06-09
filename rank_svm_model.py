@@ -155,16 +155,19 @@ def create_base_feature_file_for_configuration(
         for feature in base_feature_list:
             insert_row.append(list(bench_df[feature])[0])
 
-        for feature in base_feature_list:
-            tmp_doc_df[feature + '_Shift'] = tmp_doc_df[feature].shift(-1)
-            tmp_doc_df[feature + '_Grad'] = tmp_doc_df.apply(lambda row_: row_[feature + '_Shift'] - row_[feature] , axis = 1)
+        if len(tmp_doc_df) == 1:
+            insert_row.extend([pd.np.nan]*(len(base_feature_list)*2))
+        else:
+            for feature in base_feature_list:
+                tmp_doc_df[feature + '_Shift'] = tmp_doc_df[feature].shift(-1)
+                tmp_doc_df[feature + '_Grad'] = tmp_doc_df.apply(lambda row_: row_[feature + '_Shift'] - row_[feature] , axis = 1)
 
-        tmp_doc_df = tmp_doc_df[tmp_doc_df['Interval'] != 'ClueWeb09']
-        for feature in base_feature_list:
-            insert_row.append(list(tmp_doc_df[feature + '_Grad'])[-1])
+            tmp_doc_df = tmp_doc_df[tmp_doc_df['Interval'] != 'ClueWeb09']
+            for feature in base_feature_list:
+                insert_row.append(list(tmp_doc_df[feature + '_Grad'])[-1])
 
-        for feature in base_feature_list:
-            insert_row.append(tmp_doc_df[feature + '_Grad'].mean())
+            for feature in base_feature_list:
+                insert_row.append(tmp_doc_df[feature + '_Grad'].mean())
 
         insert_row.extend([docno, query])
         fin_df.loc[next_index] = insert_row
