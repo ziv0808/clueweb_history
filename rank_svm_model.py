@@ -20,7 +20,8 @@ def run_svm_rank_model(test_file, model_file, predictions_folder):
     command = "./svm_rank_classify " + test_file + " " + model_file + " " + predictions_file
     print("##Running command: "+command+"##")
     out = run_bash_command(command)
-    print("Output of ranking command: "+str(out),flush=True)
+    print("Output of ranking command: "+str(out))
+    sys.stdout.flush()
     return predictions_file
 
 
