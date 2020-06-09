@@ -67,10 +67,10 @@ def create_base_feature_file_for_configuration(
         year_df_dict[year]['StopwordsRatio'] = year_df_dict[year].apply(
             lambda row: row['#Stopword'] / float(row['TextLen'] - row['#Stopword']),
             axis=1)
-        year_df_dict[year].rename(columns = {'#Stopword' : 'Stopwords', 'SimToClueWeb' : 'SimClueWeb'}, inplace = True)
         year_df_dict[year]['-Query-SW'] = year_df_dict[year].apply(
             lambda row: row['TextLen'] - (row['#Stopword'] + row['QueryWords']),
             axis=1)
+        year_df_dict[year].rename(columns={'#Stopword': 'Stopwords', 'SimToClueWeb': 'SimClueWeb'}, inplace=True)
 
     print("data retrieved!")
     sys.stdout.flush()
