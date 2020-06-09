@@ -104,13 +104,13 @@ def create_base_feature_file_for_configuration(
         on=['QueryNum', 'Docno'],
         how='left')
 
+    if len(meta_data_df) != len(lm_scores_ref_df):
+        raise Exception('retrieval data not Not allienged')
+
     meta_data_df.fillna(0, inplace = True)
     del lm_scores_ref_df
     del bm25_scores_ref_df
     meta_data_df[['BM25Score', 'LMScore']] = meta_data_df[['BM25Score', 'LMScore']].applymap(lambda x: float(x))
-
-    if len(meta_data_df) != len(lm_scores_ref_df):
-        raise Exception('retrieval data not Not allienged' )
 
     print ("Meta data retrieved!")
     sys.stdout.flush()
@@ -130,7 +130,7 @@ def create_base_feature_file_for_configuration(
     doc_query_df = doc_query_df.drop_duplicates()
     for row in doc_query_df.itertuples():
         docno = row.Docno
-        query = int(row.QueryNum)
+        query = row.QueryNum
         print(docno)
         sys.stdout.flush()
         first = True
@@ -179,6 +179,7 @@ def create_base_feature_file_for_configuration(
     fin_df.to_csv(os.path.join(save_folder, filename + '_raw.tsv'), sep = '\t', index = False)
     meta_data_df.to_csv(os.path.join(save_folder, filename + '_Meatdata.tsv'), sep = '\t', index = False)
 
+    fin_df['QueryNum'] = fin_df['QueryNum'].apply(lambda x: int(x))
     fin_df = pd.merge(
         fin_df,
         meta_data_df,
