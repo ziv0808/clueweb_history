@@ -93,7 +93,7 @@ def create_base_feature_file_for_configuration(
     rel_df['Query'] = rel_df['Query'].apply(lambda x: int(x))
 
     meta_data_df = pd.merge(
-        lm_scores_ref_df[['Query_ID', 'Docno', 'Score']].rename(columns = {'Query_ID' : 'QueryNum', 'Score': ''}),
+        lm_scores_ref_df[['Query_ID', 'Docno', 'Score']].rename(columns = {'Query_ID' : 'QueryNum', 'Score': 'LMScore'}),
         bm25_scores_ref_df[['Query_ID', 'Docno', 'Score']].rename(columns={'Query_ID': 'QueryNum', 'Score': 'BM25Score'}),
         on = ['QueryNum', 'Docno'],
         how = 'inner')
