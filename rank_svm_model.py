@@ -88,9 +88,9 @@ def create_base_feature_file_for_configuration(
             os.path.join(retrival_scores_folder, 'BM25_ClueWeb09_1M_Backward_SW_RMV_Results.txt'))
         rel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc')
 
-    lm_scores_ref_df['Query_ID'] = lm_scores_ref_df['Query_ID'].applymap(lambda x: int(x))
-    bm25_scores_ref_df['Query_ID'] = bm25_scores_ref_df['Query_ID'].applymap(lambda x: int(x))
-    rel_df['Query'] = rel_df['Query'].applymap(lambda x: int(x))
+    lm_scores_ref_df['Query_ID'] = lm_scores_ref_df['Query_ID'].apply(lambda x: int(x))
+    bm25_scores_ref_df['Query_ID'] = bm25_scores_ref_df['Query_ID'].apply(lambda x: int(x))
+    rel_df['Query'] = rel_df['Query'].apply(lambda x: int(x))
 
     meta_data_df = pd.merge(
         lm_scores_ref_df[['Query_ID', 'Docno', 'Score']].rename(columns = {'Query_ID' : 'QueryNum', 'Score': ''}),
