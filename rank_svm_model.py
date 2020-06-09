@@ -169,7 +169,7 @@ def create_base_feature_file_for_configuration(
             for feature in base_feature_list:
                 insert_row.append(tmp_doc_df[feature + '_Grad'].mean())
 
-        insert_row.extend([docno, query])
+        insert_row.extend([query, docno])
         fin_df.loc[next_index] = insert_row
         next_index += 1
 
