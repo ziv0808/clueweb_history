@@ -14,10 +14,8 @@ def run_bash_command(command):
     return out
 
 def run_svm_rank_model(test_file, model_file, predictions_folder):
-    if not os.path.exists(predictions_folder):
-        os.makedirs(predictions_folder)
-    predictions_file = predictions_folder + os.path.basename(model_file)
-    command = "./svm_rank_classify " + test_file + " " + model_file + " " + predictions_file
+    predictions_file = os.path.join(predictions_folder, 'Prdictions.txt' )
+    command = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/svm_rank/svm_rank_classify " + test_file + " " + model_file + " " + predictions_file
     print("##Running command: "+command+"##")
     out = run_bash_command(command)
     print("Output of ranking command: "+str(out))
@@ -25,14 +23,12 @@ def run_svm_rank_model(test_file, model_file, predictions_folder):
     return predictions_file
 
 
-def learn_svm_rank_model(train_file, fold, C):
-    models_folder = "svm_rank_models/" + str(fold) + "/"
-    if not os.path.exists(models_folder):
-        os.makedirs(models_folder)
-    model_file = models_folder + "model_" + str(C) + ".txt"
-    command = "./svm_rank_learn -c " + str(C) + " " + train_file + " " + model_file
+def learn_svm_rank_model(train_file, models_folder, C):
+    model_file = os.path.join(models_folder , "model_" + str(C) + ".txt")
+    command = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/svm_rank/svm_rank_learn -c " + str(C) + " " + train_file + " " + model_file
     out = run_bash_command(command)
     print(out)
+    sys.stdout.flush()
     return model_file
 
 
@@ -191,6 +187,120 @@ def create_base_feature_file_for_configuration(
 
     fin_df.to_csv(os.path.join(save_folder, filename + '_with_meta.tsv'), sep='\t', index=False)
 
+def prepare_svmr_model_data(
+        base_feature_filename,
+        snapshot_limit,
+        feature_list,
+        normalize_relvance = False):
+
+    data_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
+    work_df = pd.read_csv(os.path.join(data_folder, base_feature_filename), sep = '\t', index_col = False)
+    # enforce snapshot limit
+    work_df = work_df[work_df['NumSnapshots'] >= snapshot_limit]
+    # cat relevant features
+    work_df = work_df[['QueryNum', 'Docno', 'Relevance'] + feature_list]
+    # adapt relevance column
+    if normalize_relvance == True:
+        work_df['Relevance'] = work_df['Relevance'].apply(lambda x: 0 if int(x) <= 0 else 1)
+    # minmax normalize per query
+    all_queries = list(work_df['QueryNum'].drop_duplicates())
+    fin_df = pd.DataFrame({})
+    for q in all_queries:
+        tmp_q_df = work_df[work_df['QueryNum'] == q].copy()
+        for feature in feature_list:
+            min_feat = tmp_q_df[feature].min()
+            max_feat = tmp_q_df[feature].max()
+            tmp_q_df[feature] = tmp_q_df[feature].apply(lambda x: (x - min_feat)/ float(max_feat - min_feat))
+
+        fin_df = fin_df.append(tmp_q_df, ignore_index=True)
+
+    return fin_df
+
+
+def turn_df_to_feature_str_for_model(
+        df,
+        feature_list):
+
+    feature_str = ""
+    for index, row in df.iterrows():
+        feature_str += str(int(row['Relevance'])) + " qid:" + str(int(row['QueryNum']))
+        feat_num = 1
+        for feature in feature_list:
+            feature_str += " " + str(feat_num) + ":" + str(row[feature])
+            feat_num += 1
+
+        feature_str += '\n'
+
+    return feature_str
+
+def split_to_train_test(
+        start_test_q,
+        end_test_q,
+        feat_df):
+
+    test_set_q = list(range(start_test_q, end_test_q + 1))
+    feat_df['IsTest'] = feat_df['QueryNum'].apply(lambda x: 1 if x in test_set_q else 0)
+    test_df = feat_df[feat_df['IsTest'] == 1].copy()
+    train_df = feat_df[feat_df['IsTest'] == 0]
+
+    return train_df, test_df
+
+def train_and_test_model_on_config(
+        base_feature_filename,
+        snapshot_limit,
+        feature_list,
+        start_test_q,
+        end_test_q,
+        C,
+        normalize_relvance=False):
+
+    feat_df = prepare_svmr_model_data(
+        base_feature_filename=base_feature_filename,
+        snapshot_limit=int(snapshot_limit),
+        feature_list=feature_list,
+        normalize_relvance=normalize_relvance)
+
+    print("Model Data Prepared...")
+    sys.stdout.flush()
+    train_df, test_df = split_to_train_test(
+        start_test_q=start_test_q,
+        end_test_q=end_test_q,
+        feat_df=feat_df)
+
+    base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
+    model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv','') + 'SNL' + str(snapshot_limit) + '_C' + str(C)
+    feature_folder = str(feature_list).replace('[','').replace(']','').replace("'","").replace(',','_')
+    fold_folder = str(start_test_q) + '_' + str(end_test_q)
+
+    for hirarcy_folder in [model_inner_folder, feature_folder, fold_folder]:
+        base_res_folder = os.path.join(base_res_folder, hirarcy_folder)
+        if not os.path.exists(base_res_folder):
+            os.mkdir(base_res_folder)
+
+    with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
+        f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
+
+    with open(os.path.join(base_res_folder, 'test.dat'), 'w') as f:
+        f.write(turn_df_to_feature_str_for_model(test_df, feature_list=feature_list))
+
+    print("Strating Train : " + model_inner_folder + ' ' + feature_folder + ' ' + fold_folder)
+    sys.stdout.flush()
+    model_filename = learn_svm_rank_model(
+        train_file=os.path.join(base_res_folder, 'train.dat'),
+        models_folder=base_res_folder,
+        C=C)
+
+    print("Strating Test : " + model_inner_folder + ' ' + feature_folder + ' ' + fold_folder)
+    sys.stdout.flush()
+
+    predictions_filename = run_svm_rank_model(
+        test_file=os.path.join(base_res_folder, 'test.dat'),
+        model_file=model_filename,
+        predictions_folder=base_res_folder)
+
+
+
+
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -201,5 +311,37 @@ if __name__ == '__main__':
         interval_freq = sys.argv[4]
         inner_fold = sys.argv[5]
         retrival_scores_inner_fold= sys.argv[6]
-        create_base_feature_file_for_configuration(year_list=year_list, last_interval=last_interval, interval_freq=interval_freq,
-                                        inner_fold=inner_fold, retrival_scores_inner_fold=retrival_scores_inner_fold)
+        create_base_feature_file_for_configuration(
+            year_list=year_list,
+            last_interval=last_interval,
+            interval_freq=interval_freq,
+            inner_fold=inner_fold,
+            retrival_scores_inner_fold=retrival_scores_inner_fold)
+
+    if operation == 'TrainTest':
+        base_feature_filename = sys.argv[2]
+        snapshot_limit = int(sys.argv[3])
+        feature_list = ast.literal_eval(sys.argv[4])
+        start_test_q = int(sys.argv[5])
+        end_test_q= int(sys.argv[6])
+        C = float(sys.argv[7])
+        retrieval_model = sys.argv[8]
+        if feature_list == "All":
+            feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                            'QueryWords','Stopwords','TextLen','-Query-SW',
+                            'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
+                            'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG',
+                            'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
+                            'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG']
+        if retrieval_model == 'LM':
+            feature_list.append('LMScore')
+        elif retrieval_model == 'BM25':
+            feature_list.append('BM25Score')
+            
+        train_and_test_model_on_config(
+            base_feature_filename=base_feature_filename,
+            snapshot_limit=snapshot_limit,
+            feature_list=feature_list,
+            start_test_q=start_test_q,
+            end_test_q=end_test_q,
+            C=C)
