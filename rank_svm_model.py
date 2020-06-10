@@ -435,7 +435,7 @@ def run_grid_search_over_params_for_config(
                     scored_docs_df=test_res_df,
                     score_colname=retrieval_model+'Score')
                 insert_row = ['Benchmark', pd.np.nan]
-                curr_file_name =  model_base_filename + '_' + feat_group + '_' + str(optional_c)+'.txt'
+                curr_file_name =  model_base_filename + '_Benchmark.txt'
                 with open(os.path.join(save_folder ,curr_file_name), 'w') as f:
                     f.write(convert_df_to_trec(curr_res_df))
 
@@ -467,7 +467,7 @@ def run_grid_search_over_params_for_config(
             model_summary_df.loc[next_idx] = insert_row
             next_idx += 1
 
-    model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename +'.tsv'), sep = '\t', index_col = False)
+    model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename +'.tsv'), sep = '\t', index = False)
 
 
 
