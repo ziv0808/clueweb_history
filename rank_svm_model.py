@@ -205,7 +205,7 @@ def prepare_svmr_model_data(
     # minmax normalize per query
     all_queries = list(work_df['QueryNum'].drop_duplicates())
     fin_df = pd.DataFrame({})
-    for q in all_queries:
+    for q in sorted(all_queries):
         tmp_q_df = work_df[work_df['QueryNum'] == q].copy()
         for feature in feature_list:
             min_feat = tmp_q_df[feature].min()
