@@ -269,7 +269,7 @@ def train_and_test_model_on_config(
 
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv','') + 'SNL' + str(snapshot_limit) + '_C' + str(C)
-    feature_folder = str(feature_list).replace('[','').replace(']','').replace("'","").replace(',','_')
+    feature_folder = "ALL"#str(feature_list).replace('[','').replace(']','').replace("'","").replace(',','_')
     fold_folder = str(start_test_q) + '_' + str(end_test_q)
 
     for hirarcy_folder in [model_inner_folder, feature_folder, fold_folder]:
