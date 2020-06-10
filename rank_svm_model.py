@@ -210,7 +210,7 @@ def prepare_svmr_model_data(
         for feature in feature_list:
             min_feat = tmp_q_df[feature].min()
             max_feat = tmp_q_df[feature].max()
-            tmp_q_df[feature] = tmp_q_df[feature].apply(lambda x: (x - min_feat)/ float(max_feat - min_feat))
+            tmp_q_df[feature] = tmp_q_df[feature].apply(lambda x: (x - min_feat)/ float(max_feat - min_feat) if (max_feat - min_feat) != 0 else 0.0)
 
         fin_df = fin_df.append(tmp_q_df, ignore_index=True)
 
