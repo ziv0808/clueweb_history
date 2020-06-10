@@ -259,8 +259,9 @@ def convert_trec_results_file_to_pandas_df(
 
 def get_ranking_effectiveness_for_res_file(
         file_path,
-        filename):
-    bashCommand = TREC_EVAL_PATH + ' ' + QRELS_FILE_PATH + ' ' + \
+        filename,
+        qrel_filepath = QRELS_FILE_PATH):
+    bashCommand = TREC_EVAL_PATH + ' ' + qrel_filepath + ' ' + \
                   os.path.join(file_path, filename)
 
     output = subprocess.check_output(['bash', '-c', bashCommand])
