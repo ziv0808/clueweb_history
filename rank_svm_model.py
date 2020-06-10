@@ -326,8 +326,8 @@ if __name__ == '__main__':
         end_test_q= int(sys.argv[6])
         C = float(sys.argv[7])
         retrieval_model = sys.argv[8]
-        if feature_list == "All":
-            feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+        # if feature_list == "All":
+        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                             'QueryWords','Stopwords','TextLen','-Query-SW',
                             'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
                             'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG',
@@ -337,7 +337,7 @@ if __name__ == '__main__':
             feature_list.append('LMScore')
         elif retrieval_model == 'BM25':
             feature_list.append('BM25Score')
-            
+
         train_and_test_model_on_config(
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
