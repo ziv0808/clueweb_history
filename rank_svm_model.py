@@ -118,6 +118,8 @@ def create_base_feature_file_for_configuration(
                  'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG',
                  'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                  'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
+                 'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
+                 'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG',
                  # 'LMScore','BM25Score', 'Relevance',
                  'QueryNum', 'Docno'])
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
@@ -164,6 +166,12 @@ def create_base_feature_file_for_configuration(
 
             for feature in base_feature_list:
                 insert_row.append(tmp_doc_df[feature + '_Grad'].mean())
+
+            for feature in base_feature_list:
+                curr_std = tmp_doc_df[feature + '_Grad'].std()
+                if pd.np.isnan(curr_std):
+                    curr_std = 0.0
+                insert_row.append(curr_std)
 
         insert_row.extend([query, docno])
         fin_df.loc[next_index] = insert_row
@@ -275,13 +283,13 @@ def train_and_test_model_on_config(
         end_test_q,
         C,
         feature_groupname = 'All',
-        normalize_relvance=False):
+        normalize_relevance=False):
 
     feat_df = prepare_svmr_model_data(
         base_feature_filename=base_feature_filename,
         snapshot_limit=int(snapshot_limit),
         feature_list=feature_list,
-        normalize_relvance=normalize_relvance)
+        normalize_relvance=normalize_relevance)
 
     print("Model Data Prepared...")
     sys.stdout.flush()
@@ -293,6 +301,8 @@ def train_and_test_model_on_config(
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv','') + 'SNL' + str(snapshot_limit) + '_C' + str(C)
     feature_folder = feature_groupname
+    if normalize_relevance == True:
+        feature_folder += '_NR'
     fold_folder = str(start_test_q) + '_' + str(end_test_q)
 
     for hirarcy_folder in [model_inner_folder, feature_folder, fold_folder]:
@@ -338,7 +348,8 @@ def run_cv_for_config(
         snapshot_limit,
         feature_groupname,
         C,
-        retrieval_model):
+        retrieval_model,
+        normalize_relevance):
 
     k_fold = 10
     if '2008' in base_feature_filename:
@@ -356,7 +367,9 @@ def run_cv_for_config(
                         'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
                         'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG',
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
-                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG']
+                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
+                        'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
+                        'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG']
 
     elif feature_groupname == 'Static':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
@@ -374,6 +387,26 @@ def run_cv_for_config(
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG']
 
+    elif feature_groupname == 'Static_STDG':
+        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
+                        'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
+                        'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG']
+
+    elif feature_groupname == 'Static_MG_STDG':
+        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
+                        'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
+                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
+                        'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
+                        'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG']
+
+    elif feature_groupname == 'MG_STDG':
+        feature_list = ['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
+                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
+                        'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
+                        'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG']
+
     elif feature_groupname == 'MG':
         feature_list = ['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG']
@@ -381,6 +414,10 @@ def run_cv_for_config(
     elif feature_groupname == 'LG':
         feature_list = ['QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
                         'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG']
+
+    elif feature_groupname == 'STDG':
+        feature_list = ['QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
+                        'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG']
 
     if retrieval_model == 'LM':
         feature_list.append('LMScore')
@@ -397,7 +434,8 @@ def run_cv_for_config(
             start_test_q=init_q,
             end_test_q=end_q,
             C=C,
-            feature_groupname=feature_groupname +'_'+retrieval_model)
+            feature_groupname=feature_groupname +'_'+retrieval_model,
+            normalize_relevance=normalize_relevance)
         init_q += query_bulk
         end_q += query_bulk
         test_score_df = test_score_df.append(fold_test_df, ignore_index=True)
@@ -406,10 +444,12 @@ def run_cv_for_config(
 def run_grid_search_over_params_for_config(
         base_feature_filename,
         snapshot_limit,
-        retrieval_model):
+        retrieval_model,
+        normalize_relevance):
 
-    optional_c_list = [0.1, 0.01, 0.001]
-    optional_feat_groups_list = ['All','Static','Static_LG','Static_MG','MG','LG']
+    optional_c_list = [0.2, 0.1, 0.01, 0.001]
+    optional_feat_groups_list = ['All','Static','Static_LG','Static_MG','Static_STDG',
+                                 'Static_MG_STDG','MG_STDG','MG','LG','STDG']
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
@@ -419,6 +459,8 @@ def run_grid_search_over_params_for_config(
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
 
     model_base_filename = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit) + "_" + retrieval_model
+    if normalize_relevance == True:
+        model_base_filename += '_NR'
     model_summary_df = pd.DataFrame(columns = ['FeatureGroup', 'C', 'Map', 'P@5', 'P@10'])
     next_idx = 0
     for optional_c in optional_c_list:
@@ -428,7 +470,8 @@ def run_grid_search_over_params_for_config(
                 snapshot_limit=snapshot_limit,
                 feature_groupname=feat_group,
                 C=optional_c,
-                retrieval_model=retrieval_model)
+                retrieval_model=retrieval_model,
+                normalize_relevance=normalize_relevance)
 
             if next_idx == 0:
                 curr_res_df = get_trec_prepared_df_form_res_df(
@@ -491,8 +534,10 @@ if __name__ == '__main__':
         base_feature_filename = sys.argv[2]
         snapshot_limit = int(sys.argv[3])
         retrieval_model = sys.argv[4]
+        normalize_relevance = ast.literal_eval(sys.argv[5])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
-            retrieval_model=retrieval_model)
+            retrieval_model=retrieval_model,
+            normalize_relevance=normalize_relevance)
