@@ -368,8 +368,9 @@ def run_cv_for_config(
                         'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG',
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
-                        'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
-                        'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG']
+                        # 'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
+                        # 'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG'
+                        ]
 
     elif feature_groupname == 'Static':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
@@ -448,8 +449,7 @@ def run_grid_search_over_params_for_config(
         normalize_relevance):
 
     optional_c_list = [0.2, 0.1, 0.01, 0.001]
-    optional_feat_groups_list = ['All','Static','Static_LG','Static_MG','Static_STDG',
-                                 'Static_MG_STDG','MG_STDG','MG','LG','STDG']
+    optional_feat_groups_list = ['All','Static','Static_LG','Static_MG','MG','LG']
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
