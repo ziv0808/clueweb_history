@@ -168,7 +168,8 @@ def create_base_feature_file_for_configuration(
         else:
             for feature in base_feature_list:
                 tmp_doc_df[feature + '_Shift'] = tmp_doc_df[feature].shift(-1)
-                tmp_doc_df[feature + '_Grad'] = tmp_doc_df.apply(lambda row_: (row_[feature + '_Shift'] - row_[feature]) / row_[feature + '_Shift'] , axis = 1)
+                tmp_doc_df[feature + '_Grad'] = tmp_doc_df.apply(lambda row_: (row_[feature + '_Shift'] - row_[feature]) / row_[feature + '_Shift']
+                                                                if row_[feature + '_Shift'] > 0.0 else 0.0, axis = 1)
 
             tmp_doc_df = tmp_doc_df[tmp_doc_df['Interval'] != 'ClueWeb09']
             for feature in base_feature_list:
