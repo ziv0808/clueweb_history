@@ -114,6 +114,10 @@ def create_base_feature_file_for_configuration(
     fin_df = pd.DataFrame(
         columns=['NumSnapshots','QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                  'QueryWords','Stopwords','TextLen','-Query-SW',
+                 'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                 'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
+                 'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+                 'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD',
                  'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
                  'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG',
                  'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
@@ -153,12 +157,18 @@ def create_base_feature_file_for_configuration(
         for feature in base_feature_list:
             insert_row.append(list(bench_df[feature])[0])
 
+        for feature in base_feature_list:
+            insert_row.append(tmp_doc_df[feature].mean())
+
+        for feature in base_feature_list:
+            insert_row.append(tmp_doc_df[feature].std())
+
         if len(tmp_doc_df) == 1:
-            insert_row.extend([pd.np.nan]*(len(base_feature_list)*2))
+            insert_row.extend([pd.np.nan]*(len(base_feature_list)*3))
         else:
             for feature in base_feature_list:
                 tmp_doc_df[feature + '_Shift'] = tmp_doc_df[feature].shift(-1)
-                tmp_doc_df[feature + '_Grad'] = tmp_doc_df.apply(lambda row_: row_[feature + '_Shift'] - row_[feature] , axis = 1)
+                tmp_doc_df[feature + '_Grad'] = tmp_doc_df.apply(lambda row_: (row_[feature + '_Shift'] - row_[feature]) / row_[feature + '_Shift'] , axis = 1)
 
             tmp_doc_df = tmp_doc_df[tmp_doc_df['Interval'] != 'ClueWeb09']
             for feature in base_feature_list:
