@@ -360,6 +360,7 @@ def train_and_test_model_on_config(
     best_c = None
     best_map = 0.0
     for potential_c in [0.01, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
+        print("Running valid on C : " +str(potential_c))
         model_filename = learn_svm_rank_model(
             train_file=os.path.join(base_res_folder, 'train.dat'),
             models_folder=base_res_folder,
@@ -535,7 +536,7 @@ def run_grid_search_over_params_for_config(
         retrieval_model,
         normalize_relevance):
 
-    optional_c_list = [0.2, 0.1, 0.01, 0.001]
+    # optional_c_list = [0.2, 0.1, 0.01, 0.001]
     optional_feat_groups_list = ['All','Static','MG','LG','M/STD','Static_LG','Static_MG',
                                  'Static_M/STD','MG_M/STD','Static_MG_M/STD']
 
@@ -563,7 +564,7 @@ def run_grid_search_over_params_for_config(
             qrel_filepath=qrel_filepath)
 
         if next_idx == 0:
-            curr_res_df = get_ranking_effectiveness_for_res_file_per_query(
+            curr_res_df = get_trec_prepared_df_form_res_df(
                 scored_docs_df=test_res_df,
                 score_colname=retrieval_model+'Score')
             insert_row = ['Basic Retrieval']
@@ -571,7 +572,7 @@ def run_grid_search_over_params_for_config(
             with open(os.path.join(save_folder ,curr_file_name), 'w') as f:
                 f.write(convert_df_to_trec(curr_res_df))
 
-            res_dict = get_ranking_effectiveness_for_res_file(
+            res_dict = get_ranking_effectiveness_for_res_file_per_query(
                 file_path=save_folder,
                 filename=curr_file_name,
                 qrel_filepath=qrel_filepath)
