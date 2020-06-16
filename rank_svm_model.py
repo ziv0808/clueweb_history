@@ -1,5 +1,6 @@
 import os
 import sys
+import random
 import subprocess
 import pandas as pd
 
@@ -211,11 +212,17 @@ def prepare_svmr_model_data(
         snapshot_limit,
         feature_list,
         normalize_relvance = False):
-
+    base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW']
     data_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
     work_df = pd.read_csv(os.path.join(data_folder, base_feature_filename), sep = '\t', index_col = False)
     # enforce snapshot limit
     work_df = work_df[work_df['NumSnapshots'] >= snapshot_limit]
+    # add m/s features
+    for feature in base_feature_list:
+        work_df[feature + '_M/STD'] = work_df.apply(lambda row: row[feature +'_M']
+                                                    if (row[feature +'_STD'] == 0.0 or pd.np.isnan(row[feature +'_STD']))
+                                                    else float(row[feature +'_M']) / row[feature +'_STD'], axis = 1)
     # cat relevant features
     work_df = work_df[['QueryNum', 'Docno', 'Relevance'] + feature_list]
     # adapt relevance column
@@ -233,6 +240,7 @@ def prepare_svmr_model_data(
 
         fin_df = fin_df.append(tmp_q_df, ignore_index=True)
 
+    fin_df.fillna(0.0, inplace=True)
     return fin_df
 
 
@@ -261,8 +269,27 @@ def split_to_train_test(
     feat_df['IsTest'] = feat_df['QueryNum'].apply(lambda x: 1 if x in test_set_q else 0)
     test_df = feat_df[feat_df['IsTest'] == 1].copy()
     train_df = feat_df[feat_df['IsTest'] == 0]
+    fold_size = len(test_set_q)
+    if fold_size == 20:
+        potential_folds = [(1,20),(21,40),(41,60),(61,80),(81,100),(101,120)
+                            ,(121,140),(141,160),(161,180),(181,200)]
+    else:
+        potential_folds = [(201,210),(211,220),(221,230),(231,240),(241,250),
+                           (251,260),(261,270),(271,280),(281,290),(291,300)]
+    for potential_fold in potential_folds[:]:
+        if potential_fold[0] == start_test_q:
+            potential_folds.remove(potential_fold)
+    valid_fold = potential_folds[-1]
+    valid_set_q = list(range(valid_fold[0], valid_fold[1] + 1))
 
-    return train_df, test_df
+    train_df['IsValid'] = train_df['QueryNum'].apply(lambda x: 1 if x in valid_set_q else 0)
+    valid_df = train_df[train_df['IsValid'] == 1]
+    train_df = train_df[train_df['IsValid'] == 0]
+
+    del valid_df['IsValid']
+    del train_df['IsValid']
+
+    return train_df, test_df, valid_df
 
 def get_trec_prepared_df_form_res_df(
         scored_docs_df,
@@ -292,9 +319,10 @@ def train_and_test_model_on_config(
         feature_list,
         start_test_q,
         end_test_q,
-        C,
-        feature_groupname = 'All',
-        normalize_relevance=False):
+        # C,
+        feature_groupname,
+        normalize_relevance,
+        qrel_filepath):
 
     feat_df = prepare_svmr_model_data(
         base_feature_filename=base_feature_filename,
@@ -304,13 +332,13 @@ def train_and_test_model_on_config(
 
     print("Model Data Prepared...")
     sys.stdout.flush()
-    train_df, test_df = split_to_train_test(
+    train_df, test_df, valid_df = split_to_train_test(
         start_test_q=start_test_q,
         end_test_q=end_test_q,
         feat_df=feat_df)
 
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
-    model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv','') + 'SNL' + str(snapshot_limit) + '_C' + str(C)
+    model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv','') + 'SNL' + str(snapshot_limit)
     feature_folder = feature_groupname
     if normalize_relevance == True:
         feature_folder += '_NR'
@@ -324,6 +352,52 @@ def train_and_test_model_on_config(
     with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
         f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
 
+    with open(os.path.join(base_res_folder, 'valid.dat'), 'w') as f:
+        f.write(turn_df_to_feature_str_for_model(valid_df, feature_list=feature_list))
+
+    valid_cp_df = valid_df.copy()
+
+    best_c = None
+    best_map = 0.0
+    for potential_c in [0.01, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
+        model_filename = learn_svm_rank_model(
+            train_file=os.path.join(base_res_folder, 'train.dat'),
+            models_folder=base_res_folder,
+            C=potential_c)
+
+        predictions_filename = run_svm_rank_model(
+            test_file=os.path.join(base_res_folder, 'valid.dat'),
+            model_file=model_filename,
+            predictions_folder=base_res_folder)
+
+        with open(predictions_filename, 'r') as f:
+            predications = f.read()
+
+        predications = predications.split('\n')
+        if '' in predications:
+            predications = predications[:-1]
+
+        valid_df['ModelScore'] = predications
+        valid_df['ModelScore'] = valid_df['ModelScore'].apply(lambda x: float(x))
+        curr_res_df = get_trec_prepared_df_form_res_df(
+            scored_docs_df=valid_df,
+            score_colname='ModelScore')
+        curr_file_name = 'Curr_valid_res.txt'
+        with open(os.path.join(base_res_folder, curr_file_name), 'w') as f:
+            f.write(convert_df_to_trec(curr_res_df))
+
+        res_dict = get_ranking_effectiveness_for_res_file(
+            file_path=base_res_folder,
+            filename=curr_file_name,
+            qrel_filepath=qrel_filepath)
+        if float(res_dict['Map']) > best_map:
+            best_map = float(res_dict['Map'])
+            best_c = potential_c
+
+    train_df = train_df.append(valid_cp_df, ignore_index = True)
+    with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
+        f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
+
     with open(os.path.join(base_res_folder, 'test.dat'), 'w') as f:
         f.write(turn_df_to_feature_str_for_model(test_df, feature_list=feature_list))
 
@@ -332,7 +406,7 @@ def train_and_test_model_on_config(
     model_filename = learn_svm_rank_model(
         train_file=os.path.join(base_res_folder, 'train.dat'),
         models_folder=base_res_folder,
-        C=C)
+        C=best_c)
 
     print("Strating Test : " + model_inner_folder + ' ' + feature_folder + ' ' + fold_folder)
     sys.stdout.flush()
@@ -358,9 +432,10 @@ def run_cv_for_config(
         base_feature_filename,
         snapshot_limit,
         feature_groupname,
-        C,
+        # C,
         retrieval_model,
-        normalize_relevance):
+        normalize_relevance,
+        qrel_filepath):
 
     k_fold = 10
     if '2008' in base_feature_filename:
@@ -379,8 +454,8 @@ def run_cv_for_config(
                         'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG',
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
-                        # 'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
-                        # 'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG'
+                        'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
+                        'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD'
                         ]
 
     elif feature_groupname == 'Static':
@@ -399,25 +474,25 @@ def run_cv_for_config(
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG']
 
-    elif feature_groupname == 'Static_STDG':
+    elif feature_groupname == 'Static_M/STD':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
-                        'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
-                        'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG']
+                        'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
+                        'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
 
-    elif feature_groupname == 'Static_MG_STDG':
+    elif feature_groupname == 'Static_MG_M/STD':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
-                        'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
-                        'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG']
+                        'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
+                        'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
 
-    elif feature_groupname == 'MG_STDG':
+    elif feature_groupname == 'MG_M/STD':
         feature_list = ['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
-                        'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
-                        'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG']
+                        'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
+                        'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
 
     elif feature_groupname == 'MG':
         feature_list = ['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
@@ -427,9 +502,9 @@ def run_cv_for_config(
         feature_list = ['QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
                         'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG']
 
-    elif feature_groupname == 'STDG':
-        feature_list = ['QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
-                        'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG']
+    elif feature_groupname == 'M/STD':
+        feature_list = ['QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
+                        'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
 
     if retrieval_model == 'LM':
         feature_list.append('LMScore')
@@ -445,9 +520,10 @@ def run_cv_for_config(
             feature_list= feature_list,
             start_test_q=init_q,
             end_test_q=end_q,
-            C=C,
+            # C=C,
             feature_groupname=feature_groupname +'_'+retrieval_model,
-            normalize_relevance=normalize_relevance)
+            normalize_relevance=normalize_relevance,
+            qrel_filepath=qrel_filepath)
         init_q += query_bulk
         end_q += query_bulk
         test_score_df = test_score_df.append(fold_test_df, ignore_index=True)
@@ -460,7 +536,8 @@ def run_grid_search_over_params_for_config(
         normalize_relevance):
 
     optional_c_list = [0.2, 0.1, 0.01, 0.001]
-    optional_feat_groups_list = ['All','Static','Static_LG','Static_MG','MG','LG']
+    optional_feat_groups_list = ['All','Static','MG','LG','M/STD','Static_LG','Static_MG',
+                                 'Static_M/STD','MG_M/STD','Static_MG_M/STD']
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
@@ -472,43 +549,26 @@ def run_grid_search_over_params_for_config(
     model_base_filename = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit) + "_" + retrieval_model
     if normalize_relevance == True:
         model_base_filename += '_NR'
-    model_summary_df = pd.DataFrame(columns = ['FeatureGroup', 'C', 'Map', 'P@5', 'P@10'])
+    model_summary_df = pd.DataFrame(columns = ['FeatureGroup', 'Map', 'P@5', 'P@10'])
     next_idx = 0
-    for optional_c in optional_c_list:
-        for feat_group in optional_feat_groups_list:
-            test_res_df = run_cv_for_config(
-                base_feature_filename=base_feature_filename,
-                snapshot_limit=snapshot_limit,
-                feature_groupname=feat_group,
-                C=optional_c,
-                retrieval_model=retrieval_model,
-                normalize_relevance=normalize_relevance)
+    per_q_res_dict = {}
+    # for optional_c in optional_c_list:
+    for feat_group in optional_feat_groups_list:
+        test_res_df = run_cv_for_config(
+            base_feature_filename=base_feature_filename,
+            snapshot_limit=snapshot_limit,
+            feature_groupname=feat_group,
+            retrieval_model=retrieval_model,
+            normalize_relevance=normalize_relevance,
+            qrel_filepath=qrel_filepath)
 
-            if next_idx == 0:
-                curr_res_df = get_trec_prepared_df_form_res_df(
-                    scored_docs_df=test_res_df,
-                    score_colname=retrieval_model+'Score')
-                insert_row = ['Benchmark', pd.np.nan]
-                curr_file_name =  model_base_filename + '_Benchmark.txt'
-                with open(os.path.join(save_folder ,curr_file_name), 'w') as f:
-                    f.write(convert_df_to_trec(curr_res_df))
-
-                res_dict = get_ranking_effectiveness_for_res_file(
-                    file_path=save_folder,
-                    filename=curr_file_name,
-                    qrel_filepath=qrel_filepath)
-                for measure in ['Map', 'P_5', 'P_10']:
-                    insert_row.append(res_dict[measure])
-
-                model_summary_df.loc[next_idx] = insert_row
-                next_idx+=1
-
-            curr_res_df = get_trec_prepared_df_form_res_df(
+        if next_idx == 0:
+            curr_res_df = get_ranking_effectiveness_for_res_file_per_query(
                 scored_docs_df=test_res_df,
-                score_colname='ModelScore')
-            insert_row = [feat_group, optional_c]
-            curr_file_name = model_base_filename + '_' + feat_group + '_' + str(optional_c) + '.txt'
-            with open(os.path.join(save_folder, curr_file_name), 'w') as f:
+                score_colname=retrieval_model+'Score')
+            insert_row = ['Basic Retrieval']
+            curr_file_name =  model_base_filename + '_Benchmark.txt'
+            with open(os.path.join(save_folder ,curr_file_name), 'w') as f:
                 f.write(convert_df_to_trec(curr_res_df))
 
             res_dict = get_ranking_effectiveness_for_res_file(
@@ -516,12 +576,51 @@ def run_grid_search_over_params_for_config(
                 filename=curr_file_name,
                 qrel_filepath=qrel_filepath)
             for measure in ['Map', 'P_5', 'P_10']:
-                insert_row.append(res_dict[measure])
-
+                insert_row.append(res_dict['all'][measure])
+            per_q_res_dict['Basic Retrieval'] = res_dict
             model_summary_df.loc[next_idx] = insert_row
-            next_idx += 1
+            next_idx+=1
 
+        curr_res_df = get_trec_prepared_df_form_res_df(
+            scored_docs_df=test_res_df,
+            score_colname='ModelScore')
+        insert_row = [feat_group.replace('_', '+')]
+        curr_file_name = model_base_filename + '_' + feat_group + '.txt'
+        with open(os.path.join(save_folder, curr_file_name), 'w') as f:
+            f.write(convert_df_to_trec(curr_res_df))
+
+        res_dict = get_ranking_effectiveness_for_res_file_per_query(
+            file_path=save_folder,
+            filename=curr_file_name,
+            qrel_filepath=qrel_filepath)
+        for measure in ['Map', 'P_5', 'P_10']:
+            insert_row.append(res_dict['all'][measure])
+        per_q_res_dict[feat_group.replace('_', '+')] = res_dict
+        model_summary_df.loc[next_idx] = insert_row
+        next_idx += 1
+
+    # model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename +'.tsv'), sep = '\t', index = False)
+    significance_df = pd.DataFrame(columns = ['FeatureGroup', 'Map_sign', 'P@5_sign', 'P@10_sign'])
+    next_idx = 0
+    for key in per_q_res_dict:
+        sinificance_list_dict = {'Map' : "", "P_5" : "", "P_10" : ""}
+        for key_2 in per_q_res_dict:
+            sinificance_dict = check_statistical_significance(per_q_res_dict[key], per_q_res_dict[key_2])
+            for measure in ['Map', 'P_5', 'P_10']:
+                if sinificance_dict[measure] == True:
+                    sinificance_list_dict[measure] += key_2
+        insert_row = [key]
+        for measure in ['Map', 'P_5', 'P_10']:
+            insert_row.append(sinificance_list_dict[measure])
+        significance_df.loc[next_idx] = insert_row
+        next_idx += 1
+    model_summary_df = pd.merge(
+        model_summary_df,
+        significance_df,
+        on = ['FeatureGroup'],
+        how = 'inner')
     model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename +'.tsv'), sep = '\t', index = False)
+
 
 
 

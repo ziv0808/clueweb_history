@@ -3,8 +3,8 @@ import ast
 import math
 import subprocess
 import pandas as pd
+from scipy import stats
 from scipy import spatial
-
 
 WORK_YEAR = '2011'
 TREC_EVAL_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
@@ -279,6 +279,40 @@ def get_ranking_effectiveness_for_res_file(
 
     return {'Map': map, 'P_5': p_5, 'P_10': p_10}
 
+
+def get_ranking_effectiveness_for_res_file_per_query(
+        file_path,
+        filename,
+        qrel_filepath=QRELS_FILE_PATH):
+    bashCommand = TREC_EVAL_PATH + ' ' + qrel_filepath + ' ' + \
+                  os.path.join(file_path, filename)
+
+    output = subprocess.check_output(['bash', '-c', bashCommand])
+    output_lines = output.split('\n')
+    res_dict = {}
+    res_dict['all'] = {}
+    for line in output_lines[:-1]:
+        splitted_line = line.split('\t')
+        splitted_line = list(filter(None, splitted_line))
+        if (splitted_line[1] != 'all') and (int(splitted_line[1]) not in res_dict):
+            res_dict[int(splitted_line[1])] = {}
+        else:
+            if splitted_line[1] == 'all':
+                curr_q = 'all'
+            else:
+                curr_q = int(splitted_line[1])
+            if splitted_line[0].replace(' ', '') == 'map':
+                map = float(splitted_line[2])
+                res_dict[curr_q]['Map'] = map
+            elif splitted_line[0].replace(' ', '') == 'P_5':
+                p_5 = float(splitted_line[2])
+                res_dict[curr_q]['P_5'] = p_5
+            elif splitted_line[0].replace(' ', '') == 'P_10':
+                p_10 = float(splitted_line[2])
+                res_dict[curr_q]['P_10'] = p_10
+
+    return res_dict
+
 def get_ranking_effectiveness_for_res_file_for_all_query_groups(
         file_path,
         filename):
@@ -521,3 +555,27 @@ def create_uniform_wieghts_list(
             wieght_list[i] = 1.0 / denominator
     return pd.np.array(wieght_list)
 
+def check_statistical_significance(
+        res_dict_1,
+        res_dict_2):
+    try:
+        q_list = list(res_dict_1.keys())
+        if 'all' in q_list:
+            q_list.remove('all')
+        res_dict = {}
+        for measure in ['Map', 'P_5', 'P_10']:
+            l1 = []
+            l2 = []
+            for q in q_list:
+                l1.append(res_dict_1[q][measure])
+                l2.append(res_dict_2[q][measure])
+
+            t_stat, p_val = stats.ttest_rel(l1, l2)
+            if p_val < 0.05:
+                res_dict[measure] = True
+            else:
+                res_dict[measure] = False
+    except Exception as e:
+        raise Exception('check_statistical_significance: ' + str(e))
+
+    return res_dict
