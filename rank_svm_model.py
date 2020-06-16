@@ -391,6 +391,7 @@ def train_and_test_model_on_config(
             file_path=base_res_folder,
             filename=curr_file_name,
             qrel_filepath=qrel_filepath)
+
         if float(res_dict['Map']) > best_map:
             best_map = float(res_dict['Map'])
             best_c = potential_c
@@ -475,13 +476,13 @@ def run_cv_for_config(
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG']
 
-    elif feature_groupname == 'Static_M/STD':
+    elif feature_groupname == 'Static_M_STD':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
                         'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
                         'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
 
-    elif feature_groupname == 'Static_MG_M/STD':
+    elif feature_groupname == 'Static_MG_M_STD':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
@@ -489,7 +490,7 @@ def run_cv_for_config(
                         'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
                         'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
 
-    elif feature_groupname == 'MG_M/STD':
+    elif feature_groupname == 'MG_M_STD':
         feature_list = ['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
                         'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
@@ -503,7 +504,7 @@ def run_cv_for_config(
         feature_list = ['QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
                         'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG']
 
-    elif feature_groupname == 'M/STD':
+    elif feature_groupname == 'M_STD':
         feature_list = ['QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
                         'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
 
@@ -537,8 +538,8 @@ def run_grid_search_over_params_for_config(
         normalize_relevance):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
-    optional_feat_groups_list = ['All','Static','MG','LG','M/STD','Static_LG','Static_MG',
-                                 'Static_M/STD','MG_M/STD','Static_MG_M/STD']
+    optional_feat_groups_list = ['All','Static','MG','LG','M_STD','Static_LG','Static_MG',
+                                 'Static_M_STD','MG_M_STD','Static_MG_M_STD']
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
