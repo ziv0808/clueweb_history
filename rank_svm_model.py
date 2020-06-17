@@ -624,6 +624,64 @@ def run_grid_search_over_params_for_config(
     model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename +'.tsv'), sep = '\t', index = False)
 
 
+def fix_statistical_sinificance(
+        base_feature_filename,
+        snapshot_limit,
+        retrieval_model):
+
+    save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
+    save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
+    if '2008' in base_feature_filename:
+        qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
+    else:
+        qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
+
+    model_base_filename = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit) + "_" + retrieval_model
+    optional_feat_groups_list = ['All', 'Static', 'MG', 'LG', 'M_STD', 'Static_LG', 'Static_MG',
+                                 'Static_M_STD', 'MG_M_STD', 'Static_MG_M_STD']
+
+    per_q_res_dict = {}
+    curr_file_name = model_base_filename + '_Benchmark.txt'
+    res_dict = get_ranking_effectiveness_for_res_file_per_query(
+        file_path=save_folder,
+        filename=curr_file_name,
+        qrel_filepath=qrel_filepath)
+
+    per_q_res_dict['Basic Retrieval'] = res_dict
+    for feat_group in optional_feat_groups_list:
+        curr_file_name = model_base_filename + '_' + feat_group + '.txt'
+
+        res_dict = get_ranking_effectiveness_for_res_file_per_query(
+            file_path=save_folder,
+            filename=curr_file_name,
+            qrel_filepath=qrel_filepath)
+
+        per_q_res_dict[feat_group.replace('_', '+')] = res_dict
+
+    model_summary_df = pd.read_csv(os.path.join(save_summary_folder, model_base_filename +'.tsv'), sep = '\t', index_col = False)
+    del model_summary_df['Map_sign']
+    del model_summary_df['P@5_sign']
+    del model_summary_df['P@10_sign']
+    significance_df = pd.DataFrame(columns=['FeatureGroup', 'Map_sign', 'P@5_sign', 'P@10_sign'])
+    next_idx = 0
+    for key in per_q_res_dict:
+        sinificance_list_dict = {'Map': "", "P_5": "", "P_10": ""}
+        for key_2 in per_q_res_dict:
+            sinificance_dict = check_statistical_significance(per_q_res_dict[key], per_q_res_dict[key_2])
+            for measure in ['Map', 'P_5', 'P_10']:
+                if sinificance_dict[measure] == True:
+                    sinificance_list_dict[measure] += key_2
+        insert_row = [key]
+        for measure in ['Map', 'P_5', 'P_10']:
+            insert_row.append(sinificance_list_dict[measure])
+        significance_df.loc[next_idx] = insert_row
+        next_idx += 1
+    model_summary_df = pd.merge(
+        model_summary_df,
+        significance_df,
+        on=['FeatureGroup'],
+        how='inner')
+    model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename + '_Fixed_Sign.tsv'), sep='\t', index=False)
 
 
 if __name__ == '__main__':
@@ -642,7 +700,7 @@ if __name__ == '__main__':
             inner_fold=inner_fold,
             retrival_scores_inner_fold=retrival_scores_inner_fold)
 
-    if operation == 'GridSearchParams':
+    elif operation == 'GridSearchParams':
         base_feature_filename = sys.argv[2]
         snapshot_limit = int(sys.argv[3])
         retrieval_model = sys.argv[4]
@@ -653,3 +711,13 @@ if __name__ == '__main__':
             snapshot_limit=snapshot_limit,
             retrieval_model=retrieval_model,
             normalize_relevance=normalize_relevance)
+
+    elif operation == 'FixSinificance':
+        base_feature_filename = sys.argv[2]
+        snapshot_limit = int(sys.argv[3])
+        retrieval_model = sys.argv[4]
+
+        fix_statistical_sinificance(
+            base_feature_filename=base_feature_filename,
+            snapshot_limit=snapshot_limit,
+            retrieval_model=retrieval_model)
