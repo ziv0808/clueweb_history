@@ -610,7 +610,7 @@ def run_grid_search_over_params_for_config(
             sinificance_dict = check_statistical_significance(per_q_res_dict[key], per_q_res_dict[key_2])
             for measure in ['Map', 'P_5', 'P_10']:
                 if sinificance_dict[measure] == True:
-                    sinificance_list_dict[measure] += key_2
+                    sinificance_list_dict[measure] += key_2+ ','
         insert_row = [key]
         for measure in ['Map', 'P_5', 'P_10']:
             insert_row.append(sinificance_list_dict[measure])
@@ -670,7 +670,7 @@ def fix_statistical_sinificance(
             sinificance_dict = check_statistical_significance(per_q_res_dict[key], per_q_res_dict[key_2])
             for measure in ['Map', 'P_5', 'P_10']:
                 if sinificance_dict[measure] == True:
-                    sinificance_list_dict[measure] += key_2
+                    sinificance_list_dict[measure] += key_2 + ','
         insert_row = [key]
         for measure in ['Map', 'P_5', 'P_10']:
             insert_row.append(sinificance_list_dict[measure])
