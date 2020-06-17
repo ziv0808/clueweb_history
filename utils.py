@@ -284,7 +284,7 @@ def get_ranking_effectiveness_for_res_file_per_query(
         file_path,
         filename,
         qrel_filepath=QRELS_FILE_PATH):
-    bashCommand = TREC_EVAL_PATH + ' ' + qrel_filepath + ' ' + \
+    bashCommand = TREC_EVAL_PATH + ' -q ' + qrel_filepath + ' ' + \
                   os.path.join(file_path, filename)
 
     output = subprocess.check_output(['bash', '-c', bashCommand])
