@@ -472,6 +472,12 @@ def run_cv_for_config(
                         'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG',
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
+                        'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
+                        'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD',
+                        'QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
+                        'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG',
                         # 'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
                         # 'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD'
                         ]
@@ -479,6 +485,18 @@ def run_cv_for_config(
     elif feature_groupname == 'Static':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW']
+
+    elif feature_groupname == 'M':
+        feature_list = ['QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M']
+
+    elif feature_groupname == 'STD':
+        feature_list = ['QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
+
+    elif feature_groupname == 'MRG':
+        feature_list = ['QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
+                        'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG']
 
     elif feature_groupname == 'Static_LG':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
@@ -492,25 +510,43 @@ def run_cv_for_config(
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG']
 
+    elif feature_groupname == 'Static_M':
+        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
+                        'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M']
+
+    elif feature_groupname == 'Static_RMG':
+        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
+                        'QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
+                        'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG']
+
     elif feature_groupname == 'Static_M_STD':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
-                        'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
-                        'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
+                        'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
+                        'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
 
     elif feature_groupname == 'Static_MG_M_STD':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
-                        'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
-                        'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
+                        'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
+                        'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
 
     elif feature_groupname == 'MG_M_STD':
         feature_list = ['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
-                        'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
-                        'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
+                        'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
+                        'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
 
     elif feature_groupname == 'MG':
         feature_list = ['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
@@ -521,8 +557,10 @@ def run_cv_for_config(
                         'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG']
 
     elif feature_groupname == 'M_STD':
-        feature_list = ['QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
-                        'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
+        feature_list = ['QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
+                        'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
     else:
         raise Exception('Undefined feature group!')
 
@@ -556,7 +594,8 @@ def run_grid_search_over_params_for_config(
         normalize_relevance):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
-    optional_feat_groups_list = ['All','Static','MG','LG','M','STD','RMG','Static_LG','Static_MG']
+    optional_feat_groups_list = ['All','Static','MG','LG','M','STD','RMG','Static_LG','Static_MG'
+                                    ,'Static_M', 'Static_M_STD', 'Static_RMG']
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
