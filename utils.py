@@ -555,6 +555,18 @@ def create_uniform_wieghts_list(
             wieght_list[i] = 1.0 / denominator
     return pd.np.array(wieght_list)
 
+def calc_releational_measure(
+        measure_obs,
+        reletional_measure_obs):
+
+    if reletional_measure_obs == 0.0:
+        if measure_obs != 0.0:
+            return 1.0
+        else:
+            return 0.0
+    else:
+        return float(measure_obs - reletional_measure_obs) / float(reletional_measure_obs)
+
 def check_statistical_significance(
         res_dict_1,
         res_dict_2):

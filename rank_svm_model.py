@@ -117,6 +117,8 @@ def create_base_feature_file_for_configuration(
                  'QueryWords','Stopwords','TextLen','-Query-SW',
                  'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
                  'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
+                 'QueryTermsRatio_M_5Snap', 'StopwordsRatio_M_5Snap', 'Entropy_M_5Snap', 'SimClueWeb_M_5Snap',
+                 'QueryWords_M_5Snap', 'Stopwords_M_5Snap', 'TextLen_M_5Snap', '-Query-SW_M_5Snap',
                  'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
                  'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD',
                  'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
@@ -125,6 +127,11 @@ def create_base_feature_file_for_configuration(
                  'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
                  'QueryTermsRatio_STDG', 'StopwordsRatio_STDG', 'Entropy_STDG', 'SimClueWeb_STDG',
                  'QueryWords_STDG', 'Stopwords_STDG', 'TextLen_STDG', '-Query-SW_STDG',
+                 'QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
+                 'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG',
+                 'QueryTermsRatio_MRG_5Snap', 'StopwordsRatio_MRG_5Snap', 'Entropy_MRG_5Snap', 'SimClueWeb_MRG_5Snap',
+                 'QueryWords_MRG_5Snap', 'Stopwords_MRG_5Snap', 'TextLen_MRG_5Snap', '-Query-SW_MRG_5Snap',
+
                  # 'LMScore','BM25Score', 'Relevance',
                  'QueryNum', 'Docno'])
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
@@ -162,15 +169,18 @@ def create_base_feature_file_for_configuration(
             insert_row.append(tmp_doc_df[feature].mean())
 
         for feature in base_feature_list:
+            insert_row.append(tmp_doc_df[-5:][feature].mean())
+
+        for feature in base_feature_list:
             insert_row.append(tmp_doc_df[feature].std())
 
         if len(tmp_doc_df) == 1:
-            insert_row.extend([pd.np.nan]*(len(base_feature_list)*3))
+            insert_row.extend([pd.np.nan]*(len(base_feature_list)*5))
         else:
             for feature in base_feature_list:
                 tmp_doc_df[feature + '_Shift'] = tmp_doc_df[feature].shift(-1)
-                tmp_doc_df[feature + '_Grad'] = tmp_doc_df.apply(lambda row_: (row_[feature + '_Shift'] - row_[feature]) / row_[feature + '_Shift']
-                                                                if row_[feature + '_Shift'] > 0.0 else 0.0, axis = 1)
+                tmp_doc_df[feature + '_Grad']  = tmp_doc_df.apply(lambda row_: calc_releational_measure(row_[feature + '_Shift'], row_[feature]), axis = 1)
+                tmp_doc_df[feature + '_RGrad'] = tmp_doc_df.apply(lambda row_: calc_releational_measure(row_[feature], list(bench_df[feature])[0]), axis=1)
 
             tmp_doc_df = tmp_doc_df[tmp_doc_df['Interval'] != 'ClueWeb09']
             for feature in base_feature_list:
@@ -184,6 +194,12 @@ def create_base_feature_file_for_configuration(
                 if pd.np.isnan(curr_std):
                     curr_std = 0.0
                 insert_row.append(curr_std)
+
+            for feature in base_feature_list:
+                insert_row.append(tmp_doc_df[feature + '_RGrad'].mean())
+
+            for feature in base_feature_list:
+                insert_row.append(tmp_doc_df[-5:][feature + '_RGrad'].mean())
 
         insert_row.extend([query, docno])
         fin_df.loc[next_index] = insert_row
@@ -456,8 +472,8 @@ def run_cv_for_config(
                         'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG',
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
                         'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
-                        'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
-                        'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD'
+                        # 'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
+                        # 'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD'
                         ]
 
     elif feature_groupname == 'Static':
@@ -507,6 +523,8 @@ def run_cv_for_config(
     elif feature_groupname == 'M_STD':
         feature_list = ['QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
                         'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD']
+    else:
+        raise Exception('Undefined feature group!')
 
     if retrieval_model == 'LM':
         feature_list.append('LMScore')
@@ -538,8 +556,7 @@ def run_grid_search_over_params_for_config(
         normalize_relevance):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
-    optional_feat_groups_list = ['All','Static','MG','LG','M_STD','Static_LG','Static_MG',
-                                 'Static_M_STD','MG_M_STD','Static_MG_M_STD']
+    optional_feat_groups_list = ['All','Static','MG','LG','M','STD','RMG','Static_LG','Static_MG']
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
