@@ -494,7 +494,7 @@ def run_cv_for_config(
         feature_list = ['QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
                         'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
 
-    elif feature_groupname == 'MRG':
+    elif feature_groupname == 'RMG':
         feature_list = ['QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
                         'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG']
 
