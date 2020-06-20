@@ -134,6 +134,8 @@ def create_base_feature_file_for_configuration(
 
                  # 'LMScore','BM25Score', 'Relevance',
                  'QueryNum', 'Docno'])
+
+    all_snaps_df = pd.DataFrame({})
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                  'QueryWords','Stopwords','TextLen','-Query-SW']
     next_index = 0
@@ -181,6 +183,9 @@ def create_base_feature_file_for_configuration(
                 tmp_doc_df[feature + '_Shift'] = tmp_doc_df[feature].shift(-1)
                 tmp_doc_df[feature + '_Grad']  = tmp_doc_df.apply(lambda row_: calc_releational_measure(row_[feature + '_Shift'], row_[feature]), axis = 1)
                 tmp_doc_df[feature + '_RGrad'] = tmp_doc_df.apply(lambda row_: calc_releational_measure(row_[feature], list(bench_df[feature])[0]), axis=1)
+            tmp_doc_df['NumSnapshots'] = len(tmp_doc_df)
+            tmp_doc_df['SnapNum'] = list(range((len(tmp_doc_df) - 1)*(-1),1))
+            all_snaps_df = all_snaps_df.append(tmp_doc_df, ignore_index=True)
 
             tmp_doc_df = tmp_doc_df[tmp_doc_df['Interval'] != 'ClueWeb09']
             for feature in base_feature_list:
@@ -222,6 +227,7 @@ def create_base_feature_file_for_configuration(
         how = 'inner')
 
     fin_df.to_csv(os.path.join(save_folder, filename + '_with_meta.tsv'), sep='\t', index=False)
+    all_snaps_df.to_csv(os.path.join(save_folder, filename + '_all_snaps.tsv'), sep='\t', index=False)
 
 def prepare_svmr_model_data(
         base_feature_filename,
