@@ -583,7 +583,7 @@ def check_statistical_significance(
                 l2.append(res_dict_2[q][measure])
 
             t_stat, p_val = stats.ttest_rel(l1, l2)
-            if p_val < 0.05:
+            if p_val <= 0.05:
                 res_dict[measure] = True
             else:
                 res_dict[measure] = False

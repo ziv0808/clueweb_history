@@ -183,9 +183,6 @@ def create_base_feature_file_for_configuration(
                 tmp_doc_df[feature + '_Shift'] = tmp_doc_df[feature].shift(-1)
                 tmp_doc_df[feature + '_Grad']  = tmp_doc_df.apply(lambda row_: calc_releational_measure(row_[feature + '_Shift'], row_[feature]), axis = 1)
                 tmp_doc_df[feature + '_RGrad'] = tmp_doc_df.apply(lambda row_: calc_releational_measure(row_[feature], list(bench_df[feature])[0]), axis=1)
-            tmp_doc_df['NumSnapshots'] = len(tmp_doc_df)
-            tmp_doc_df['SnapNum'] = list(range((len(tmp_doc_df) - 1)*(-1),1))
-            all_snaps_df = all_snaps_df.append(tmp_doc_df, ignore_index=True)
 
             tmp_doc_df = tmp_doc_df[tmp_doc_df['Interval'] != 'ClueWeb09']
             for feature in base_feature_list:
@@ -209,6 +206,10 @@ def create_base_feature_file_for_configuration(
         insert_row.extend([query, docno])
         fin_df.loc[next_index] = insert_row
         next_index += 1
+        
+        tmp_doc_df['NumSnapshots'] = len(tmp_doc_df)
+        tmp_doc_df['SnapNum'] = list(range((len(tmp_doc_df) - 1) * (-1), 1))
+        all_snaps_df = all_snaps_df.append(tmp_doc_df, ignore_index=True)
 
     filename = interval_freq + "_"
     for year_ in year_list:
