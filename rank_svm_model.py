@@ -444,7 +444,7 @@ def train_and_test_model_on_config(
     feature_folder = feature_groupname
     if normalize_relevance == True:
         feature_folder += '_NR'
-    fold_folder = str(start_test_q) + '_' + str(end_test_q)
+    fold_folder = str(start_test_q) + '_' + str(end_test_q) + "_" + str(snap_chosing_method)
 
     for hirarcy_folder in [model_inner_folder, feature_folder, fold_folder]:
         base_res_folder = os.path.join(base_res_folder, hirarcy_folder)
