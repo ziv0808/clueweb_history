@@ -206,7 +206,7 @@ def create_base_feature_file_for_configuration(
         insert_row.extend([query, docno])
         fin_df.loc[next_index] = insert_row
         next_index += 1
-        
+
         tmp_doc_df['NumSnapshots'] = len(tmp_doc_df)
         tmp_doc_df['SnapNum'] = list(range((len(tmp_doc_df) - 1) * (-1), 1))
         all_snaps_df = all_snaps_df.append(tmp_doc_df, ignore_index=True)
@@ -601,8 +601,8 @@ def run_grid_search_over_params_for_config(
         normalize_relevance):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
-    optional_feat_groups_list = ['All','Static','MG','LG','M','STD','RMG','Static_LG','Static_MG'
-                                    ,'Static_M', 'Static_M_STD', 'Static_RMG']
+    optional_feat_groups_list = ['All','Static','MG','LG','M','RMG','Static_LG','Static_MG'
+                                    ,'Static_M', 'Static_RMG']
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
@@ -746,6 +746,89 @@ def fix_statistical_sinificance(
         how='inner')
     model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename + '_Fixed_Sign.tsv'), sep='\t', index=False)
 
+def create_all_x_snap_aggregations(
+        base_feature_filename):
+
+    base_file_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
+    base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW']
+
+    work_df = pd.read_csv(os.path.join(base_file_folder, base_feature_filename), sep = '\t', index = False)
+    if '2008' in base_feature_filename:
+        start_interval = '2008-12-01'
+    else:
+        start_interval = '2012-01-01'
+
+    for feature in base_feature_filename:
+        del work_df[feature + '_Shift']
+
+    possible_num_snaps = [2,3,4,5,6,7,8,10,12,15,20]
+    possible_monthes = ['2M','3M','5M','6M','8M','9M','10M','1Y','1.5Y']
+
+    for num_snaps in possible_num_snaps + possible_monthes:
+        if type(num_snaps) == str:
+            broken_interval = start_interval.split('-')
+            if 'M' in num_snaps:
+                rel_month = str(int(broken_interval[1]) - int(num_snaps.replace('M', '')) + 1)
+                curr_interval = broken_interval[0] + '-' + '0'*(2 - len(rel_month)) + rel_month + '-01'
+            elif num_snaps == '1Y':
+                if broken_interval[0] == '2008':
+                    curr_interval = '2008-01-01'
+                else:
+                    curr_interval = '2011-02-01'
+            else:
+                if broken_interval[0] == '2008':
+                    curr_interval = '2007-07-01'
+                else:
+                    curr_interval = '2010-08-01'
+            tmp_df = work_df[work_df['Interval'] >= curr_interval].copy()
+        else:
+            tmp_df = work_df[work_df['SnapNum'] >= (-1)*num_snaps].copy()
+        suffix = str(num_snaps) + 'Snaps'
+        print(suffix)
+        sys.stdout.flush()
+        save_df = tmp_df[['QueryNum', 'Docno'] + base_feature_list].groupby(['QueryNum', 'Docno']).mean()
+        rename_dict_1 = {}
+        rename_dict_2 = {}
+        for feature in base_feature_list:
+            rename_dict_1[feature] = feature + '_M' + suffix
+            rename_dict_2[feature] = feature + '_STD' + suffix
+
+        std_df = tmp_df[['QueryNum', 'Docno'] + base_feature_list].groupby(['QueryNum', 'Docno']).std()
+        save_df = pd.merge(
+            save_df.rename(columns = rename_dict_1),
+            std_df.rename(columns = rename_dict_2),
+            right_index=True,
+            left_index=True)
+
+        tmp_df = tmp_df[tmp_df['Interval'] != 'ClueWeb09']
+        grad_list = []
+        rgrad_list = []
+        rename_dict_1 = {}
+        rename_dict_2 = {}
+        for feature in base_feature_list:
+            grad_list.append(feature + '_Grad')
+            rename_dict_1[feature + '_Grad'] = feature + '_MG' + suffix
+            rgrad_list.append(feature + '_RGrad')
+            rename_dict_2[feature + '_RGrad'] = feature + '_RMG' + suffix
+
+        grad_df = tmp_df[['QueryNum', 'Docno'] + grad_list].groupby(['QueryNum', 'Docno']).mean()
+        rgrad_df = tmp_df[['QueryNum', 'Docno'] + rgrad_list].groupby(['QueryNum', 'Docno']).mean()
+
+        save_df = pd.merge(
+            save_df.reset_index(),
+            grad_df.rename(columns=rename_dict_1).reset_index(),
+            on=['QueryNum', 'Docno'],
+            how='left')
+
+        save_df = pd.merge(
+            save_df,
+            rgrad_df.rename(columns=rename_dict_2).reset_index(),
+            on=['QueryNum', 'Docno'],
+            how='left')
+
+        save_df.to_csv(os.path.join(os.path.join(base_file_folder, 'feat_ref'), base_feature_filename.replace('_all_snaps.tsv', suffix + '.tsv')), sep = '\t', index = False)
+
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -784,3 +867,8 @@ if __name__ == '__main__':
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
             retrieval_model=retrieval_model)
+
+    elif operation == 'LimitedSnapFeatures':
+        base_feature_filename = sys.argv[2]
+
+        create_all_x_snap_aggregations(base_feature_filename)
