@@ -753,7 +753,7 @@ def create_all_x_snap_aggregations(
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                          'QueryWords', 'Stopwords', 'TextLen', '-Query-SW']
 
-    work_df = pd.read_csv(os.path.join(base_file_folder, base_feature_filename), sep = '\t', index = False)
+    work_df = pd.read_csv(os.path.join(base_file_folder, base_feature_filename), sep = '\t', index_col = False)
     if '2008' in base_feature_filename:
         start_interval = '2008-12-01'
     else:
