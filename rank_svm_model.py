@@ -759,7 +759,7 @@ def create_all_x_snap_aggregations(
     else:
         start_interval = '2012-01-01'
 
-    for feature in base_feature_filename:
+    for feature in base_feature_list:
         del work_df[feature + '_Shift']
 
     possible_num_snaps = [2,3,4,5,6,7,8,10,12,15,20]
