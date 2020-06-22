@@ -234,7 +234,8 @@ def prepare_svmr_model_data(
         base_feature_filename,
         snapshot_limit,
         feature_list,
-        normalize_relvance = False):
+        normalize_relvance = False,
+        limited_snaps_num  = None):
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                          'QueryWords', 'Stopwords', 'TextLen', '-Query-SW']
     data_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
@@ -242,10 +243,23 @@ def prepare_svmr_model_data(
     # enforce snapshot limit
     work_df = work_df[work_df['NumSnapshots'] >= snapshot_limit]
     # add m/s features
-    for feature in base_feature_list:
-        work_df[feature + '_M/STD'] = work_df.apply(lambda row: row[feature +'_M']
-                                                    if (row[feature +'_STD'] == 0.0 or pd.np.isnan(row[feature +'_STD']))
-                                                    else float(row[feature +'_M']) / row[feature +'_STD'], axis = 1)
+    need_m_div_std = False
+    for feature in feature_list:
+        if 'M/STD' in feature:
+            need_m_div_std = True
+    if need_m_div_std == True:
+        for feature in base_feature_list:
+            work_df[feature + '_M/STD'] = work_df.apply(lambda row: row[feature +'_M']
+                                                        if (row[feature +'_STD'] == 0.0 or pd.np.isnan(row[feature +'_STD']))
+                                                        else float(row[feature +'_M']) / row[feature +'_STD'], axis = 1)
+    if limited_snaps_num is not None:
+        limited_snaps_df = pd.read_csv(os.path.join(os.path.join(data_folder, 'feat_ref'),
+                                                    base_feature_filename.replace('_with_meta', str(limited_snaps_num) +'Snaps')), sep = '\t', index_col = False)
+        work_df = pd.merge(
+            work_df,
+            limited_snaps_df,
+            on = ['QueryNum', 'Docno'],
+            how = 'left')
     # cat relevant features
     work_df = work_df[['QueryNum', 'Docno', 'Relevance'] + feature_list]
     # adapt relevance column
@@ -336,32 +350,95 @@ def get_trec_prepared_df_form_res_df(
 
     return big_df
 
+def learn_best_num_of_snaps(
+        base_feature_filename,
+        snapshot_limit,
+        feature_list,
+        start_test_q,
+        end_test_q,
+        base_res_folder,
+        qrel_filepath,
+        normalize_relevance,
+        snap_chosing_method):
+
+    if snap_chosing_method == 'SnapNum':
+        optional_snap_limit = [2,3,5,7,8,10,15]
+    elif snap_chosing_method == 'Months':
+        optional_snap_limit = ['2M','3M','5M','6M','9M','10M','1Y','1.5Y']
+    else:
+        raise Exception('learn_best_num_of_snaps: Unknown snap_chosing_method')
+
+    best_snap_lim = None
+    best_map = 0.0
+    for snap_lim in optional_snap_limit:
+        feat_df = prepare_svmr_model_data(
+            base_feature_filename=base_feature_filename,
+            snapshot_limit=int(snapshot_limit),
+            feature_list=feature_list,
+            normalize_relvance=normalize_relevance,
+            limited_snaps_num=snap_lim)
+
+        train_df, test_df, valid_df = split_to_train_test(
+            start_test_q=start_test_q,
+            end_test_q=end_test_q,
+            feat_df=feat_df)
+
+        with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
+            f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
+
+        with open(os.path.join(base_res_folder, 'valid.dat'), 'w') as f:
+            f.write(turn_df_to_feature_str_for_model(valid_df, feature_list=feature_list))
+
+        model_filename = learn_svm_rank_model(
+            train_file=os.path.join(base_res_folder, 'train.dat'),
+            models_folder=base_res_folder,
+            C=0.2)
+
+        predictions_filename = run_svm_rank_model(
+            test_file=os.path.join(base_res_folder, 'valid.dat'),
+            model_file=model_filename,
+            predictions_folder=base_res_folder)
+
+        with open(predictions_filename, 'r') as f:
+            predications = f.read()
+
+        predications = predications.split('\n')
+        if '' in predications:
+            predications = predications[:-1]
+
+        valid_df['ModelScore'] = predications
+        valid_df['ModelScore'] = valid_df['ModelScore'].apply(lambda x: float(x))
+        curr_res_df = get_trec_prepared_df_form_res_df(
+            scored_docs_df=valid_df,
+            score_colname='ModelScore')
+        curr_file_name = 'Curr_valid_res.txt'
+        with open(os.path.join(base_res_folder, curr_file_name), 'w') as f:
+            f.write(convert_df_to_trec(curr_res_df))
+
+        res_dict = get_ranking_effectiveness_for_res_file(
+            file_path=base_res_folder,
+            filename=curr_file_name,
+            qrel_filepath=qrel_filepath)
+
+        if float(res_dict['Map']) > best_map:
+            best_map = float(res_dict['Map'])
+            best_snap_lim = snap_lim
+
+    return best_snap_lim
+
 def train_and_test_model_on_config(
         base_feature_filename,
         snapshot_limit,
         feature_list,
         start_test_q,
         end_test_q,
-        # C,
         feature_groupname,
         normalize_relevance,
-        qrel_filepath):
-
-    feat_df = prepare_svmr_model_data(
-        base_feature_filename=base_feature_filename,
-        snapshot_limit=int(snapshot_limit),
-        feature_list=feature_list,
-        normalize_relvance=normalize_relevance)
-
-    print("Model Data Prepared...")
-    sys.stdout.flush()
-    train_df, test_df, valid_df = split_to_train_test(
-        start_test_q=start_test_q,
-        end_test_q=end_test_q,
-        feat_df=feat_df)
+        qrel_filepath,
+        snap_chosing_method = None):
 
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
-    model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv','') + 'SNL' + str(snapshot_limit)
+    model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit)
     feature_folder = feature_groupname
     if normalize_relevance == True:
         feature_folder += '_NR'
@@ -371,6 +448,33 @@ def train_and_test_model_on_config(
         base_res_folder = os.path.join(base_res_folder, hirarcy_folder)
         if not os.path.exists(base_res_folder):
             os.mkdir(base_res_folder)
+
+    best_snap_num = None
+    if 'XXSnap' in feature_groupname:
+        best_snap_num = learn_best_num_of_snaps(
+            base_feature_filename=base_feature_filename,
+            snapshot_limit=snapshot_limit,
+            feature_list=feature_list,
+            start_test_q=start_test_q,
+            end_test_q=end_test_q,
+            base_res_folder=base_res_folder,
+            qrel_filepath=qrel_filepath,
+            normalize_relevance=normalize_relevance,
+            snap_chosing_method=snap_chosing_method)
+
+    feat_df = prepare_svmr_model_data(
+        base_feature_filename=base_feature_filename,
+        snapshot_limit=int(snapshot_limit),
+        feature_list=feature_list,
+        normalize_relvance=normalize_relevance,
+        limited_snaps_num=best_snap_num)
+
+    print("Model Data Prepared...")
+    sys.stdout.flush()
+    train_df, test_df, valid_df = split_to_train_test(
+        start_test_q=start_test_q,
+        end_test_q=end_test_q,
+        feat_df=feat_df)
 
     with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
         f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
@@ -419,6 +523,10 @@ def train_and_test_model_on_config(
             best_map = float(res_dict['Map'])
             best_c = potential_c
 
+    best_params_str = "C: " +str(best_c) +' \nSnapLim: ' + str(best_snap_num)
+    with open(os.path.join(base_res_folder, 'hyper_params.txt'), 'w') as f:
+        f.write(best_params_str)
+
     train_df = train_df.append(valid_cp_df, ignore_index = True)
     with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
         f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
@@ -457,10 +565,10 @@ def run_cv_for_config(
         base_feature_filename,
         snapshot_limit,
         feature_groupname,
-        # C,
         retrieval_model,
         normalize_relevance,
-        qrel_filepath):
+        qrel_filepath,
+        snap_chosing_method):
 
     k_fold = 10
     if '2008' in base_feature_filename:
@@ -577,6 +685,8 @@ def run_cv_for_config(
         feature_list.append('BM25Score')
 
     test_score_df = pd.DataFrame({})
+    if 'XXSnap' in feature_groupname:
+        feature_groupname += 'By' + snap_chosing_method
 
     for i in range(k_fold):
         fold_test_df = train_and_test_model_on_config(
@@ -585,10 +695,10 @@ def run_cv_for_config(
             feature_list= feature_list,
             start_test_q=init_q,
             end_test_q=end_q,
-            # C=C,
             feature_groupname=feature_groupname +'_'+retrieval_model,
             normalize_relevance=normalize_relevance,
-            qrel_filepath=qrel_filepath)
+            qrel_filepath=qrel_filepath,
+            snap_chosing_method=snap_chosing_method)
         init_q += query_bulk
         end_q += query_bulk
         test_score_df = test_score_df.append(fold_test_df, ignore_index=True)
@@ -598,11 +708,15 @@ def run_grid_search_over_params_for_config(
         base_feature_filename,
         snapshot_limit,
         retrieval_model,
-        normalize_relevance):
+        normalize_relevance,
+        snap_chosing_method):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
-    optional_feat_groups_list = ['All','Static','MG','LG','M','RMG','Static_LG','Static_MG'
-                                    ,'Static_M', 'Static_RMG']
+    ## num 1
+    # optional_feat_groups_list = ['All','Static','MG','LG','M','RMG','Static_LG','Static_MG'
+    #                                 ,'Static_M', 'Static_RMG']
+    optional_feat_groups_list = ['Static','MGXXSnap', 'MXXSnap','RMGXXSnap','Static_MGXXSnap'
+                                        ,'Static_MXXSnap', 'Static_RMGXXSnap','MGXXSnap_MXXSnap_RMGXXSnap']
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
@@ -611,7 +725,7 @@ def run_grid_search_over_params_for_config(
     else:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
 
-    model_base_filename = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit) + "_" + retrieval_model
+    model_base_filename = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit) + "_" + retrieval_model + "_By" + snap_chosing_method
     if normalize_relevance == True:
         model_base_filename += '_NR'
     model_summary_df = pd.DataFrame(columns = ['FeatureGroup', 'Map', 'P@5', 'P@10'])
@@ -625,7 +739,11 @@ def run_grid_search_over_params_for_config(
             feature_groupname=feat_group,
             retrieval_model=retrieval_model,
             normalize_relevance=normalize_relevance,
-            qrel_filepath=qrel_filepath)
+            qrel_filepath=qrel_filepath,
+            snap_chosing_method=snap_chosing_method)
+
+        if 'XXSnap' in feat_group:
+            feat_group += 'By' + snap_chosing_method
 
         if next_idx == 0:
             curr_res_df = get_trec_prepared_df_form_res_df(
@@ -785,14 +903,15 @@ def create_all_x_snap_aggregations(
         else:
             tmp_df = work_df[work_df['SnapNum'] >= (-1)*num_snaps].copy()
         suffix = str(num_snaps) + 'Snaps'
+        suffix_col = 'XXSnaps'
         print(suffix)
         sys.stdout.flush()
         save_df = tmp_df[['QueryNum', 'Docno'] + base_feature_list].groupby(['QueryNum', 'Docno']).mean()
         rename_dict_1 = {}
         rename_dict_2 = {}
         for feature in base_feature_list:
-            rename_dict_1[feature] = feature + '_M' + suffix
-            rename_dict_2[feature] = feature + '_STD' + suffix
+            rename_dict_1[feature] = feature + '_M' + suffix_col
+            rename_dict_2[feature] = feature + '_STD' + suffix_col
 
         std_df = tmp_df[['QueryNum', 'Docno'] + base_feature_list].groupby(['QueryNum', 'Docno']).std()
         save_df = pd.merge(
@@ -808,9 +927,9 @@ def create_all_x_snap_aggregations(
         rename_dict_2 = {}
         for feature in base_feature_list:
             grad_list.append(feature + '_Grad')
-            rename_dict_1[feature + '_Grad'] = feature + '_MG' + suffix
+            rename_dict_1[feature + '_Grad'] = feature + '_MG' + suffix_col
             rgrad_list.append(feature + '_RGrad')
-            rename_dict_2[feature + '_RGrad'] = feature + '_RMG' + suffix
+            rename_dict_2[feature + '_RGrad'] = feature + '_RMG' + suffix_col
 
         grad_df = tmp_df[['QueryNum', 'Docno'] + grad_list].groupby(['QueryNum', 'Docno']).mean()
         rgrad_df = tmp_df[['QueryNum', 'Docno'] + rgrad_list].groupby(['QueryNum', 'Docno']).mean()
