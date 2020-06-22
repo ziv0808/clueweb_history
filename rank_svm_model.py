@@ -371,6 +371,8 @@ def learn_best_num_of_snaps(
     best_snap_lim = None
     best_map = 0.0
     for snap_lim in optional_snap_limit:
+        print("Running validation snap limit: " + str(snap_lim))
+        sys.stdout.flush()
         feat_df = prepare_svmr_model_data(
             base_feature_filename=base_feature_filename,
             snapshot_limit=int(snapshot_limit),
@@ -580,6 +582,9 @@ def run_cv_for_config(
         end_q = 210
         query_bulk = 10
 
+    feature_list = []
+    broken_feature_groupname = feature_groupname.split('_')
+    len_handled = 0
     if feature_groupname == 'All':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                         'QueryWords','Stopwords','TextLen','-Query-SW',
@@ -596,87 +601,47 @@ def run_cv_for_config(
                         # 'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
                         # 'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD'
                         ]
+        len_handled += 1
 
-    elif feature_groupname == 'Static':
-        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW']
+    if 'Static' in broken_feature_groupname:
+        feature_list.extend(['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW'])
+        len_handled += 1
+    if 'M' in broken_feature_groupname:
+        feature_list.extend(['QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M'])
+        len_handled += 1
+    if 'STD' in broken_feature_groupname:
+        feature_list.extend(['QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD'])
+        len_handled += 1
+    if 'RMG' in broken_feature_groupname:
+        feature_list.extend(['QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
+                        'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG'])
+        len_handled += 1
+    if 'MG' in broken_feature_groupname:
+        feature_list.extend(['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
+                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG'])
+        len_handled += 1
+    if 'LG' in broken_feature_groupname:
+        feature_list.extend(['QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
+                        'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG'])
+        len_handled += 1
 
-    elif feature_groupname == 'M':
-        feature_list = ['QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M']
+    if 'RMGXXSnap' in broken_feature_groupname:
+        feature_list.extend(['QueryTermsRatio_RMGXXSnaps', 'StopwordsRatio_RMGXXSnaps', 'Entropy_RMGXXSnaps', 'SimClueWeb_RMGXXSnaps',
+                             'QueryWords_RMGXXSnaps', 'Stopwords_RMGXXSnaps', 'TextLen_RMGXXSnaps', '-Query-SW_RMGXXSnaps'])
+        len_handled += 1
+    if 'MGXXSnap' in broken_feature_groupname:
+        feature_list.extend(['QueryTermsRatio_MGXXSnaps', 'StopwordsRatio_MGXXSnaps', 'Entropy_MGXXSnaps', 'SimClueWeb_MGXXSnaps',
+                             'QueryWords_MGXXSnaps', 'Stopwords_MGXXSnaps', 'TextLen_MGXXSnaps', '-Query-SW_MGXXSnaps'])
+        len_handled += 1
+    if 'MXXSnap' in broken_feature_groupname:
+        feature_list.extend(['QueryTermsRatio_MXXSnaps', 'StopwordsRatio_MXXSnaps', 'Entropy_MXXSnaps', 'SimClueWeb_MXXSnaps',
+                             'QueryWords_MXXSnaps', 'Stopwords_MXXSnaps', 'TextLen_MXXSnaps', '-Query-SW_MXXSnaps'])
+        len_handled += 1
 
-    elif feature_groupname == 'STD':
-        feature_list = ['QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
-                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
-
-    elif feature_groupname == 'RMG':
-        feature_list = ['QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
-                        'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG']
-
-    elif feature_groupname == 'Static_LG':
-        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-                        'QueryWords','Stopwords','TextLen','-Query-SW',
-                        'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
-                        'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG']
-
-    elif feature_groupname == 'Static_MG':
-        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
-                        'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
-                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG']
-
-    elif feature_groupname == 'Static_M':
-        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
-                        'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M']
-
-    elif feature_groupname == 'Static_RMG':
-        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
-                        'QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
-                        'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG']
-
-    elif feature_groupname == 'Static_M_STD':
-        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
-                        'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
-                        'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
-                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
-
-    elif feature_groupname == 'Static_MG_M_STD':
-        feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
-                        'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
-                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
-                        'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
-                        'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
-                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
-
-    elif feature_groupname == 'MG_M_STD':
-        feature_list = ['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
-                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
-                        'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
-                        'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
-                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
-
-    elif feature_groupname == 'MG':
-        feature_list = ['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
-                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG']
-
-    elif feature_groupname == 'LG':
-        feature_list = ['QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
-                        'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG']
-
-    elif feature_groupname == 'M_STD':
-        feature_list = ['QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
-                        'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
-                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD']
-    else:
+    if len_handled != len(broken_feature_groupname):
         raise Exception('Undefined feature group!')
 
     if retrieval_model == 'LM':
@@ -970,12 +935,14 @@ if __name__ == '__main__':
         snapshot_limit = int(sys.argv[3])
         retrieval_model = sys.argv[4]
         normalize_relevance = ast.literal_eval(sys.argv[5])
+        snap_chosing_method = sys.argv[6]
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
             retrieval_model=retrieval_model,
-            normalize_relevance=normalize_relevance)
+            normalize_relevance=normalize_relevance,
+            snap_chosing_method=snap_chosing_method)
 
     elif operation == 'FixSinificance':
         base_feature_filename = sys.argv[2]
