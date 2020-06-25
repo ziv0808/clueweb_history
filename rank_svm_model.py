@@ -242,6 +242,10 @@ def prepare_svmr_model_data(
     work_df = pd.read_csv(os.path.join(data_folder, base_feature_filename), sep = '\t', index_col = False)
     # enforce snapshot limit
     work_df = work_df[work_df['NumSnapshots'] >= snapshot_limit]
+    if '2008' in base_feature_filename:
+        work_df['Filter'] = work_df['QueryNum'].apply(lambda x: True if int(x) in [95,100] else False)
+        work_df = work_df[work_df['Filter'] == False]
+        del work_df['Filter']
     # add m/s features
     need_m_div_std = False
     for feature in feature_list:
@@ -300,7 +304,8 @@ def turn_df_to_feature_str_for_model(
 def split_to_train_test(
         start_test_q,
         end_test_q,
-        feat_df):
+        feat_df,
+        seed = None):
 
     test_set_q = list(range(start_test_q, end_test_q + 1))
     feat_df['IsTest'] = feat_df['QueryNum'].apply(lambda x: 1 if x in test_set_q else 0)
@@ -310,13 +315,24 @@ def split_to_train_test(
     if fold_size == 20:
         potential_folds = [(1,20),(21,40),(41,60),(61,80),(81,100),(101,120)
                             ,(121,140),(141,160),(161,180),(181,200)]
-    else:
+    elif fold_size == 10:
         potential_folds = [(201,210),(211,220),(221,230),(231,240),(241,250),
                            (251,260),(261,270),(271,280),(281,290),(291,300)]
+    elif fold_size == 1:
+        potential_folds = []
+        if start_test_q in list(range(201, 301)):
+            q_list = list(range(201, 301))
+        else:
+            q_list = list(range(1, 201))
+        for q in q_list:
+            potential_folds.append((q,q))
+
     for potential_fold in potential_folds[:]:
         if potential_fold[0] == start_test_q:
             potential_folds.remove(potential_fold)
-    valid_fold = potential_folds[-1]
+    if seed == None:
+        seed = random.randint(0,len(potential_folds) - 1)
+    valid_fold = potential_folds[seed]
     valid_set_q = list(range(valid_fold[0], valid_fold[1] + 1))
 
     train_df['IsValid'] = train_df['QueryNum'].apply(lambda x: 1 if x in valid_set_q else 0)
@@ -326,7 +342,7 @@ def split_to_train_test(
     del valid_df['IsValid']
     del train_df['IsValid']
 
-    return train_df, test_df, valid_df
+    return train_df, test_df, valid_df, seed
 
 def get_trec_prepared_df_form_res_df(
         scored_docs_df,
@@ -362,14 +378,15 @@ def learn_best_num_of_snaps(
         snap_chosing_method):
 
     if snap_chosing_method == 'SnapNum':
-        optional_snap_limit = [2,3,5,7,8,10,15]
+        optional_snap_limit = [2,3,5,7,8,10,15,'All']
     elif snap_chosing_method == 'Months':
-        optional_snap_limit = ['2M','3M','5M','6M','9M','10M','1Y','1.5Y']
+        optional_snap_limit = ['2M','3M','5M','6M','9M','10M','1Y','1.5Y','All']
     else:
         raise Exception('learn_best_num_of_snaps: Unknown snap_chosing_method')
 
     best_snap_lim = None
     best_map = 0.0
+    seed = None
     for snap_lim in optional_snap_limit:
         print("Running validation snap limit: " + str(snap_lim))
         sys.stdout.flush()
@@ -380,10 +397,11 @@ def learn_best_num_of_snaps(
             normalize_relvance=normalize_relevance,
             limited_snaps_num=snap_lim)
 
-        train_df, test_df, valid_df = split_to_train_test(
+        train_df, test_df, valid_df, seed = split_to_train_test(
             start_test_q=start_test_q,
             end_test_q=end_test_q,
-            feat_df=feat_df)
+            feat_df=feat_df,
+            seed = seed)
 
         with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
             f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
@@ -473,7 +491,7 @@ def train_and_test_model_on_config(
 
     print("Model Data Prepared...")
     sys.stdout.flush()
-    train_df, test_df, valid_df = split_to_train_test(
+    train_df, test_df, valid_df, seed = split_to_train_test(
         start_test_q=start_test_q,
         end_test_q=end_test_q,
         feat_df=feat_df)
@@ -530,6 +548,7 @@ def train_and_test_model_on_config(
         f.write(best_params_str)
 
     train_df = train_df.append(valid_cp_df, ignore_index = True)
+    train_df.sort_values('QueryNum', inplace = True)
     with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
         f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
 
@@ -570,17 +589,25 @@ def run_cv_for_config(
         retrieval_model,
         normalize_relevance,
         qrel_filepath,
-        snap_chosing_method):
+        snap_chosing_method,
+        train_leave_one_out):
 
     k_fold = 10
     if '2008' in base_feature_filename:
         init_q = 1
         end_q = 20
         query_bulk = 20
+        num_q = 198
     else:
         init_q = 201
         end_q = 210
         query_bulk = 10
+        num_q = 100
+
+    if train_leave_one_out == True:
+        k_fold = num_q
+        query_bulk = 1
+        end_q = init_q
 
     feature_list = []
     broken_feature_groupname = feature_groupname.split('_')
@@ -640,6 +667,22 @@ def run_cv_for_config(
         feature_list.extend(['QueryTermsRatio_MXXSnaps', 'StopwordsRatio_MXXSnaps', 'Entropy_MXXSnaps', 'SimClueWeb_MXXSnaps',
                              'QueryWords_MXXSnaps', 'Stopwords_MXXSnaps', 'TextLen_MXXSnaps', '-Query-SW_MXXSnaps'])
         len_handled += 1
+    if 'STDXXSnap' in broken_feature_groupname:
+        feature_list.extend(
+            ['QueryTermsRatio_STDXXSnaps', 'StopwordsRatio_STDXXSnaps', 'Entropy_STDXXSnaps', 'SimClueWeb_STDXXSnaps',
+             'QueryWords_STDXXSnaps', 'Stopwords_STDXXSnaps', 'TextLen_STDXXSnaps', '-Query-SW_STDXXSnaps'])
+        len_handled += 1
+    if 'MinXXSnap' in broken_feature_groupname:
+        feature_list.extend(
+            ['QueryTermsRatio_MinXXSnaps', 'StopwordsRatio_MinXXSnaps', 'Entropy_MinXXSnaps', 'SimClueWeb_MinXXSnaps',
+             'QueryWords_MinXXSnaps', 'Stopwords_MinXXSnaps', 'TextLen_MinXXSnaps', '-Query-SW_MinXXSnaps'])
+        len_handled += 1
+    if 'MaxXXSnap' in broken_feature_groupname:
+        feature_list.extend(
+            ['QueryTermsRatio_MaxXXSnaps', 'StopwordsRatio_MaxXXSnaps', 'Entropy_MaxXXSnaps', 'SimClueWeb_MaxXXSnaps',
+             'QueryWords_MaxXXSnaps', 'Stopwords_MaxXXSnaps', 'TextLen_MaxXXSnaps', '-Query-SW_MaxXXSnaps'])
+        len_handled += 1
+
 
     if len_handled != len(broken_feature_groupname):
         raise Exception('Undefined feature group!')
@@ -666,6 +709,9 @@ def run_cv_for_config(
             snap_chosing_method=snap_chosing_method)
         init_q += query_bulk
         end_q += query_bulk
+        if (init_q in [95, 100]) and (init_q == end_q):
+            init_q += 1
+            end_q += 1
         test_score_df = test_score_df.append(fold_test_df, ignore_index=True)
     return test_score_df
 
@@ -674,12 +720,14 @@ def run_grid_search_over_params_for_config(
         snapshot_limit,
         retrieval_model,
         normalize_relevance,
-        snap_chosing_method):
+        snap_chosing_method,
+        tarin_leave_one_out):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
     ## num 1
     # optional_feat_groups_list = ['All','Static','MG','LG','M','RMG','Static_LG','Static_MG'
     #                                 ,'Static_M', 'Static_RMG']
+    ## num 2
     optional_feat_groups_list = ['Static','MGXXSnap', 'MXXSnap','RMGXXSnap','Static_MGXXSnap'
                                         ,'Static_MXXSnap', 'Static_RMGXXSnap','MGXXSnap_MXXSnap_RMGXXSnap']
 
@@ -693,6 +741,8 @@ def run_grid_search_over_params_for_config(
     model_base_filename = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit) + "_" + retrieval_model + "_By" + snap_chosing_method
     if normalize_relevance == True:
         model_base_filename += '_NR'
+    if tarin_leave_one_out == True:
+        model_base_filename += '_LoO'
     model_summary_df = pd.DataFrame(columns = ['FeatureGroup', 'Map', 'P@5', 'P@10'])
     next_idx = 0
     per_q_res_dict = {}
@@ -705,7 +755,8 @@ def run_grid_search_over_params_for_config(
             retrieval_model=retrieval_model,
             normalize_relevance=normalize_relevance,
             qrel_filepath=qrel_filepath,
-            snap_chosing_method=snap_chosing_method)
+            snap_chosing_method=snap_chosing_method,
+            tarin_leave_one_out=tarin_leave_one_out)
 
         if 'XXSnap' in feat_group:
             feat_group += 'By' + snap_chosing_method
@@ -845,26 +896,29 @@ def create_all_x_snap_aggregations(
     for feature in base_feature_list:
         del work_df[feature + '_Shift']
 
-    possible_num_snaps = [2,3,4,5,6,7,8,10,12,15,20]
-    possible_monthes = ['2M','3M','5M','6M','8M','9M','10M','1Y','1.5Y']
+    possible_num_snaps = [1,2,3,4,5,6,7,8,9,10,12,15,20,'All']
+    possible_monthes = ['2M','3M','4M','5M','6M','7M','8M','9M','10M','1Y','1.5Y']
 
     for num_snaps in possible_num_snaps + possible_monthes:
         if type(num_snaps) == str:
-            broken_interval = start_interval.split('-')
-            if 'M' in num_snaps:
-                rel_month = str(int(broken_interval[1]) - int(num_snaps.replace('M', '')) + 1)
-                curr_interval = broken_interval[0] + '-' + '0'*(2 - len(rel_month)) + rel_month + '-01'
-            elif num_snaps == '1Y':
-                if broken_interval[0] == '2008':
-                    curr_interval = '2008-01-01'
-                else:
-                    curr_interval = '2011-02-01'
+            if num_snaps == 'All':
+                tmp_df = work_df.copy()
             else:
-                if broken_interval[0] == '2008':
-                    curr_interval = '2007-07-01'
+                broken_interval = start_interval.split('-')
+                if 'M' in num_snaps:
+                    rel_month = str(int(broken_interval[1]) - int(num_snaps.replace('M', '')) + 1)
+                    curr_interval = broken_interval[0] + '-' + '0'*(2 - len(rel_month)) + rel_month + '-01'
+                elif num_snaps == '1Y':
+                    if broken_interval[0] == '2008':
+                        curr_interval = '2008-01-01'
+                    else:
+                        curr_interval = '2011-02-01'
                 else:
-                    curr_interval = '2010-08-01'
-            tmp_df = work_df[work_df['Interval'] >= curr_interval].copy()
+                    if broken_interval[0] == '2008':
+                        curr_interval = '2007-07-01'
+                    else:
+                        curr_interval = '2010-08-01'
+                tmp_df = work_df[work_df['Interval'] >= curr_interval].copy()
         else:
             tmp_df = work_df[work_df['SnapNum'] >= (-1)*num_snaps].copy()
         suffix = str(num_snaps) + 'Snaps'
@@ -874,14 +928,32 @@ def create_all_x_snap_aggregations(
         save_df = tmp_df[['QueryNum', 'Docno'] + base_feature_list].groupby(['QueryNum', 'Docno']).mean()
         rename_dict_1 = {}
         rename_dict_2 = {}
+        rename_dict_3 = {}
+        rename_dict_4 = {}
         for feature in base_feature_list:
             rename_dict_1[feature] = feature + '_M' + suffix_col
             rename_dict_2[feature] = feature + '_STD' + suffix_col
+            rename_dict_3[feature] = feature + '_Min' + suffix_col
+            rename_dict_4[feature] = feature + '_Max' + suffix_col
 
         std_df = tmp_df[['QueryNum', 'Docno'] + base_feature_list].groupby(['QueryNum', 'Docno']).std()
         save_df = pd.merge(
             save_df.rename(columns = rename_dict_1),
             std_df.rename(columns = rename_dict_2),
+            right_index=True,
+            left_index=True)
+
+        min_df = tmp_df[['QueryNum', 'Docno'] + base_feature_list].groupby(['QueryNum', 'Docno']).min()
+        save_df = pd.merge(
+            save_df,
+            min_df.rename(columns=rename_dict_3),
+            right_index=True,
+            left_index=True)
+
+        max_df = tmp_df[['QueryNum', 'Docno'] + base_feature_list].groupby(['QueryNum', 'Docno']).max()
+        save_df = pd.merge(
+            save_df,
+            max_df.rename(columns=rename_dict_4),
             right_index=True,
             left_index=True)
 
