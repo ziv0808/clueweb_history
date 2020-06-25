@@ -730,7 +730,8 @@ def run_grid_search_over_params_for_config(
     ## num 2
     optional_feat_groups_list = ['Static','MGXXSnap', 'MXXSnap','RMGXXSnap','Static_MGXXSnap'
                                         ,'Static_MXXSnap', 'Static_RMGXXSnap','MGXXSnap_MXXSnap_RMGXXSnap']
-
+    ## num 3
+    # optional_feat_groups_list = ['Static', 'MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap','Static_MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     if '2008' in base_feature_filename:
@@ -1008,13 +1009,15 @@ if __name__ == '__main__':
         retrieval_model = sys.argv[4]
         normalize_relevance = ast.literal_eval(sys.argv[5])
         snap_chosing_method = sys.argv[6]
+        tarin_leave_one_out = ast.literal_eval(sys.argv[7])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
             retrieval_model=retrieval_model,
             normalize_relevance=normalize_relevance,
-            snap_chosing_method=snap_chosing_method)
+            snap_chosing_method=snap_chosing_method,
+            tarin_leave_one_out=tarin_leave_one_out)
 
     elif operation == 'FixSinificance':
         base_feature_filename = sys.argv[2]
