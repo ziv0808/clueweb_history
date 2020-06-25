@@ -757,7 +757,7 @@ def run_grid_search_over_params_for_config(
             normalize_relevance=normalize_relevance,
             qrel_filepath=qrel_filepath,
             snap_chosing_method=snap_chosing_method,
-            tarin_leave_one_out=tarin_leave_one_out)
+            train_leave_one_out=tarin_leave_one_out)
 
         if 'XXSnap' in feat_group:
             feat_group += 'By' + snap_chosing_method
