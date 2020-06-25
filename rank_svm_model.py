@@ -321,14 +321,17 @@ def split_to_train_test(
     elif fold_size == 1:
         potential_folds = []
         if start_test_q in list(range(201, 301)):
-            q_list = list(range(201, 301))
+            q_list = list(range(201, 301, 5))
+            for q in q_list:
+                potential_folds.append((q, q + 4))
         else:
-            q_list = list(range(1, 201))
-        for q in q_list:
-            potential_folds.append((q,q))
+            q_list = list(range(1, 201, 10))
+            for q in q_list:
+                potential_folds.append((q, q + 9))
+
 
     for potential_fold in potential_folds[:]:
-        if potential_fold[0] == start_test_q:
+        if start_test_q in range(potential_fold[0], potential_fold[1]+1):
             potential_folds.remove(potential_fold)
     if seed == None:
         seed = random.randint(0,len(potential_folds) - 1)
