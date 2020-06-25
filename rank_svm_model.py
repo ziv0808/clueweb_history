@@ -728,10 +728,10 @@ def run_grid_search_over_params_for_config(
     # optional_feat_groups_list = ['All','Static','MG','LG','M','RMG','Static_LG','Static_MG'
     #                                 ,'Static_M', 'Static_RMG']
     ## num 2
-    optional_feat_groups_list = ['Static','MGXXSnap', 'MXXSnap','RMGXXSnap','Static_MGXXSnap'
-                                        ,'Static_MXXSnap', 'Static_RMGXXSnap','MGXXSnap_MXXSnap_RMGXXSnap']
+    # optional_feat_groups_list = ['Static','MGXXSnap', 'MXXSnap','RMGXXSnap','Static_MGXXSnap'
+    #                                     ,'Static_MXXSnap', 'Static_RMGXXSnap','MGXXSnap_MXXSnap_RMGXXSnap']
     ## num 3
-    # optional_feat_groups_list = ['Static', 'MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap','Static_MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
+    optional_feat_groups_list = ['Static', 'MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap','Static_MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     if '2008' in base_feature_filename:
