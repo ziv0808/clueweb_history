@@ -29,14 +29,16 @@ def learn_lambdamart_model(train_file, models_folder, valid_file=None):
 
 def get_predictions_list(
         predictions_filename):
+
     with open(predictions_filename, 'r') as f:
         predications = f.read()
 
-    predications = predications.split('\n')
-    if '' in predications:
-        predications = predications[:-1]
+    predications_list = []
+    for row in predications.split('\n'):
+        if row != "":
+            predications_list.append(row.split('\t')[2])
 
-    return predications
+    return predications_list
 
 
 def learn_best_num_of_snaps(
