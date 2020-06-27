@@ -6,7 +6,7 @@ from rank_svm_model import run_bash_command, prepare_svmr_model_data, turn_df_to
 
 def run_lambdamart_model(test_file, model_file, predictions_folder):
     predictions_file = os.path.join(predictions_folder, 'Prdictions.txt' )
-    command = "java -jar bin/RankLib.jar -load " + model_file + " -rank " + test_file + " -score " + predictions_file
+    command = "java -jar bin/RankLib-2.14.jar -load " + model_file + " -rank " + test_file + " -score " + predictions_file
     print("##Running command: "+command+"##")
     out = run_bash_command(command)
     print("Output of ranking command: "+str(out))
