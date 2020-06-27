@@ -6,8 +6,7 @@ from rank_svm_model import run_bash_command, prepare_svmr_model_data, turn_df_to
 
 def run_lambdamart_model(test_file, model_file, predictions_folder):
     predictions_file = os.path.join(predictions_folder, 'Prdictions.txt' )
-    "java -jar bin/RankLib.jar -load " + model_file + " -rank " + test_file + " -score " + predictions_file
-    command = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/svm_rank/svm_rank_classify " + test_file + " " + model_file + " " + predictions_file
+    command = "java -jar bin/RankLib.jar -load " + model_file + " -rank " + test_file + " -score " + predictions_file
     print("##Running command: "+command+"##")
     out = run_bash_command(command)
     print("Output of ranking command: "+str(out))
@@ -70,7 +69,8 @@ def learn_best_num_of_snaps(
             snapshot_limit=int(snapshot_limit),
             feature_list=feature_list,
             normalize_relvance=normalize_relevance,
-            limited_snaps_num=snap_lim)
+            limited_snaps_num=snap_lim,
+            lambdamart=True)
 
         train_df, test_df, valid_df, seed = split_to_train_test(
             start_test_q=start_test_q,
@@ -157,7 +157,8 @@ def train_and_test_model_on_config(
         snapshot_limit=int(snapshot_limit),
         feature_list=feature_list,
         normalize_relvance=normalize_relevance,
-        limited_snaps_num=best_snap_num)
+        limited_snaps_num=best_snap_num,
+        lambdamart=True)
 
     print("Model Data Prepared...")
     sys.stdout.flush()

@@ -235,7 +235,8 @@ def prepare_svmr_model_data(
         snapshot_limit,
         feature_list,
         normalize_relvance = False,
-        limited_snaps_num  = None):
+        limited_snaps_num  = None,
+        lambdamart = False):
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                          'QueryWords', 'Stopwords', 'TextLen', '-Query-SW']
     data_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
@@ -269,6 +270,9 @@ def prepare_svmr_model_data(
     # adapt relevance column
     if normalize_relvance == True:
         work_df['Relevance'] = work_df['Relevance'].apply(lambda x: 0 if int(x) <= 0 else 1)
+
+    if lambdamart == True:
+        work_df['Relevance'] = work_df['Relevance'].apply(lambda x: 0 if int(x) <= 0 else x)
     # minmax normalize per query
     all_queries = list(work_df['QueryNum'].drop_duplicates())
     fin_df = pd.DataFrame({})
