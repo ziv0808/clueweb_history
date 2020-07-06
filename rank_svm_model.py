@@ -337,7 +337,7 @@ def split_to_train_test(
     for potential_fold in potential_folds[:]:
         if start_test_q in range(potential_fold[0], potential_fold[1]+1):
             potential_folds.remove(potential_fold)
-    if seed == None:
+    if seed is None:
         seed = random.randint(0,len(potential_folds) - 1)
     valid_fold = potential_folds[seed]
     valid_set_q = list(range(valid_fold[0], valid_fold[1] + 1))
@@ -513,7 +513,7 @@ def train_and_test_model_on_config(
 
     best_c = None
     best_map = 0.0
-    for potential_c in [0.01, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
+    for potential_c in [0.01, 0.1, 0.2, 0.5, 1, 2, 5, 10]:
         print("Running valid on C : " +str(potential_c))
         model_filename = learn_svm_rank_model(
             train_file=os.path.join(base_res_folder, 'train.dat'),
@@ -728,7 +728,8 @@ def run_grid_search_over_params_for_config(
         retrieval_model,
         normalize_relevance,
         snap_chosing_method,
-        tarin_leave_one_out):
+        tarin_leave_one_out,
+        feat_group_list):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
     ## num 1
@@ -738,7 +739,10 @@ def run_grid_search_over_params_for_config(
     # optional_feat_groups_list = ['Static','MGXXSnap', 'MXXSnap','RMGXXSnap','Static_MGXXSnap'
     #                                     ,'Static_MXXSnap', 'Static_RMGXXSnap','MGXXSnap_MXXSnap_RMGXXSnap']
     ## num 3
-    optional_feat_groups_list = ['Static', 'MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap','Static_MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
+    if feat_group_list is None:
+        optional_feat_groups_list = ['Static', 'MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap','Static_MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
+    else:
+        optional_feat_groups_list = feat_group_list
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     if '2008' in base_feature_filename:
@@ -754,8 +758,9 @@ def run_grid_search_over_params_for_config(
     model_summary_df = pd.DataFrame(columns = ['FeatureGroup', 'Map', 'P@5', 'P@10'])
     next_idx = 0
     per_q_res_dict = {}
-    # for optional_c in optional_c_list:
+    feat_group_list_str = ""
     for feat_group in optional_feat_groups_list:
+        feat_group_list_str += "__" + feat_group
         test_res_df = run_cv_for_config(
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
@@ -826,7 +831,7 @@ def run_grid_search_over_params_for_config(
         significance_df,
         on = ['FeatureGroup'],
         how = 'inner')
-    model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename +'.tsv'), sep = '\t', index = False)
+    model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename +feat_group_list_str+'.tsv'), sep = '\t', index = False)
 
 
 def fix_statistical_sinificance(
@@ -1017,6 +1022,7 @@ if __name__ == '__main__':
         normalize_relevance = ast.literal_eval(sys.argv[5])
         snap_chosing_method = sys.argv[6]
         tarin_leave_one_out = ast.literal_eval(sys.argv[7])
+        feat_group_list = ast.literal_eval(sys.argv[8])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
@@ -1024,7 +1030,8 @@ if __name__ == '__main__':
             retrieval_model=retrieval_model,
             normalize_relevance=normalize_relevance,
             snap_chosing_method=snap_chosing_method,
-            tarin_leave_one_out=tarin_leave_one_out)
+            tarin_leave_one_out=tarin_leave_one_out,
+            feat_group_list=feat_group_list)
 
     elif operation == 'FixSinificance':
         base_feature_filename = sys.argv[2]

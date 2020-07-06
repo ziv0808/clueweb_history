@@ -14,13 +14,10 @@ def run_lambdamart_model(test_file, model_file, predictions_folder):
     return predictions_file
 
 
-def learn_lambdamart_model(train_file, models_folder, valid_file=None):
+def learn_lambdamart_model(train_file, models_folder, tree_num, leaf_num):
     model_file = os.path.join(models_folder , "model.txt")
-    if valid_file is None:
-        command = "java -jar /mnt/bi-strg3/v/zivvasilisky/ziv/env/ranklib/RankLib-2.14.jar -train " + train_file + " -ranker 6 -metric2t MAP -save " + model_file
-    else:
-        command = "java -jar /mnt/bi-strg3/v/zivvasilisky/ziv/env/ranklib/RankLib-2.14.jar -train " + train_file + " -validate " + valid_file + " -ranker 6 -metric2t MAP -save " + model_file
-
+    command = "java -jar /mnt/bi-strg3/v/zivvasilisky/ziv/env/ranklib/RankLib-2.14.jar -train " + train_file + " -ranker 6 -metric2t NDCG@20 -save " + model_file
+    command += " -tree " + str(tree_num) + " -leaf " +str(leaf_num)
     out = run_bash_command(command)
     print(out)
     sys.stdout.flush()
@@ -60,6 +57,9 @@ def learn_best_num_of_snaps(
     else:
         raise Exception('learn_best_num_of_snaps: Unknown snap_chosing_method')
 
+
+    tree_num = 250
+    leaf_num = 5
     best_snap_lim = None
     best_map = 0.0
     seed = None
@@ -88,7 +88,9 @@ def learn_best_num_of_snaps(
 
         model_filename = learn_lambdamart_model(
             train_file=os.path.join(base_res_folder, 'train.dat'),
-            models_folder=base_res_folder)
+            models_folder=base_res_folder,
+            tree_num=tree_num,
+            leaf_num=leaf_num)
 
         predictions_filename = run_lambdamart_model(
             test_file=os.path.join(base_res_folder, 'valid.dat'),
@@ -115,7 +117,7 @@ def learn_best_num_of_snaps(
             best_map = float(res_dict['Map'])
             best_snap_lim = snap_lim
 
-    return best_snap_lim
+    return best_snap_lim,
 
 
 def train_and_test_model_on_config(
@@ -169,13 +171,60 @@ def train_and_test_model_on_config(
         end_test_q=end_test_q,
         feat_df=feat_df)
 
+
+    valid_df_cp = valid_df.copy()
     with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
         f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
 
     with open(os.path.join(base_res_folder, 'valid.dat'), 'w') as f:
         f.write(turn_df_to_feature_str_for_model(valid_df, feature_list=feature_list))
 
-    best_params_str = 'SnapLim: ' + str(best_snap_num)
+    num_tree_optional_list = [250, 500]
+    num_leaf_optional_list = [5, 3, 10]
+    best_map = 0.0
+
+    for tree_num in num_tree_optional_list:
+        for leaf_num in num_leaf_optional_list:
+            print("Running validation tree num: " + str(tree_num)) + " leaf num: " + str(leaf_num)
+            model_filename = learn_lambdamart_model(
+                train_file=os.path.join(base_res_folder, 'train.dat'),
+                models_folder=base_res_folder,
+                tree_num=tree_num,
+                leaf_num=leaf_num)
+
+            predictions_filename = run_lambdamart_model(
+                test_file=os.path.join(base_res_folder, 'valid.dat'),
+                model_file=model_filename,
+                predictions_folder=base_res_folder)
+
+            predications = get_predictions_list(predictions_filename)
+
+            valid_df['ModelScore'] = predications
+            valid_df['ModelScore'] = valid_df['ModelScore'].apply(lambda x: float(x))
+            curr_res_df = get_trec_prepared_df_form_res_df(
+                scored_docs_df=valid_df,
+                score_colname='ModelScore')
+            curr_file_name = 'Curr_valid_res.txt'
+            with open(os.path.join(base_res_folder, curr_file_name), 'w') as f:
+                f.write(convert_df_to_trec(curr_res_df))
+
+            res_dict = get_ranking_effectiveness_for_res_file(
+                file_path=base_res_folder,
+                filename=curr_file_name,
+                qrel_filepath=qrel_filepath)
+
+            if float(res_dict['Map']) > best_map:
+                best_map = float(res_dict['Map'])
+                best_tree_num = tree_num
+                beat_leaf_num = leaf_num
+
+    train_df = train_df.append(valid_df_cp, ignore_index=True)
+    train_df.sort_values('QueryNum', inplace=True)
+
+    with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
+        f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
+
+    best_params_str = 'SnapLim: ' + str(best_snap_num) + '\n' + "TreeNum: " +str(best_tree_num) +'\n' +"LeafNum: " +str(beat_leaf_num)
     with open(os.path.join(base_res_folder, 'hyper_params.txt'), 'w') as f:
         f.write(best_params_str)
 
@@ -187,7 +236,8 @@ def train_and_test_model_on_config(
     model_filename = learn_lambdamart_model(
         train_file=os.path.join(base_res_folder, 'train.dat'),
         models_folder=base_res_folder,
-        valid_file=os.path.join(base_res_folder, 'valid.dat'))
+        tree_num=best_tree_num,
+        leaf_num=beat_leaf_num)
 
     print("Strating Test : " + model_inner_folder + ' ' + feature_folder + ' ' + fold_folder)
     sys.stdout.flush()
@@ -346,7 +396,8 @@ def run_grid_search_over_params_for_config(
         retrieval_model,
         normalize_relevance,
         snap_chosing_method,
-        tarin_leave_one_out):
+        tarin_leave_one_out,
+        feat_group_list):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
     ## num 1
@@ -356,8 +407,11 @@ def run_grid_search_over_params_for_config(
     # optional_feat_groups_list = ['Static','MGXXSnap', 'MXXSnap','RMGXXSnap','Static_MGXXSnap'
     #                                     ,'Static_MXXSnap', 'Static_RMGXXSnap','MGXXSnap_MXXSnap_RMGXXSnap']
     ## num 3
-    optional_feat_groups_list = ['Static', 'MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap',
+    if feat_group_list is None:
+        optional_feat_groups_list = ['Static', 'MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap',
                                  'Static_MGXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
+    else:
+        optional_feat_groups_list = feat_group_list
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/'
     if '2008' in base_feature_filename:
@@ -374,8 +428,10 @@ def run_grid_search_over_params_for_config(
     model_summary_df = pd.DataFrame(columns=['FeatureGroup', 'Map', 'P@5', 'P@10'])
     next_idx = 0
     per_q_res_dict = {}
+    feat_group_list_str = ""
     # for optional_c in optional_c_list:
     for feat_group in optional_feat_groups_list:
+        feat_group_list_str +=  "__" + feat_group
         test_res_df = run_cv_for_config(
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
@@ -446,7 +502,8 @@ def run_grid_search_over_params_for_config(
         significance_df,
         on=['FeatureGroup'],
         how='inner')
-    model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename + '.tsv'), sep='\t', index=False)
+    model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '.tsv'), sep='\t', index=False)
+
 
 
 if __name__ == '__main__':
@@ -459,6 +516,7 @@ if __name__ == '__main__':
         normalize_relevance = ast.literal_eval(sys.argv[5])
         snap_chosing_method = sys.argv[6]
         tarin_leave_one_out = ast.literal_eval(sys.argv[7])
+        feat_group_list = ast.literal_eval(sys.argv[8])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
@@ -466,4 +524,5 @@ if __name__ == '__main__':
             retrieval_model=retrieval_model,
             normalize_relevance=normalize_relevance,
             snap_chosing_method=snap_chosing_method,
-            tarin_leave_one_out=tarin_leave_one_out)
+            tarin_leave_one_out=tarin_leave_one_out,
+            feat_group_list=feat_group_list)
