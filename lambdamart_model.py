@@ -117,7 +117,7 @@ def learn_best_num_of_snaps(
             best_map = float(res_dict['Map'])
             best_snap_lim = snap_lim
 
-    return best_snap_lim,
+    return best_snap_lim
 
 
 def train_and_test_model_on_config(
