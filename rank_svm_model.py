@@ -278,6 +278,8 @@ def prepare_svmr_model_data(
     fin_df = pd.DataFrame({})
     for q in sorted(all_queries):
         tmp_q_df = work_df[work_df['QueryNum'] == q].copy()
+        if len(tmp_q_df[tmp_q_df['Relevance'] > 0]) == 0:
+            continue
         for feature in feature_list:
             min_feat = tmp_q_df[feature].min()
             max_feat = tmp_q_df[feature].max()
@@ -740,7 +742,8 @@ def run_grid_search_over_params_for_config(
     #                                     ,'Static_MXXSnap', 'Static_RMGXXSnap','MGXXSnap_MXXSnap_RMGXXSnap']
     ## num 3
     if feat_group_list is None:
-        optional_feat_groups_list = ['Static', 'MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap','Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
+        optional_feat_groups_list = ['Static','Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap',
+                                     'Static_MGXXSnap']
     else:
         optional_feat_groups_list = feat_group_list
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'

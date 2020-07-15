@@ -408,8 +408,7 @@ def run_grid_search_over_params_for_config(
     #                                     ,'Static_MXXSnap', 'Static_RMGXXSnap','MGXXSnap_MXXSnap_RMGXXSnap']
     ## num 3
     if feat_group_list is None:
-        optional_feat_groups_list = ['Static', 'MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap',
-                                 'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
+        optional_feat_groups_list = ['Static','Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap','Static_MGXXSnap']
     else:
         optional_feat_groups_list = feat_group_list
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/'
