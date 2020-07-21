@@ -375,6 +375,20 @@ def get_trec_prepared_df_form_res_df(
 
     return big_df
 
+def get_svm_weights(
+    model_file):
+
+    with open(model_file, 'r') as f:
+        file_str = f.read()
+    broken_str = file_str.split('\n')
+    broken_str = broken_str[-2].split(' ')
+    wieght_list = []
+    for elem in broken_str[1:-1]:
+        wieght_list.append(elem.split(':')[1])
+    return wieght_list
+
+
+
 def learn_best_num_of_snaps(
         base_feature_filename,
         snapshot_limit,
@@ -389,7 +403,7 @@ def learn_best_num_of_snaps(
     if snap_chosing_method == 'SnapNum':
         optional_snap_limit = [2,3,5,7,8,10,15,'All']
     elif snap_chosing_method == 'Months':
-        optional_snap_limit = ['2M','3M','5M','6M','9M','10M','1Y','1.5Y','All']
+        optional_snap_limit = ['2M','3M','5M','6M','7M','8M','9M','10M','1Y','1.5Y','All']
     else:
         raise Exception('learn_best_num_of_snaps: Unknown snap_chosing_method')
 
@@ -588,7 +602,17 @@ def train_and_test_model_on_config(
 
     test_df['ModelScore'] = predications
     test_df['ModelScore'] = test_df['ModelScore'].apply(lambda x: float(x))
-    return test_df
+
+    wieghts_list = get_svm_weights(model_filename)
+    hyper_params = ['C']
+    wieghts_list.append(best_c)
+    if best_snap_num is not None:
+        hyper_params.append('SnapLimit')
+        wieghts_list.append(best_snap_num)
+    params_df = pd.DataFrame(columns=['Fold'] + feature_list + hyper_params)
+    params_df.loc[0] = [str(start_test_q) + '_' + str(end_test_q)] + wieghts_list
+
+    return test_df, params_df
 
 
 def run_cv_for_config(
@@ -706,7 +730,7 @@ def run_cv_for_config(
         feature_groupname += 'By' + snap_chosing_method
 
     for i in range(k_fold):
-        fold_test_df = train_and_test_model_on_config(
+        fold_test_df, fold_params_df = train_and_test_model_on_config(
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
             feature_list= feature_list,
@@ -721,8 +745,12 @@ def run_cv_for_config(
         if (init_q in [95, 100]) and (init_q == end_q):
             init_q += 1
             end_q += 1
+        if i == 0:
+            params_df = fold_params_df
+        else:
+            params_df = params_df.append(fold_params_df, ignore_index = True)
         test_score_df = test_score_df.append(fold_test_df, ignore_index=True)
-    return test_score_df
+    return test_score_df, params_df
 
 def run_grid_search_over_params_for_config(
         base_feature_filename,
@@ -764,7 +792,7 @@ def run_grid_search_over_params_for_config(
     feat_group_list_str = ""
     for feat_group in optional_feat_groups_list:
         feat_group_list_str += "__" + feat_group
-        test_res_df = run_cv_for_config(
+        test_res_df, tmp_params_df = run_cv_for_config(
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
             feature_groupname=feat_group,
@@ -774,6 +802,7 @@ def run_grid_search_over_params_for_config(
             snap_chosing_method=snap_chosing_method,
             train_leave_one_out=tarin_leave_one_out)
 
+        tmp_params_df['FeatGroup'] = feat_group
         if 'XXSnap' in feat_group:
             feat_group += 'By' + snap_chosing_method
 
@@ -795,6 +824,9 @@ def run_grid_search_over_params_for_config(
             per_q_res_dict['Basic Retrieval'] = res_dict
             model_summary_df.loc[next_idx] = insert_row
             next_idx+=1
+            params_df = tmp_params_df
+        else:
+            params_df= params_df.append(tmp_params_df, ignore_index = True)
 
         curr_res_df = get_trec_prepared_df_form_res_df(
             scored_docs_df=test_res_df,
@@ -814,28 +846,37 @@ def run_grid_search_over_params_for_config(
         model_summary_df.loc[next_idx] = insert_row
         next_idx += 1
 
-    # model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename +'.tsv'), sep = '\t', index = False)
-    significance_df = pd.DataFrame(columns = ['FeatureGroup', 'Map_sign', 'P@5_sign', 'P@10_sign'])
-    next_idx = 0
-    for key in per_q_res_dict:
-        sinificance_list_dict = {'Map' : "", "P_5" : "", "P_10" : ""}
-        for key_2 in per_q_res_dict:
-            sinificance_dict = check_statistical_significance(per_q_res_dict[key], per_q_res_dict[key_2])
-            for measure in ['Map', 'P_5', 'P_10']:
-                if sinificance_dict[measure] == True:
-                    sinificance_list_dict[measure] += key_2+ ','
-        insert_row = [key]
-        for measure in ['Map', 'P_5', 'P_10']:
-            insert_row.append(sinificance_list_dict[measure])
-        significance_df.loc[next_idx] = insert_row
-        next_idx += 1
+    significance_df = create_sinificance_df(per_q_res_dict)
     model_summary_df = pd.merge(
         model_summary_df,
         significance_df,
         on = ['FeatureGroup'],
         how = 'inner')
     model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename +feat_group_list_str+'.tsv'), sep = '\t', index = False)
+    params_df.to_csv(os.path.join(save_summary_folder, model_base_filename +feat_group_list_str+'_Params.tsv'), sep = '\t', index = False)
 
+
+def create_sinificance_df(
+        per_q_res_dict):
+    significance_df = pd.DataFrame(columns = ['FeatureGroup', 'Map_sign', 'P@5_sign', 'P@10_sign','Map_vsS', 'P@5_vsS', 'P@10_vsS'])
+    next_idx = 0
+    for key in per_q_res_dict:
+        sinificance_list_dict = {'Map' : "", "P_5" : "", "P_10" : "", 'MapVSs' : "", "P_5VSs" : "", "P_10VSs" : ""}
+        for key_2 in per_q_res_dict:
+            sinificance_dict = check_statistical_significance(per_q_res_dict[key], per_q_res_dict[key_2])
+            for measure in ['Map', 'P_5', 'P_10']:
+                if sinificance_dict[measure]['Significant'] == True:
+                    if per_q_res_dict[key]['all'] > per_q_res_dict[key_2]['all']:
+                        sinificance_list_dict[measure] += key_2+ ','
+                if (key_2 == 'Static') or (key_2 == 'Basic Retrieval'):
+                    sinificance_list_dict[measure + "VSs"] += key_2 + " " +str(sinificance_dict[measure]['Pval']) +\
+                                                      "(" + str(sinificance_dict[measure]['%Better'])+ "),"
+        insert_row = [key]
+        for measure in ['Map', 'P_5', 'P_10','MapVSs', 'P_5VSs', 'P_10VSs']:
+            insert_row.append(sinificance_list_dict[measure])
+        significance_df.loc[next_idx] = insert_row
+        next_idx += 1
+    return significance_df
 
 def fix_statistical_sinificance(
         base_feature_filename,

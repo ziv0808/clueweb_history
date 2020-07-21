@@ -583,10 +583,14 @@ def check_statistical_significance(
                 l2.append(res_dict_2[q][measure])
 
             t_stat, p_val = stats.ttest_rel(l1, l2)
+            res_dict[measure] = {}
             if p_val <= 0.05:
-                res_dict[measure] = True
+                res_dict[measure]['Significant'] = True
             else:
-                res_dict[measure] = False
+                res_dict[measure]['Significant'] = False
+
+            res_dict[measure]['Pval'] = p_val
+            res_dict[measure]['%Better'] = pd.np.sum(pd.np.array(l1) > pd.np.array(l2))/float(len(l1))
     except Exception as e:
         raise Exception('check_statistical_significance: ' + str(e))
 
