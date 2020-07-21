@@ -51,7 +51,7 @@ def learn_best_num_of_snaps(
 
 
     if snap_chosing_method == 'SnapNum':
-        optional_snap_limit = [2, 3,4, 5,6, 7, 8,9, 10, 15, 'All']
+        optional_snap_limit = [2,3,4,5,6,7, 8,9, 10, 15, 'All']
     elif snap_chosing_method == 'Months':
         optional_snap_limit = ['2M','3M','5M','6M','7M','8M','9M','10M','1Y','1.5Y','All']
     else:
@@ -488,12 +488,6 @@ def run_grid_search_over_params_for_config(
         with open(os.path.join(save_folder, curr_file_name), 'w') as f:
             f.write(convert_df_to_trec(curr_res_df))
 
-        significance_df = create_sinificance_df(per_q_res_dict)
-        model_summary_df = pd.merge(
-            model_summary_df,
-            significance_df,
-            on=['FeatureGroup'],
-            how='inner')
         res_dict = get_ranking_effectiveness_for_res_file_per_query(
             file_path=save_folder,
             filename=curr_file_name,
@@ -503,6 +497,13 @@ def run_grid_search_over_params_for_config(
         per_q_res_dict[feat_group.replace('_', '+')] = res_dict
         model_summary_df.loc[next_idx] = insert_row
         next_idx += 1
+
+    significance_df = create_sinificance_df(per_q_res_dict)
+    model_summary_df = pd.merge(
+        model_summary_df,
+        significance_df,
+        on=['FeatureGroup'],
+        how='inner')
 
     model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '.tsv'), sep='\t', index=False)
     params_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '_Params.tsv'), sep='\t', index=False)

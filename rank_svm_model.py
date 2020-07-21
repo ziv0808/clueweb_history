@@ -376,16 +376,28 @@ def get_trec_prepared_df_form_res_df(
     return big_df
 
 def get_svm_weights(
-    model_file):
+    model_file,
+    feature_list = []):
 
     with open(model_file, 'r') as f:
         file_str = f.read()
     broken_str = file_str.split('\n')
     broken_str = broken_str[-2].split(' ')
     wieght_list = []
-    for elem in broken_str[1:-1]:
-        wieght_list.append(elem.split(':')[1])
-    return wieght_list
+    if len(feature_list) > 0:
+        uncovered_features = feature_list[:]
+        for elem in broken_str[1:-1]:
+            wieght_list.append(elem.split(':')[1])
+            uncovered_features.remove(feature_list[int(elem.split(':')[0])-1])
+
+        for feature in uncovered_features:
+            feature_list.remove(feature)
+
+        return wieght_list, feature_list
+    else:
+        for elem in broken_str[1:-1]:
+            wieght_list.append(elem.split(':')[1])
+        return wieght_list
 
 
 
@@ -603,13 +615,14 @@ def train_and_test_model_on_config(
     test_df['ModelScore'] = predications
     test_df['ModelScore'] = test_df['ModelScore'].apply(lambda x: float(x))
 
-    wieghts_list = get_svm_weights(model_filename)
+    feature_list_cp = feature_list[:]
+    wieghts_list, feature_list_cp = get_svm_weights(model_filename,feature_list_cp)
     hyper_params = ['C']
     wieghts_list.append(best_c)
     if best_snap_num is not None:
         hyper_params.append('SnapLimit')
         wieghts_list.append(best_snap_num)
-    params_df = pd.DataFrame(columns=['Fold'] + feature_list + hyper_params)
+    params_df = pd.DataFrame(columns=['Fold'] + feature_list_cp + hyper_params)
     params_df.loc[0] = [str(start_test_q) + '_' + str(end_test_q)] + wieghts_list
 
     return test_df, params_df
