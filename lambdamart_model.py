@@ -51,7 +51,7 @@ def learn_best_num_of_snaps(
 
 
     if snap_chosing_method == 'SnapNum':
-        optional_snap_limit = [2, 3, 5, 7, 8, 10, 15, 'All']
+        optional_snap_limit = [2, 3,4, 5,6, 7, 8,9, 10, 15, 'All']
     elif snap_chosing_method == 'Months':
         optional_snap_limit = ['2M','3M','5M','6M','7M','8M','9M','10M','1Y','1.5Y','All']
     else:
@@ -312,7 +312,7 @@ def run_cv_for_config(
         len_handled += 1
 
     if 'Static' in broken_feature_groupname:
-        feature_list.extend(['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+        feature_list.extend(['QueryTermsRatio', 'StopwordsRatio', 'Entropy',
                              'QueryWords', 'Stopwords', 'TextLen', '-Query-SW'])
         len_handled += 1
     if 'M' in broken_feature_groupname:
