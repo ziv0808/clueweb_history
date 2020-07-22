@@ -1480,7 +1480,10 @@ def handle_rank_svm_params(
         tmp_df = work_df[work_df['FeatGroup'] == featgroup]
         for col in all_cols:
             if col not in ['FeatGroup','C','SnapLimit','Fold']:
-                print(col + " -> Mean : " + str(tmp_df[col].mean()) + ", Std: " + str(tmp_df[col].std()) + ", Min: " + str(tmp_df[col].min()) + ", Max: " + str(tmp_df[col].max()) )
+                addition = ""
+                if abs(tmp_df[col].mean()) <= tmp_df[col].std() and pd.np.sign(tmp_df[col].min()) != pd.np.sign(tmp_df[col].max()):
+                    addition = "  *** Prob"
+                print(col + " -> Mean : " + str(tmp_df[col].mean()) + ", Std: " + str(tmp_df[col].std()) + ", Min: " + str(tmp_df[col].min()) + ", Max: " + str(tmp_df[col].max()) + addition)
 
 
 if __name__ == '__main__':
