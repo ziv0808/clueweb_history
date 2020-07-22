@@ -461,7 +461,7 @@ def run_grid_search_over_params_for_config(
     feat_group_list_str = ""
     # for optional_c in optional_c_list:
     for curr_feat_group in optional_feat_groups_list:
-        feat_group_list_str +=  "__" + feat_group
+        feat_group_list_str +=  "__" + curr_feat_group
         if 'XXSnap' in curr_feat_group:
             snap_limit_list = snap_limit_options
         else:
