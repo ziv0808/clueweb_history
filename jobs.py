@@ -1467,6 +1467,21 @@ def per_query_coverage_ploter(
     plt.xticks(rotation=45)
     plt.savefig('Per_Query_Coverage_' + filename_for_save.replace(".tsv", ".png"), dpi=300)
 
+def handle_rank_svm_params(
+        filename):
+
+    data_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
+    work_df = pd.read_csv(os.path.join(data_folder, filename), sep = '\t', index_col = False)
+    print(work_df[['FeatGroup','C','SnapLimit']])
+    all_cols = list(work_df.columns)
+    all_feat_groups = list(work_df['FeatGroup'].drop_duplicates())
+    for featgroup in all_feat_groups:
+        print("################  " + featgroup + "  ################")
+        tmp_df = work_df[work_df['FeatGroup'] == featgroup]
+        for col in all_cols:
+            if col not in ['FeatGroup','C','SnapLimit','Fold']:
+                print(col + " -> Mean : " + str(tmp_df[col].mean()) + ", Std: " + str(tmp_df[col].std()) + ", Min: " + str(tmp_df[col].min()) + ", Max: " + str(tmp_df[col].max()) )
+
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -1593,6 +1608,11 @@ if __name__ == '__main__':
                 if int_freq == "" or file_lookup == "":
                     raise  Exception("Prob!")
                 plot_retrival_stats(filename=filename, interval_freq=int_freq, lookup_method=file_lookup)
+
+    elif operation == 'SVMParams':
+        filname = sys.argv[2]
+        handle_rank_svm_params(filename)
+
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
