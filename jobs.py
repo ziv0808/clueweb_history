@@ -1610,7 +1610,7 @@ if __name__ == '__main__':
                 plot_retrival_stats(filename=filename, interval_freq=int_freq, lookup_method=file_lookup)
 
     elif operation == 'SVMParams':
-        filname = sys.argv[2]
+        filename = sys.argv[2]
         handle_rank_svm_params(filename)
 
         # create_text_manipulated_interval(
