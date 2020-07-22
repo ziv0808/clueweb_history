@@ -129,7 +129,8 @@ def train_and_test_model_on_config(
         feature_groupname,
         normalize_relevance,
         qrel_filepath,
-        snap_chosing_method=None):
+        snap_chosing_method=None,
+        snap_calc_limit=None):
 
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/'
     model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit)
@@ -143,18 +144,18 @@ def train_and_test_model_on_config(
         if not os.path.exists(base_res_folder):
             os.mkdir(base_res_folder)
 
-    best_snap_num = None
-    if 'XXSnap' in feature_groupname:
-        best_snap_num = learn_best_num_of_snaps(
-            base_feature_filename=base_feature_filename,
-            snapshot_limit=snapshot_limit,
-            feature_list=feature_list,
-            start_test_q=start_test_q,
-            end_test_q=end_test_q,
-            base_res_folder=base_res_folder,
-            qrel_filepath=qrel_filepath,
-            normalize_relevance=normalize_relevance,
-            snap_chosing_method=snap_chosing_method)
+    best_snap_num = snap_calc_limit
+    # if 'XXSnap' in feature_groupname:
+    #     best_snap_num = learn_best_num_of_snaps(
+    #         base_feature_filename=base_feature_filename,
+    #         snapshot_limit=snapshot_limit,
+    #         feature_list=feature_list,
+    #         start_test_q=start_test_q,
+    #         end_test_q=end_test_q,
+    #         base_res_folder=base_res_folder,
+    #         qrel_filepath=qrel_filepath,
+    #         normalize_relevance=normalize_relevance,
+    #         snap_chosing_method=snap_chosing_method)
 
     feat_df = prepare_svmr_model_data(
         base_feature_filename=base_feature_filename,
@@ -271,7 +272,8 @@ def run_cv_for_config(
         normalize_relevance,
         qrel_filepath,
         snap_chosing_method,
-        train_leave_one_out):
+        train_leave_one_out,
+        snap_calc_limit):
 
     k_fold = 10
     if '2008' in base_feature_filename:
@@ -295,17 +297,17 @@ def run_cv_for_config(
     len_handled = 0
     if feature_groupname == 'All':
         feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW',
+                        'QueryWords', 'Stopwords', '-Query-SW',
                         'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
-                        'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG',
+                        'QueryWords_LG', 'Stopwords_LG', '-Query-SW_LG',
                         'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
-                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG',
+                        'QueryWords_MG', 'Stopwords_MG', '-Query-SW_MG',
                         'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M',
+                        'QueryWords_M', 'Stopwords_M', '-Query-SW_M',
                         'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
-                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD',
+                        'QueryWords_STD', 'Stopwords_STD', '-Query-SW_STD',
                         'QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
-                        'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG',
+                        'QueryWords_MRG', 'Stopwords_MRG', '-Query-SW_MRG',
                         # 'QueryTermsRatio_M/STD', 'StopwordsRatio_M/STD', 'Entropy_M/STD', 'SimClueWeb_M/STD',
                         # 'QueryWords_M/STD', 'Stopwords_M/STD', 'TextLen_M/STD', '-Query-SW_M/STD'
                         ]
@@ -313,61 +315,64 @@ def run_cv_for_config(
 
     if 'Static' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio', 'StopwordsRatio', 'Entropy',
-                             'QueryWords', 'Stopwords', 'TextLen', '-Query-SW'])
+                             'QueryWords', 'Stopwords', '-Query-SW'])
         len_handled += 1
     if 'M' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-                             'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M'])
+                             'QueryWords_M', 'Stopwords_M', '-Query-SW_M'])
         len_handled += 1
     if 'STD' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
-                             'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD'])
+                             'QueryWords_STD', 'Stopwords_STD', '-Query-SW_STD'])
         len_handled += 1
     if 'RMG' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
-                             'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG'])
+                             'QueryWords_MRG', 'Stopwords_MRG', '-Query-SW_MRG'])
         len_handled += 1
     if 'MG' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
-                             'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG'])
+                             'QueryWords_MG', 'Stopwords_MG', '-Query-SW_MG'])
         len_handled += 1
     if 'LG' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
-                             'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG'])
+                             'QueryWords_LG', 'Stopwords_LG', '-Query-SW_LG'])
         len_handled += 1
 
     if 'RMGXXSnap' in broken_feature_groupname:
         feature_list.extend(
             ['QueryTermsRatio_RMGXXSnaps', 'StopwordsRatio_RMGXXSnaps', 'Entropy_RMGXXSnaps', 'SimClueWeb_RMGXXSnaps',
-             'QueryWords_RMGXXSnaps', 'Stopwords_RMGXXSnaps', 'TextLen_RMGXXSnaps', '-Query-SW_RMGXXSnaps'])
+             'QueryWords_RMGXXSnaps', 'Stopwords_RMGXXSnaps', '-Query-SW_RMGXXSnaps'])
         len_handled += 1
     if 'MGXXSnap' in broken_feature_groupname:
         feature_list.extend(
             ['QueryTermsRatio_MGXXSnaps', 'StopwordsRatio_MGXXSnaps', 'Entropy_MGXXSnaps', 'SimClueWeb_MGXXSnaps',
-             'QueryWords_MGXXSnaps', 'Stopwords_MGXXSnaps', 'TextLen_MGXXSnaps', '-Query-SW_MGXXSnaps'])
+             'QueryWords_MGXXSnaps', 'Stopwords_MGXXSnaps', '-Query-SW_MGXXSnaps'])
         len_handled += 1
     if 'MXXSnap' in broken_feature_groupname:
         feature_list.extend(
             ['QueryTermsRatio_MXXSnaps', 'StopwordsRatio_MXXSnaps', 'Entropy_MXXSnaps', 'SimClueWeb_MXXSnaps',
-             'QueryWords_MXXSnaps', 'Stopwords_MXXSnaps', 'TextLen_MXXSnaps', '-Query-SW_MXXSnaps'])
+             'QueryWords_MXXSnaps', 'Stopwords_MXXSnaps', '-Query-SW_MXXSnaps'])
         len_handled += 1
     if 'STDXXSnap' in broken_feature_groupname:
         feature_list.extend(
             ['QueryTermsRatio_STDXXSnaps', 'StopwordsRatio_STDXXSnaps', 'Entropy_STDXXSnaps', 'SimClueWeb_STDXXSnaps',
-             'QueryWords_STDXXSnaps', 'Stopwords_STDXXSnaps', 'TextLen_STDXXSnaps', '-Query-SW_STDXXSnaps'])
+             'QueryWords_STDXXSnaps', 'Stopwords_STDXXSnaps', '-Query-SW_STDXXSnaps'])
         len_handled += 1
     if 'MinXXSnap' in broken_feature_groupname:
         feature_list.extend(
             ['QueryTermsRatio_MinXXSnaps', 'StopwordsRatio_MinXXSnaps', 'Entropy_MinXXSnaps', 'SimClueWeb_MinXXSnaps',
-             'QueryWords_MinXXSnaps', 'Stopwords_MinXXSnaps', 'TextLen_MinXXSnaps', '-Query-SW_MinXXSnaps'])
+             'QueryWords_MinXXSnaps', 'Stopwords_MinXXSnaps', '-Query-SW_MinXXSnaps'])
         len_handled += 1
     if 'MaxXXSnap' in broken_feature_groupname:
         feature_list.extend(
             ['QueryTermsRatio_MaxXXSnaps', 'StopwordsRatio_MaxXXSnaps', 'Entropy_MaxXXSnaps', 'SimClueWeb_MaxXXSnaps',
-             'QueryWords_MaxXXSnaps', 'Stopwords_MaxXXSnaps', 'TextLen_MaxXXSnaps', '-Query-SW_MaxXXSnaps'])
+             'QueryWords_MaxXXSnaps', 'Stopwords_MaxXXSnaps', '-Query-SW_MaxXXSnaps'])
         len_handled += 1
 
-    if len_handled != len(broken_feature_groupname):
+    feature_groups_num = len(broken_feature_groupname)
+    if snap_calc_limit is not None:
+        feature_groups_num = feature_groups_num - 1
+    if len_handled != feature_groups_num:
         raise Exception('Undefined feature group!')
 
     if retrieval_model == 'LM':
@@ -389,7 +394,8 @@ def run_cv_for_config(
             feature_groupname=feature_groupname + '_' + retrieval_model,
             normalize_relevance=normalize_relevance,
             qrel_filepath=qrel_filepath,
-            snap_chosing_method=snap_chosing_method)
+            snap_chosing_method=snap_chosing_method,
+            snap_calc_limit=snap_calc_limit)
         init_q += query_bulk
         end_q += query_bulk
         if (init_q in [95, 100]) and (init_q == end_q):
@@ -431,8 +437,20 @@ def run_grid_search_over_params_for_config(
     else:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
 
+    if snap_chosing_method == 'Months':
+        snap_limit_options = ['3M', '6M', '9M', '1Y', '1.5Y', 'All']
+    elif snap_chosing_method == 'SnapNum':
+        snap_limit_options = [3, 5, 7, 10, 15, 'All']
+    else:
+        raise Exception("Unknown snap_chosing_method!")
+
     model_base_filename = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(
         snapshot_limit) + "_" + retrieval_model + "_By" + snap_chosing_method
+
+    if not os.path.exists(os.path.join(save_folder, model_base_filename)):
+        os.mkdir(os.path.join(save_folder, model_base_filename))
+    save_folder = os.path.join(save_folder, model_base_filename)
+
     if normalize_relevance == True:
         model_base_filename += '_NR'
     if tarin_leave_one_out == True:
@@ -442,28 +460,59 @@ def run_grid_search_over_params_for_config(
     per_q_res_dict = {}
     feat_group_list_str = ""
     # for optional_c in optional_c_list:
-    for feat_group in optional_feat_groups_list:
+    for curr_feat_group in optional_feat_groups_list:
         feat_group_list_str +=  "__" + feat_group
-        test_res_df, tmp_params_df = run_cv_for_config(
-            base_feature_filename=base_feature_filename,
-            snapshot_limit=snapshot_limit,
-            feature_groupname=feat_group,
-            retrieval_model=retrieval_model,
-            normalize_relevance=normalize_relevance,
-            qrel_filepath=qrel_filepath,
-            snap_chosing_method=snap_chosing_method,
-            train_leave_one_out=tarin_leave_one_out)
+        if 'XXSnap' in curr_feat_group:
+            snap_limit_list = snap_limit_options
+        else:
+            snap_limit_list = [None]
+        for snap_limit in snap_limit_list:
+            if snap_limit is None:
+                feat_group = curr_feat_group
+            else:
+                feat_group = curr_feat_group + "_" + str(snap_limit)
+            test_res_df, tmp_params_df = run_cv_for_config(
+                base_feature_filename=base_feature_filename,
+                snapshot_limit=snapshot_limit,
+                feature_groupname=feat_group,
+                retrieval_model=retrieval_model,
+                normalize_relevance=normalize_relevance,
+                qrel_filepath=qrel_filepath,
+                snap_chosing_method=snap_chosing_method,
+                train_leave_one_out=tarin_leave_one_out,
+                snap_calc_limit=snap_limit)
 
-        tmp_params_df['FeatGroup'] = feat_group
-        if 'XXSnap' in feat_group:
-            feat_group += 'By' + snap_chosing_method
+            tmp_params_df['FeatGroup'] = feat_group
+            if 'XXSnap' in feat_group:
+                feat_group += 'By' + snap_chosing_method
 
-        if next_idx == 0:
+            if next_idx == 0:
+                curr_res_df = get_trec_prepared_df_form_res_df(
+                    scored_docs_df=test_res_df,
+                    score_colname=retrieval_model + 'Score')
+                insert_row = ['Basic Retrieval']
+                curr_file_name = model_base_filename + '_Benchmark.txt'
+                with open(os.path.join(save_folder, curr_file_name), 'w') as f:
+                    f.write(convert_df_to_trec(curr_res_df))
+
+                res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                    file_path=save_folder,
+                    filename=curr_file_name,
+                    qrel_filepath=qrel_filepath)
+                for measure in ['Map', 'P_5', 'P_10']:
+                    insert_row.append(res_dict['all'][measure])
+                per_q_res_dict['Basic Retrieval'] = res_dict
+                model_summary_df.loc[next_idx] = insert_row
+                next_idx += 1
+                params_df = tmp_params_df
+            else:
+                params_df = params_df.append(tmp_params_df, ignore_index=True)
+
             curr_res_df = get_trec_prepared_df_form_res_df(
                 scored_docs_df=test_res_df,
-                score_colname=retrieval_model + 'Score')
-            insert_row = ['Basic Retrieval']
-            curr_file_name = model_base_filename + '_Benchmark.txt'
+                score_colname='ModelScore')
+            insert_row = [feat_group.replace('_', '+')]
+            curr_file_name = model_base_filename + '_' + feat_group + '.txt'
             with open(os.path.join(save_folder, curr_file_name), 'w') as f:
                 f.write(convert_df_to_trec(curr_res_df))
 
@@ -473,30 +522,9 @@ def run_grid_search_over_params_for_config(
                 qrel_filepath=qrel_filepath)
             for measure in ['Map', 'P_5', 'P_10']:
                 insert_row.append(res_dict['all'][measure])
-            per_q_res_dict['Basic Retrieval'] = res_dict
+            per_q_res_dict[feat_group.replace('_', '+')] = res_dict
             model_summary_df.loc[next_idx] = insert_row
             next_idx += 1
-            params_df = tmp_params_df
-        else:
-            params_df = params_df.append(tmp_params_df, ignore_index=True)
-
-        curr_res_df = get_trec_prepared_df_form_res_df(
-            scored_docs_df=test_res_df,
-            score_colname='ModelScore')
-        insert_row = [feat_group.replace('_', '+')]
-        curr_file_name = model_base_filename + '_' + feat_group + '.txt'
-        with open(os.path.join(save_folder, curr_file_name), 'w') as f:
-            f.write(convert_df_to_trec(curr_res_df))
-
-        res_dict = get_ranking_effectiveness_for_res_file_per_query(
-            file_path=save_folder,
-            filename=curr_file_name,
-            qrel_filepath=qrel_filepath)
-        for measure in ['Map', 'P_5', 'P_10']:
-            insert_row.append(res_dict['all'][measure])
-        per_q_res_dict[feat_group.replace('_', '+')] = res_dict
-        model_summary_df.loc[next_idx] = insert_row
-        next_idx += 1
 
     significance_df = create_sinificance_df(per_q_res_dict)
     model_summary_df = pd.merge(

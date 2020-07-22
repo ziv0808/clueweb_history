@@ -589,8 +589,8 @@ def check_statistical_significance(
             else:
                 res_dict[measure]['Significant'] = False
 
-            res_dict[measure]['Pval'] = p_val
-            res_dict[measure]['%Better'] = pd.np.sum(pd.np.array(l1) > pd.np.array(l2))/float(len(l1))
+            res_dict[measure]['Pval'] = round(p_val,4)
+            res_dict[measure]['%Better'] = round(pd.np.sum(pd.np.array(l1) > pd.np.array(l2))/float(len(l1)),4)
     except Exception as e:
         raise Exception('check_statistical_significance: ' + str(e))
 
