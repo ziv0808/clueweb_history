@@ -878,7 +878,7 @@ def create_sinificance_df(
             sinificance_dict = check_statistical_significance(per_q_res_dict[key], per_q_res_dict[key_2])
             for measure in ['Map', 'P_5', 'P_10']:
                 if sinificance_dict[measure]['Significant'] == True:
-                    if per_q_res_dict[key]['all'] > per_q_res_dict[key_2]['all']:
+                    if per_q_res_dict[key]['all'][measure] > per_q_res_dict[key_2]['all'][measure]:
                         sinificance_list_dict[measure] += key_2+ ','
                 if (key_2 == 'Static') or (key_2 == 'Basic Retrieval'):
                     sinificance_list_dict[measure + "VSs"] += key_2 + " " +str(sinificance_dict[measure]['Pval']) +\

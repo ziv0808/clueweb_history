@@ -180,7 +180,7 @@ def train_and_test_model_on_config(
         f.write(turn_df_to_feature_str_for_model(valid_df, feature_list=feature_list))
 
     num_tree_optional_list = [250, 500]
-    num_leaf_optional_list = [3, 2, 5, 10]
+    num_leaf_optional_list = [3, 2, 5]
     best_map = 0.0
 
     for tree_num in num_tree_optional_list:
