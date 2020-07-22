@@ -1483,6 +1483,8 @@ def handle_rank_svm_params(
                 addition = ""
                 if abs(tmp_df[col].mean()) <= tmp_df[col].std() and pd.np.sign(tmp_df[col].min()) != pd.np.sign(tmp_df[col].max()):
                     addition = "  *** Prob"
+                elif abs(tmp_df[col].mean()) >= tmp_df[col].std() and pd.np.sign(tmp_df[col].min()) == pd.np.sign(tmp_df[col].max()):
+                    addition = "  *** STRONG!!"
                 print(col + " -> Mean : " + str(tmp_df[col].mean()) + ", Std: " + str(tmp_df[col].std()) + ", Min: " + str(tmp_df[col].min()) + ", Max: " + str(tmp_df[col].max()) + addition)
 
 
