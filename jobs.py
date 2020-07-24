@@ -1495,7 +1495,7 @@ def asrc_data_parser(
         filepath,
         rel_filepath):
 
-    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/asrc/2008/'
+
     with open(filepath, 'r') as f:
         soup = BeautifulSoup(f.read())
 
@@ -1586,8 +1586,8 @@ def asrc_data_parser(
                                                     'docno': docno}
         else:
             raise Exception("double ID")
-    del stemmer
-    import pandas as pd
+
+
     print("Step 2...")
     sys.stdout.flush()
     df_dict['AVG_DOC_LEN'] = float(df_dict['AVG_DOC_LEN']) / df_dict['ALL_DOCS_COUNT']
@@ -1620,11 +1620,18 @@ def asrc_data_parser(
                     query_stem_dict=query_to_stem_mapping[query_user_str.split('-')[0]],
                     df_dict=df_dict,
                     doc_dict=big_doc_index[query_user_str][round_]['json'])
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/RawData.json' , 'w') as f:
+        f.write(str(big_doc_index))
 
-    print("Step 3...")
-    sys.stdout.flush()
-    col_list = [
-                 'NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+
+def create_base_features_for_asrc(
+        rel_filepath):
+
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/RawData.json', 'r') as f:
+        big_doc_index = ast.literal_eval(f.read())
+
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/asrc/2008/'
+    col_list = ['NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                  'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score',
                  'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
                  'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M','LMScore_M','BM25Score_M',
@@ -1869,8 +1876,11 @@ if __name__ == '__main__':
 
     elif operation == 'ASRCMeta':
         filepath = sys.argv[2]
-        rel_filepath = sys.argv[3]
-        asrc_data_parser(filepath, rel_filepath)
+        asrc_data_parser(filepath)
+
+    elif operation == 'ASRCFeat':
+        rel_filepath = sys.argv[2]
+        create_base_features_for_asrc(rel_filepath)
 
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
