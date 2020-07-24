@@ -1492,8 +1492,7 @@ def handle_rank_svm_params(
 
 
 def asrc_data_parser(
-        filepath,
-        rel_filepath):
+        filepath):
 
 
     with open(filepath, 'r') as f:
