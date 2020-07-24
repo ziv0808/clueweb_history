@@ -680,55 +680,55 @@ def run_cv_for_config(
 
     if 'Static' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio', 'StopwordsRatio', 'Entropy',
-                        'QueryWords', 'Stopwords', '-Query-SW'])
+                        'QueryWords', 'Stopwords', 'TextLen', '-Query-SW'])
         len_handled += 1
     if 'M' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-                        'QueryWords_M', 'Stopwords_M', '-Query-SW_M'])
+                        'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M'])
         len_handled += 1
     if 'STD' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
-                        'QueryWords_STD', 'Stopwords_STD', '-Query-SW_STD'])
+                        'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD'])
         len_handled += 1
     if 'RMG' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_MRG', 'StopwordsRatio_MRG', 'Entropy_MRG', 'SimClueWeb_MRG',
-                        'QueryWords_MRG', 'Stopwords_MRG', '-Query-SW_MRG'])
+                        'QueryWords_MRG', 'Stopwords_MRG', 'TextLen_MRG', '-Query-SW_MRG'])
         len_handled += 1
     if 'MG' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
-                        'QueryWords_MG', 'Stopwords_MG', '-Query-SW_MG'])
+                        'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG'])
         len_handled += 1
     if 'LG' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
-                        'QueryWords_LG', 'Stopwords_LG', '-Query-SW_LG'])
+                        'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG'])
         len_handled += 1
 
     if 'RMGXXSnap' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_RMGXXSnaps', 'StopwordsRatio_RMGXXSnaps', 'Entropy_RMGXXSnaps', 'SimClueWeb_RMGXXSnaps',
-                             'QueryWords_RMGXXSnaps', 'Stopwords_RMGXXSnaps', '-Query-SW_RMGXXSnaps'])
+                             'QueryWords_RMGXXSnaps', 'Stopwords_RMGXXSnaps', 'TextLen_RMGXXSnaps', '-Query-SW_RMGXXSnaps'])
         len_handled += 1
     if 'MGXXSnap' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_MGXXSnaps', 'StopwordsRatio_MGXXSnaps', 'Entropy_MGXXSnaps', 'SimClueWeb_MGXXSnaps',
-                             'QueryWords_MGXXSnaps', 'Stopwords_MGXXSnaps', '-Query-SW_MGXXSnaps'])
+                             'QueryWords_MGXXSnaps', 'Stopwords_MGXXSnaps', 'TextLen_MGXXSnaps', '-Query-SW_MGXXSnaps'])
         len_handled += 1
     if 'MXXSnap' in broken_feature_groupname:
         feature_list.extend(['QueryTermsRatio_MXXSnaps', 'StopwordsRatio_MXXSnaps', 'Entropy_MXXSnaps', 'SimClueWeb_MXXSnaps',
-                             'QueryWords_MXXSnaps', 'Stopwords_MXXSnaps', '-Query-SW_MXXSnaps'])
+                             'QueryWords_MXXSnaps', 'Stopwords_MXXSnaps', 'TextLen_MXXSnaps', '-Query-SW_MXXSnaps'])
         len_handled += 1
     if 'STDXXSnap' in broken_feature_groupname:
         feature_list.extend(
             ['QueryTermsRatio_STDXXSnaps', 'StopwordsRatio_STDXXSnaps', 'Entropy_STDXXSnaps', 'SimClueWeb_STDXXSnaps',
-             'QueryWords_STDXXSnaps', 'Stopwords_STDXXSnaps', '-Query-SW_STDXXSnaps'])
+             'QueryWords_STDXXSnaps', 'Stopwords_STDXXSnaps', 'TextLen_STDXXSnaps', '-Query-SW_STDXXSnaps'])
         len_handled += 1
     if 'MinXXSnap' in broken_feature_groupname:
         feature_list.extend(
             ['QueryTermsRatio_MinXXSnaps', 'StopwordsRatio_MinXXSnaps', 'Entropy_MinXXSnaps', 'SimClueWeb_MinXXSnaps',
-             'QueryWords_MinXXSnaps', 'Stopwords_MinXXSnaps', '-Query-SW_MinXXSnaps'])
+             'QueryWords_MinXXSnaps', 'Stopwords_MinXXSnaps', 'TextLen_MinXXSnaps', '-Query-SW_MinXXSnaps'])
         len_handled += 1
     if 'MaxXXSnap' in broken_feature_groupname:
         feature_list.extend(
             ['QueryTermsRatio_MaxXXSnaps', 'StopwordsRatio_MaxXXSnaps', 'Entropy_MaxXXSnaps', 'SimClueWeb_MaxXXSnaps',
-             'QueryWords_MaxXXSnaps', 'Stopwords_MaxXXSnaps', '-Query-SW_MaxXXSnaps'])
+             'QueryWords_MaxXXSnaps', 'Stopwords_MaxXXSnaps', 'TextLen_MaxXXSnaps', '-Query-SW_MaxXXSnaps'])
         len_handled += 1
 
     feature_groups_num = len(broken_feature_groupname)
@@ -788,7 +788,10 @@ def run_grid_search_over_params_for_config(
     #                                     ,'Static_MXXSnap', 'Static_RMGXXSnap','MGXXSnap_MXXSnap_RMGXXSnap']
     ## num 3
     if feat_group_list is None:
-        optional_feat_groups_list = ['Static','Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap_RMGXXSnap']
+        optional_feat_groups_list = ['Static','Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap_RMGXXSnap',
+                                    'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap',
+                                     'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap',
+                                    'Static_MGXXSnap','Static_RMGXXSnap']
     else:
         optional_feat_groups_list = feat_group_list
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
@@ -800,9 +803,13 @@ def run_grid_search_over_params_for_config(
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
 
     if snap_chosing_method == 'Months':
-        snap_limit_options = ['3M', '6M', '9M', '1Y', '1.5Y', 'All']
+        snap_limit_options = [
+            # '3M', '6M', '9M', '1Y', '1.5Y',
+            'All']
     elif snap_chosing_method == 'SnapNum':
-        snap_limit_options = [3, 5, 7, 10, 15, 'All']
+        snap_limit_options = [
+            # 3, 5, 7, 10, 15,
+            'All']
     else:
         raise Exception("Unknown snap_chosing_method!")
     model_base_filename = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit) + "_" + retrieval_model + "_By" + snap_chosing_method
@@ -977,11 +984,12 @@ def fix_statistical_sinificance(
     model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename + '_Fixed_Sign.tsv'), sep='\t', index=False)
 
 def create_all_x_snap_aggregations(
-        base_feature_filename):
+        base_feature_filename,
+        possible_num_snaps_options_list =None):
 
     base_file_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW']
+                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score']
 
     work_df = pd.read_csv(os.path.join(base_file_folder, base_feature_filename), sep = '\t', index_col = False)
     if '2008' in base_feature_filename:
@@ -994,8 +1002,10 @@ def create_all_x_snap_aggregations(
 
     possible_num_snaps = [1,2,3,4,5,6,7,8,9,10,12,15,20,'All']
     possible_monthes = ['2M','3M','4M','5M','6M','7M','8M','9M','10M','1Y','1.5Y']
+    if possible_num_snaps_options_list is None:
+        possible_num_snaps_options_list = possible_num_snaps + possible_monthes
 
-    for num_snaps in possible_num_snaps + possible_monthes:
+    for num_snaps in possible_num_snaps_options_list:
         if type(num_snaps) == str:
             if num_snaps == 'All':
                 tmp_df = work_df.copy()
@@ -1128,5 +1138,5 @@ if __name__ == '__main__':
 
     elif operation == 'LimitedSnapFeatures':
         base_feature_filename = sys.argv[2]
-
-        create_all_x_snap_aggregations(base_feature_filename)
+        possible_num_snaps_options_list = ast.literal_eval(sys.argv[3])
+        create_all_x_snap_aggregations(base_feature_filename, possible_num_snaps_options_list)
