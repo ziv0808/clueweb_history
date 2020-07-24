@@ -1662,8 +1662,10 @@ def asrc_data_parser(
                     res_dict[diff]= big_doc_index[query_user_str][additional_round]['json']
             with open(os.path.join(os.path.join(processed_docs_folder, 'SIM'), docno +'.json'), 'w') as f:
                 f.write(str(res_dict))
-
-            curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'] + base_feature_list)
+            col_list = ['Docno', 'QueryNum', 'Interval'] + base_feature_list
+            curr_doc_df = pd.DataFrame({})
+            for col in col_list:
+                curr_doc_df[col] = None
             tmp_idx = 0
             for i in list(reversed(range(round_))):
                 if i == 0:
