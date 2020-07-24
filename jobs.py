@@ -1640,7 +1640,6 @@ def asrc_data_parser(
         fin_df[col] = None
     print(fin_df)
     sys.stdout.flush()
-    fin_df = fin_df[col_list]
 
     all_snaps_df = pd.DataFrame({})
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
