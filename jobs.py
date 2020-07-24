@@ -1526,7 +1526,7 @@ def asrc_data_parser(
         if int(round_) == 0:
             continue
 
-        fulltext = re.sub('[^a-zA-Z0-9 \n\.]', ' ', fulltext)
+        fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', fulltext)
 
         res_dict = {}
         res_dict['StemList'] = ['[[OOV]']
@@ -1543,6 +1543,8 @@ def asrc_data_parser(
         curr_fulltext_list = fulltext.split(" ")
         for stem in curr_fulltext_list:
             stem = stemmer.stem(stem)
+            if stem == '' or stem == '\n':
+                continue
             if stem not in res_dict['TfDict']:
                 res_dict['StemList'].append(stem)
                 res_dict['TfDict'][stem] = 1
@@ -1656,7 +1658,7 @@ def asrc_data_parser(
             round_ = int(round_)
             for additional_round in all_rounds:
                 if int(additional_round) < round_:
-                    diff = str(round_ - int(additional_round))
+                    diff = str(int(additional_round) - round_)
                     res_dict[diff]= big_doc_index[query_user_str][additional_round]['json']
             with open(os.path.join(os.path.join(processed_docs_folder, 'SIM'), docno +'.json'), 'w') as f:
                 f.write(str(res_dict))
