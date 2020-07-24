@@ -1520,10 +1520,10 @@ def asrc_data_parser(
         docno = doc.find('docno').text
         fulltext = doc.find('text').text
         broken_docno = docno.split('-')
-        round = broken_docno[1]
+        round_ = broken_docno[1]
         query_num = broken_docno[2]
         user = broken_docno[3]
-        if int(round) == 0:
+        if int(round_) == 0:
             continue
 
         fulltext = re.sub('[^a-zA-Z0-9 \n\.]', ' ', fulltext)
@@ -1580,8 +1580,8 @@ def asrc_data_parser(
         query_user_str = query_num +'-' +user
         if query_user_str not in big_doc_index:
             big_doc_index[query_user_str] = {}
-        if round not in big_doc_index[query_user_str]:
-            big_doc_index[query_user_str][round] = {'json' : res_dict,
+        if round_ not in big_doc_index[query_user_str]:
+            big_doc_index[query_user_str][round_] = {'json' : res_dict,
                                                     'docno': docno}
         else:
             raise Exception("double ID")
@@ -1597,44 +1597,44 @@ def asrc_data_parser(
 
     # calc cc and df list for all
     for query_user_str in big_doc_index:
-        for round in big_doc_index[query_user_str]:
-            if 'DfList' not in big_doc_index[query_user_str][round]['json']:
-                big_doc_index[query_user_str][round]['json']['DfList'] = [0]
-                big_doc_index[query_user_str][round]['json']['CCList'] = [0]
-                for stem in big_doc_index[query_user_str][round]['json']['StemList'][1:]:
-                    big_doc_index[query_user_str][round]['json']['DfList'].append(df_dict[stem])
-                    big_doc_index[query_user_str][round]['json']['CCList'].append(cc_dict[stem])
+        for round_ in big_doc_index[query_user_str]:
+            if 'DfList' not in big_doc_index[query_user_str][round_]['json']:
+                big_doc_index[query_user_str][round_]['json']['DfList'] = [0]
+                big_doc_index[query_user_str][round_]['json']['CCList'] = [0]
+                for stem in big_doc_index[query_user_str][round_]['json']['StemList'][1:]:
+                    big_doc_index[query_user_str][round_]['json']['DfList'].append(df_dict[stem])
+                    big_doc_index[query_user_str][round_]['json']['CCList'].append(cc_dict[stem])
 
-                big_doc_index[query_user_str][round]['json']['TfIdf'] = calc_tfidf_dict(
-                    big_doc_index[query_user_str][round]['json']['StemList'],
-                    big_doc_index[query_user_str][round]['json']['TfList'],
-                    big_doc_index[query_user_str][round]['json']['DfList'])
-                big_doc_index[query_user_str][round]['json']['LMScore'] = lm_score_doc_for_query(
+                big_doc_index[query_user_str][round_]['json']['TfIdf'] = calc_tfidf_dict(
+                    big_doc_index[query_user_str][round_]['json']['StemList'],
+                    big_doc_index[query_user_str][round_]['json']['TfList'],
+                    big_doc_index[query_user_str][round_]['json']['DfList'])
+                big_doc_index[query_user_str][round_]['json']['LMScore'] = lm_score_doc_for_query(
                     query_stem_dict=query_to_stem_mapping[query_user_str.split('-')[0]],
                     cc_dict=cc_dict,
-                    doc_dict=big_doc_index[query_user_str][round]['json'])
-                big_doc_index[query_user_str][round]['json']['BM25Score'] = bm25_score_doc_for_query(
+                    doc_dict=big_doc_index[query_user_str][round_]['json'])
+                big_doc_index[query_user_str][round_]['json']['BM25Score'] = bm25_score_doc_for_query(
                     query_stem_dict=query_to_stem_mapping[query_user_str.split('-')[0]],
                     df_dict=df_dict,
-                    doc_dict=big_doc_index[query_user_str][round]['json'])
+                    doc_dict=big_doc_index[query_user_str][round_]['json'])
 
     print("Step 3...")
     sys.stdout.flush()
 
-    # fin_df = pd.DataFrame(columns=['NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-    #              'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score',
-    #              'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-    #              'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M','LMScore_M','BM25Score_M',
-    #              'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
-    #              'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD','LMScore_STD','BM25Score_STD',
-    #              'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
-    #              'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG','LMScore_LG','BM25Score_LG',
-    #              'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
-    #              'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG','LMScore_MG','BM25Score_MG',
-    #              'QueryTermsRatio_RMG', 'StopwordsRatio_RMG', 'Entropy_RMG', 'SimClueWeb_RMG',
-    #              'QueryWords_RMG', 'Stopwords_RMG', 'TextLen_RMG', '-Query-SW_RMG','LMScore_RMG','BM25Score_RMG',
-    #              # 'Relevance',
-    #              'QueryNum', 'Docno'])
+    fin_df = pd.DataFrame(columns=['NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                 'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score',
+                 'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                 'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M','LMScore_M','BM25Score_M',
+                 'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+                 'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD','LMScore_STD','BM25Score_STD',
+                 'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
+                 'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG','LMScore_LG','BM25Score_LG',
+                 'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
+                 'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG','LMScore_MG','BM25Score_MG',
+                 'QueryTermsRatio_RMG', 'StopwordsRatio_RMG', 'Entropy_RMG', 'SimClueWeb_RMG',
+                 'QueryWords_RMG', 'Stopwords_RMG', 'TextLen_RMG', '-Query-SW_RMG','LMScore_RMG','BM25Score_RMG',
+                 # 'Relevance',
+                 'QueryNum', 'Docno'])
 
     all_snaps_df = pd.DataFrame({})
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
@@ -1643,22 +1643,22 @@ def asrc_data_parser(
     for query_user_str in big_doc_index:
         all_rounds = list(big_doc_index[query_user_str].keys())
         query_num = query_user_str.split('-')[0]
-        for round in all_rounds:
+        for round_ in all_rounds:
             print(docno)
             sys.stdout.flush()
-            docno = big_doc_index[query_user_str][round]['docno'].replace('ROUND','EPOCH')
-            res_dict = {'ClueWeb09' : big_doc_index[query_user_str][round]['json']}
-            round = int(round)
+            docno = big_doc_index[query_user_str][round_]['docno'].replace('ROUND','EPOCH')
+            res_dict = {'ClueWeb09' : big_doc_index[query_user_str][round_]['json']}
+            round_ = int(round_)
             for additional_round in all_rounds:
-                if int(additional_round) < round:
-                    diff = str(round - int(additional_round))
+                if int(additional_round) < round_:
+                    diff = str(round_ - int(additional_round))
                     res_dict[diff]= big_doc_index[query_user_str][additional_round]['json']
             with open(os.path.join(os.path.join(processed_docs_folder, 'SIM'), docno +'.json'), 'w') as f:
                 f.write(str(res_dict))
 
             curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'] + base_feature_list)
             tmp_idx = 0
-            for i in list(reversed(range(round))):
+            for i in list(reversed(range(round_))):
                 if i == 0:
                     round_str = 'ClueWeb09'
                 else:
