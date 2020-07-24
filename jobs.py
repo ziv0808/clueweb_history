@@ -1659,9 +1659,9 @@ def create_base_features_for_asrc(
         all_rounds = list(big_doc_index[query_user_str].keys())
         query_num = query_user_str.split('-')[0]
         for round_ in all_rounds:
+            docno = big_doc_index[query_user_str][round_]['docno'].replace('ROUND','EPOCH')
             print(docno)
             sys.stdout.flush()
-            docno = big_doc_index[query_user_str][round_]['docno'].replace('ROUND','EPOCH')
             res_dict = {'ClueWeb09' : big_doc_index[query_user_str][round_]['json']}
             round_ = int(round_)
             for additional_round in all_rounds:
