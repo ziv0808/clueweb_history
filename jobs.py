@@ -1518,17 +1518,21 @@ def asrc_data_parser(
     sys.stdout.flush()
     curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
     for doc in all_docs:
+        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         docno = doc.find('docno').text
         fulltext = doc.find('text').text
+        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         broken_docno = docno.split('-')
         round_ = broken_docno[1]
+        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         query_num = broken_docno[2]
         user = broken_docno[3]
+        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         if int(round_) == 0:
             continue
         curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', fulltext)
-        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
+
         res_dict = {}
         res_dict['StemList'] = ['[[OOV]']
         res_dict['IndexList'] = []
