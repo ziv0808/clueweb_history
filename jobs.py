@@ -1542,10 +1542,8 @@ def asrc_data_parser(
         res_dict['TfDict'] = {}
 
         curr_fulltext_list = fulltext.split(" ")
-        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         for stem in curr_fulltext_list:
             stem = stemmer.stem(stem)
-            curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
             if stem == '' or stem == '\n':
                 continue
             if stem not in res_dict['TfDict']:
@@ -1564,7 +1562,6 @@ def asrc_data_parser(
             res_dict['NumWords'] += 1
             res_dict['Fulltext'] += stem + " "
         res_dict['Fulltext'] = res_dict['Fulltext'][:-1]
-        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         for stem in res_dict['StemList'][1:]:
             res_dict['TfList'].append(res_dict['TfDict'][stem])
             if stem in cc_dict:
@@ -1573,7 +1570,7 @@ def asrc_data_parser(
             else:
                 cc_dict[stem] = res_dict['TfDict'][stem]
                 df_dict[stem] = 1
-        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
+
         cc_dict['ALL_TERMS_COUNT'] += res_dict['NumWords']
         cc_dict['ALL_SW_COUNT'] += res_dict['NumStopWords']
         df_dict['ALL_DOCS_COUNT'] += 1
@@ -1581,7 +1578,6 @@ def asrc_data_parser(
         df_dict['AVG_DOC_LEN_NO_SW'] += (res_dict['NumWords']- res_dict['NumStopWords'])
 
         res_dict['Entropy'] = calc_shannon_entopy(res_dict['TfList'][1:])
-        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         query_user_str = query_num +'-' +user
         if query_user_str not in big_doc_index:
             big_doc_index[query_user_str] = {}
@@ -1590,7 +1586,8 @@ def asrc_data_parser(
                                                     'docno': docno}
         else:
             raise Exception("double ID")
-
+    del stemmer
+    import pandas as pd
     print("Step 2...")
     sys.stdout.flush()
     df_dict['AVG_DOC_LEN'] = float(df_dict['AVG_DOC_LEN']) / df_dict['ALL_DOCS_COUNT']
