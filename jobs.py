@@ -1517,7 +1517,7 @@ def asrc_data_parser(
     print("Step 1...")
     sys.stdout.flush()
 
-    for doc_ in all_docs:
+    for doc_ in list(all_docs):
         curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         docno = doc_.find('docno').text
         fulltext = doc_.find('text').text
