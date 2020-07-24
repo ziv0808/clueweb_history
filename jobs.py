@@ -1494,11 +1494,11 @@ def handle_rank_svm_params(
 def asrc_data_parser(
         filepath,
         rel_filepath):
-    doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
+
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/asrc/2008/'
     with open(filepath, 'r') as f:
         soup = BeautifulSoup(f.read())
-    doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
+
     stemmer = Stemmer()
     big_doc_index = {}
     stopword_list = get_stopword_list()
@@ -1507,7 +1507,7 @@ def asrc_data_parser(
     for index, row in df_query_stems.iterrows():
         query_num = ('0' * (3 - len(str(row['QueryNum'])))) + str(row['QueryNum'])
         query_to_stem_mapping[query_num] = convert_query_to_tf_dict(row['QueryStems'])
-    doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
+
     all_docs = soup.find_all('doc')
     cc_dict = {'ALL_TERMS_COUNT' : 0,
                'ALL_SW_COUNT'    : 0}
@@ -1637,6 +1637,7 @@ def asrc_data_parser(
                  'QueryWords_RMG', 'Stopwords_RMG', 'TextLen_RMG', '-Query-SW_RMG','LMScore_RMG','BM25Score_RMG',
                  # 'Relevance',
                  'QueryNum', 'Docno']
+    curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
     fin_df = pd.DataFrame({})
     for col in col_list:
         fin_df[col] = None
