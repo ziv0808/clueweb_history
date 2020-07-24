@@ -1521,16 +1521,13 @@ def asrc_data_parser(
         curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         docno = doc_.find('docno').text
         fulltext = doc_.find('text').text
-        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         broken_docno = docno.split('-')
         round_ = broken_docno[1]
-        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         query_num = broken_docno[2]
         user = broken_docno[3]
-        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         if int(round_) == 0:
             continue
-        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
+
         fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', fulltext)
 
         res_dict = {}
@@ -1583,7 +1580,7 @@ def asrc_data_parser(
         df_dict['AVG_DOC_LEN_NO_SW'] += (res_dict['NumWords']- res_dict['NumStopWords'])
 
         res_dict['Entropy'] = calc_shannon_entopy(res_dict['TfList'][1:])
-
+        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         query_user_str = query_num +'-' +user
         if query_user_str not in big_doc_index:
             big_doc_index[query_user_str] = {}
@@ -1592,7 +1589,7 @@ def asrc_data_parser(
                                                     'docno': docno}
         else:
             raise Exception("double ID")
-    curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
+
     print("Step 2...")
     sys.stdout.flush()
     df_dict['AVG_DOC_LEN'] = float(df_dict['AVG_DOC_LEN']) / df_dict['ALL_DOCS_COUNT']
