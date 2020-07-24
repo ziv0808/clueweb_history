@@ -1620,22 +1620,22 @@ def asrc_data_parser(
 
     print("Step 3...")
     sys.stdout.flush()
-    fin_df = pd.DataFrame(columns=['NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
-                 'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score',
-                 'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
-                 'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M','LMScore_M','BM25Score_M',
-                 'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
-                 'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD','LMScore_STD','BM25Score_STD',
-                 'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
-                 'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG','LMScore_LG','BM25Score_LG',
-                 'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
-                 'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG','LMScore_MG','BM25Score_MG',
-                 'QueryTermsRatio_RMG', 'StopwordsRatio_RMG', 'Entropy_RMG', 'SimClueWeb_RMG',
-                 'QueryWords_RMG', 'Stopwords_RMG', 'TextLen_RMG', '-Query-SW_RMG','LMScore_RMG','BM25Score_RMG',
-                 # 'Relevance',
-                 'QueryNum', 'Docno'])
-    print("Step 4...")
-    sys.stdout.flush()
+
+    # fin_df = pd.DataFrame(columns=['NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+    #              'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score',
+    #              'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+    #              'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M','LMScore_M','BM25Score_M',
+    #              'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+    #              'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD','LMScore_STD','BM25Score_STD',
+    #              'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
+    #              'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG','LMScore_LG','BM25Score_LG',
+    #              'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
+    #              'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG','LMScore_MG','BM25Score_MG',
+    #              'QueryTermsRatio_RMG', 'StopwordsRatio_RMG', 'Entropy_RMG', 'SimClueWeb_RMG',
+    #              'QueryWords_RMG', 'Stopwords_RMG', 'TextLen_RMG', '-Query-SW_RMG','LMScore_RMG','BM25Score_RMG',
+    #              # 'Relevance',
+    #              'QueryNum', 'Docno'])
+
     all_snaps_df = pd.DataFrame({})
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                          'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score']
