@@ -1518,7 +1518,6 @@ def asrc_data_parser(
     sys.stdout.flush()
 
     for doc_ in list(all_docs):
-        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         docno = doc_.find('docno').text
         fulltext = doc_.find('text').text
         broken_docno = docno.split('-')
@@ -1543,8 +1542,10 @@ def asrc_data_parser(
         res_dict['TfDict'] = {}
 
         curr_fulltext_list = fulltext.split(" ")
+        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         for stem in curr_fulltext_list:
             stem = stemmer.stem(stem)
+            curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
             if stem == '' or stem == '\n':
                 continue
             if stem not in res_dict['TfDict']:
@@ -1563,7 +1564,7 @@ def asrc_data_parser(
             res_dict['NumWords'] += 1
             res_dict['Fulltext'] += stem + " "
         res_dict['Fulltext'] = res_dict['Fulltext'][:-1]
-
+        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         for stem in res_dict['StemList'][1:]:
             res_dict['TfList'].append(res_dict['TfDict'][stem])
             if stem in cc_dict:
@@ -1572,7 +1573,7 @@ def asrc_data_parser(
             else:
                 cc_dict[stem] = res_dict['TfDict'][stem]
                 df_dict[stem] = 1
-
+        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         cc_dict['ALL_TERMS_COUNT'] += res_dict['NumWords']
         cc_dict['ALL_SW_COUNT'] += res_dict['NumStopWords']
         df_dict['ALL_DOCS_COUNT'] += 1
