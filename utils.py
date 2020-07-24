@@ -6,7 +6,7 @@ import pandas as pd
 from scipy import stats
 from scipy import spatial
 
-WORK_YEAR = '2011'
+WORK_YEAR = '2008'
 TREC_EVAL_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
 if WORK_YEAR == '2011':
     QRELS_FILE_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
@@ -590,8 +590,72 @@ def check_statistical_significance(
                 res_dict[measure]['Significant'] = False
 
             res_dict[measure]['Pval'] = round(p_val,4)
-            res_dict[measure]['%Better'] = round(pd.np.sum(pd.np.array(l1) > pd.np.array(l2))/float(len(l1)),4)
+            res_dict[measure]['%Better'] = round(pd.np.sum(pd.np.array(l1) >= pd.np.array(l2))/float(len(l1)),4)
     except Exception as e:
         raise Exception('check_statistical_significance: ' + str(e))
 
     return res_dict
+
+
+def bm25_score_doc_for_query(
+        query_stem_dict,
+        df_dict,
+        doc_dict,
+        k1=1.0,
+        b=0.5):
+
+    bm25_score = 0.0
+    work_stem_list = list(query_stem_dict.keys())
+
+    for stem in work_stem_list:
+        doc_stem_tf = 0
+        if 'TfDict' in doc_dict:
+            if stem in doc_dict['TfDict']:
+                doc_stem_tf = float(doc_dict['TfDict'][stem])
+
+        if stem not in df_dict:
+            raise Exception('Unexpected Situation')
+
+        idf = math.log(df_dict['ALL_DOCS_COUNT'] / float(df_dict[stem]), 10)
+        stem_d_proba = (doc_stem_tf * (k1 + 1)) / (
+        doc_stem_tf + k1 * ((1 - b) + b * (float(doc_dict['NumWords']) / df_dict['AVG_DOC_LEN'])))
+
+        bm25_score += idf * stem_d_proba
+
+    return bm25_score
+
+
+def lm_score_doc_for_query(
+        query_stem_dict,
+        cc_dict,
+        doc_dict,
+        mue=1000.0):
+
+    kl_score = 0.0
+    work_stem_list = list(query_stem_dict.keys())
+
+    for stem in work_stem_list:
+        doc_stem_tf = 0
+        if stem in doc_dict['TfDict']:
+            doc_stem_tf = float(doc_dict['TfDict'][stem])
+
+
+        if stem not in cc_dict:
+            raise Exception('Unexpected Situation')
+
+        query_tf = 0
+        if stem in query_stem_dict:
+            query_tf = query_stem_dict[stem]
+
+        stem_q_prob = float(query_tf) / sum(list(query_stem_dict.values()))
+
+        stem_d_proba = get_word_diriclet_smoothed_probability(
+            tf_in_doc=doc_stem_tf,
+            doc_len=doc_dict['NumWords'],
+            collection_count_for_word=cc_dict[stem],
+            collection_len=cc_dict['ALL_TERMS_COUNT'],
+            mue=mue)
+
+        kl_score += (-1) * stem_q_prob * (math.log((stem_q_prob / stem_d_proba), 2))
+
+    return kl_score

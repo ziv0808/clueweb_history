@@ -1,6 +1,9 @@
 import os
 import sys
 import pandas as pd
+import re
+from bs4 import BeautifulSoup
+from krovetzstemmer import Stemmer
 from utils import *
 import matplotlib
 matplotlib.use('agg')
@@ -1488,6 +1491,242 @@ def handle_rank_svm_params(
                 print(col + " -> Mean : " + str(tmp_df[col].mean()) + ", Std: " + str(tmp_df[col].std()) + ", Min: " + str(tmp_df[col].min()) + ", Max: " + str(tmp_df[col].max()) + addition)
 
 
+def asrc_data_parser(
+        filepath,
+        rel_filepath):
+
+    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/asrc/2008/'
+    with open(filepath, 'r') as f:
+        soup = BeautifulSoup(f.read())
+
+    stemmer = Stemmer()
+    big_doc_index = {}
+    stopword_list = get_stopword_list()
+    df_query_stems = create_stemmed_queries_df(sw_rmv=True)
+    query_to_stem_mapping = {}
+    for index, row in df_query_stems.iterrows():
+        query_num = ('0' * (3 - len(str(row['QueryNum'])))) + str(row['QueryNum'])
+        query_to_stem_mapping[query_num] = convert_query_to_tf_dict(row['QueryStems'])
+
+    all_docs = soup.find_all('doc')
+    cc_dict = {'ALL_TERMS_COUNT' : 0,
+               'ALL_SW_COUNT'    : 0}
+    df_dict = {'ALL_DOCS_COUNT'    : 0,
+               'AVG_DOC_LEN_NO_SW' : 0,
+               'AVG_DOC_LEN'       : 0}
+    print("Step 1...")
+    sys.stdout.flush()
+    for doc in all_docs:
+        docno = doc.find('docno').text
+        fulltext = doc.find('text').text
+        broken_docno = docno.split('-')
+        round = broken_docno[1]
+        query_num = broken_docno[2]
+        user = broken_docno[3]
+        if int(round) == 0:
+            continue
+
+        fulltext = re.sub('[^a-zA-Z0-9 \n\.]', ' ', fulltext)
+
+        res_dict = {}
+        res_dict['StemList'] = ['[[OOV]']
+        res_dict['IndexList'] = []
+        res_dict['NumStopWords'] = 0
+        res_dict['NumWords'] = 0
+        res_dict['NumQueryWords'] = 0
+        res_dict['TfList'] = [0]
+        # res_dict['DfList'] = [0]
+        # res_dict['CCList'] = [0]
+        res_dict['Fulltext'] = ""
+        res_dict['TfDict'] = {}
+
+        curr_fulltext_list = fulltext.split(" ")
+        for stem in curr_fulltext_list:
+            stem = stemmer.stem(stem)
+            if stem not in res_dict['TfDict']:
+                res_dict['StemList'].append(stem)
+                res_dict['TfDict'][stem] = 1
+            else:
+                res_dict['TfDict'][stem] += 1
+
+            res_dict['IndexList'].append(res_dict['StemList'].index(stem))
+            if stem in stopword_list:
+                res_dict['NumStopWords'] += 1
+
+            if stem in query_to_stem_mapping[query_num]:
+                res_dict['NumQueryWords'] += 1
+
+            res_dict['NumWords'] += 1
+            res_dict['Fulltext'] += stem + " "
+        res_dict['Fulltext'] = res_dict['Fulltext'][:-1]
+
+        for stem in res_dict['StemList'][1:]:
+            res_dict['TfList'].append(res_dict['TfDict'][stem])
+            if stem in cc_dict:
+                cc_dict[stem] += res_dict['TfDict'][stem]
+                df_dict[stem] += 1
+            else:
+                cc_dict[stem] = res_dict['TfDict'][stem]
+                df_dict[stem] = 1
+
+        cc_dict['ALL_TERMS_COUNT'] += res_dict['NumWords']
+        cc_dict['ALL_SW_COUNT'] += res_dict['NumStopWords']
+        df_dict['ALL_DOCS_COUNT'] += 1
+        df_dict['AVG_DOC_LEN'] += res_dict['NumWords']
+        df_dict['AVG_DOC_LEN_NO_SW'] += (res_dict['NumWords']- res_dict['NumStopWords'])
+
+        res_dict['Entropy'] = calc_shannon_entopy(res_dict['TfList'][1:])
+
+        query_user_str = query_num +'-' +user
+        if query_user_str not in big_doc_index:
+            big_doc_index[query_user_str] = {}
+        if round not in big_doc_index[query_user_str]:
+            big_doc_index[query_user_str][round] = {'json' : res_dict,
+                                                    'docno': docno}
+        else:
+            raise Exception("double ID")
+    print("Step 2...")
+    sys.stdout.flush()
+    df_dict['AVG_DOC_LEN'] = float(df_dict['AVG_DOC_LEN']) / df_dict['ALL_DOCS_COUNT']
+    df_dict['AVG_DOC_LEN_NO_SW'] = float(df_dict['AVG_DOC_LEN_NO_SW']) / df_dict['ALL_DOCS_COUNT']
+    # save cc and df dicts
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/cc_per_interval_dict.json', 'w') as f:
+        f.write(str(cc_dict))
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/df_per_interval_dict.json', 'w') as f:
+        f.write(str(df_dict))
+
+    # calc cc and df list for all
+    for query_user_str in big_doc_index:
+        for round in big_doc_index[query_user_str]:
+            if 'DfList' not in big_doc_index[query_user_str][round]['json']:
+                big_doc_index[query_user_str][round]['json']['DfList'] = [0]
+                big_doc_index[query_user_str][round]['json']['CCList'] = [0]
+                for stem in big_doc_index[query_user_str][round]['json']['StemList'][1:]:
+                    big_doc_index[query_user_str][round]['json']['DfList'].append(df_dict[stem])
+                    big_doc_index[query_user_str][round]['json']['CCList'].append(cc_dict[stem])
+
+                big_doc_index[query_user_str][round]['json']['TfIdf'] = calc_tfidf_dict(
+                    big_doc_index[query_user_str][round]['json']['StemList'],
+                    big_doc_index[query_user_str][round]['json']['TfList'],
+                    big_doc_index[query_user_str][round]['json']['DfList'])
+                big_doc_index[query_user_str][round]['json']['LMScore'] = lm_score_doc_for_query(
+                    query_stem_dict=query_to_stem_mapping[query_user_str.split('-')[0]],
+                    cc_dict=cc_dict,
+                    doc_dict=big_doc_index[query_user_str][round]['json'])
+                big_doc_index[query_user_str][round]['json']['BM25Score'] = bm25_score_doc_for_query(
+                    query_stem_dict=query_to_stem_mapping[query_user_str.split('-')[0]],
+                    df_dict=df_dict,
+                    doc_dict=big_doc_index[query_user_str][round]['json'])
+
+    print("Step 3...")
+    sys.stdout.flush()
+    fin_df = pd.DataFrame(
+        columns=['NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                 'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score',
+                 'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
+                 'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M','LMScore_M','BM25Score_M',
+                 'QueryTermsRatio_STD', 'StopwordsRatio_STD', 'Entropy_STD', 'SimClueWeb_STD',
+                 'QueryWords_STD', 'Stopwords_STD', 'TextLen_STD', '-Query-SW_STD','LMScore_STD','BM25Score_STD',
+                 'QueryTermsRatio_LG', 'StopwordsRatio_LG', 'Entropy_LG', 'SimClueWeb_LG',
+                 'QueryWords_LG', 'Stopwords_LG', 'TextLen_LG', '-Query-SW_LG','LMScore_LG','BM25Score_LG',
+                 'QueryTermsRatio_MG', 'StopwordsRatio_MG', 'Entropy_MG', 'SimClueWeb_MG',
+                 'QueryWords_MG', 'Stopwords_MG', 'TextLen_MG', '-Query-SW_MG','LMScore_MG','BM25Score_MG',
+                 'QueryTermsRatio_RMG', 'StopwordsRatio_RMG', 'Entropy_RMG', 'SimClueWeb_RMG',
+                 'QueryWords_RMG', 'Stopwords_RMG', 'TextLen_RMG', '-Query-SW_RMG','LMScore_RMG','BM25Score_RMG',
+                 # 'Relevance',
+                 'QueryNum', 'Docno'])
+    all_snaps_df = pd.DataFrame({})
+    base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+                         'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score']
+    next_index = 0
+    for query_user_str in big_doc_index:
+        all_rounds = list(big_doc_index[query_user_str].keys())
+        query_num = query_user_str.split('-')[0]
+        for round in all_rounds:
+            print(docno)
+            sys.stdout.flush()
+            docno = big_doc_index[query_user_str][round]['docno'].replace('ROUND','EPOCH')
+            res_dict = {'ClueWeb09' : big_doc_index[query_user_str][round]['json']}
+            round = int(round)
+            for additional_round in all_rounds:
+                if int(additional_round) < round:
+                    diff = str(round - int(additional_round))
+                    res_dict[diff]= big_doc_index[query_user_str][additional_round]['json']
+            with open(os.path.join(os.path.join(processed_docs_folder, 'SIM'), docno +'.json'), 'w') as f:
+                f.write(str(res_dict))
+
+            curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'] + base_feature_list)
+            tmp_idx = 0
+            for i in list(reversed(range(round))):
+                if i == 0:
+                    round_str = 'ClueWeb09'
+                else:
+                    round_str = str((-1)*i)
+                doc_dict = res_dict[round_str]
+                insert_row = [doc_dict['NumQueryWords'] / float((doc_dict['NumWords'])), doc_dict['NumStopWords'] / float(doc_dict['NumWords'] - doc_dict['NumStopWords']),
+                              doc_dict['Entropy'], calc_cosine(doc_dict['TfIdf'], res_dict['ClueWeb09']['TfIdf']), doc_dict['NumQueryWords'], doc_dict['NumStopWords'],
+                              doc_dict['NumWords'], doc_dict['NumWords'] - (doc_dict['NumQueryWords'] + doc_dict['NumStopWords']), doc_dict['LMScore'], doc_dict['BM25Score']]
+                curr_doc_df.loc[tmp_idx] = [docno, query_num, round_str] + insert_row
+                tmp_idx += 1
+
+            bench_df = curr_doc_df[curr_doc_df['Interval'] == 'ClueWeb09']
+            insert_row = [len(curr_doc_df)]
+            for feature in base_feature_list:
+                insert_row.append(list(bench_df[feature])[0])
+
+            for feature in base_feature_list:
+                insert_row.append(curr_doc_df[feature].mean())
+
+            for feature in base_feature_list:
+                insert_row.append(curr_doc_df[feature].std())
+
+            if len(curr_doc_df) == 1:
+                insert_row.extend([pd.np.nan] * (len(base_feature_list) * 3))
+            else:
+                for feature in base_feature_list:
+                    curr_doc_df[feature + '_Shift'] = curr_doc_df[feature].shift(-1)
+                    curr_doc_df[feature + '_Grad']  = curr_doc_df.apply(
+                        lambda row_: calc_releational_measure(row_[feature + '_Shift'], row_[feature]), axis=1)
+                    curr_doc_df[feature + '_RGrad'] = curr_doc_df.apply(
+                        lambda row_: calc_releational_measure(row_[feature], list(bench_df[feature])[0]), axis=1)
+
+                curr_doc_df = curr_doc_df[curr_doc_df['Interval'] != 'ClueWeb09']
+                for feature in base_feature_list:
+                    insert_row.append(list(curr_doc_df[feature + '_Grad'])[-1])
+
+                for feature in base_feature_list:
+                    insert_row.append(curr_doc_df[feature + '_Grad'].mean())
+
+                for feature in base_feature_list:
+                    insert_row.append(curr_doc_df[feature + '_RGrad'].mean())
+
+            insert_row.extend([query_num, docno])
+            fin_df.loc[next_index] = insert_row
+            next_index += 1
+
+            curr_doc_df['NumSnapshots'] = len(curr_doc_df)
+            curr_doc_df['SnapNum'] = list(range((len(curr_doc_df) - 1) * (-1), 1))
+            all_snaps_df = all_snaps_df.append(curr_doc_df, ignore_index=True)
+    print("Finished features!")
+    sys.stdout.flush()
+    meta_data_df = get_relevant_docs_df(rel_filepath)
+    filename = 'ASRC_All_features'
+
+    # fin_df.to_csv(os.path.join(save_folder, filename + '_raw.tsv'), sep = '\t', index = False)
+    # meta_data_df.to_csv(os.path.join(save_folder, filename + '_Meatdata.tsv'), sep = '\t', index = False)
+
+    fin_df['QueryNum'] = fin_df['QueryNum'].apply(lambda x: int(x))
+    fin_df = pd.merge(
+        fin_df,
+        meta_data_df.rename(columns = {'Query' : 'QueryNum'}),
+        on=['QueryNum', 'Docno'],
+        how='inner')
+
+    save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
+    fin_df.to_csv(os.path.join(save_folder, filename + '_with_meta.tsv'), sep='\t', index=False)
+    all_snaps_df.to_csv(os.path.join(save_folder, filename + '_all_snaps.tsv'), sep='\t', index=False)
+
+
 if __name__ == '__main__':
     operation = sys.argv[1]
     if operation == 'TFDict':
@@ -1617,6 +1856,11 @@ if __name__ == '__main__':
     elif operation == 'SVMParams':
         filename = sys.argv[2]
         handle_rank_svm_params(filename)
+
+    elif operation == 'ASRCMeta':
+        filepath = sys.argv[2]
+        rel_filepath = sys.argv[3]
+        asrc_data_parser(filepath, rel_filepath)
 
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
