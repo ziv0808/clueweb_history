@@ -1620,8 +1620,7 @@ def asrc_data_parser(
 
     print("Step 3...")
     sys.stdout.flush()
-    fin_df = pd.DataFrame(
-        columns=['NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
+    fin_df = pd.DataFrame(columns=['NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                  'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score',
                  'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
                  'QueryWords_M', 'Stopwords_M', 'TextLen_M', '-Query-SW_M','LMScore_M','BM25Score_M',
@@ -1635,6 +1634,8 @@ def asrc_data_parser(
                  'QueryWords_RMG', 'Stopwords_RMG', 'TextLen_RMG', '-Query-SW_RMG','LMScore_RMG','BM25Score_RMG',
                  # 'Relevance',
                  'QueryNum', 'Docno'])
+    print("Step 4...")
+    sys.stdout.flush()
     all_snaps_df = pd.DataFrame({})
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                          'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score']
