@@ -1634,8 +1634,10 @@ def asrc_data_parser(
                  'QueryWords_RMG', 'Stopwords_RMG', 'TextLen_RMG', '-Query-SW_RMG','LMScore_RMG','BM25Score_RMG',
                  # 'Relevance',
                  'QueryNum', 'Docno']
-    fin_df = pd.DataFrame(columns=col_list)
-
+    fin_df = pd.DataFrame({})
+    for col in col_list:
+        fin_df[col] = None
+    fin_df = fin_df[col_list]
     all_snaps_df = pd.DataFrame({})
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                          'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score']
