@@ -1516,11 +1516,11 @@ def asrc_data_parser(
                'AVG_DOC_LEN'       : 0}
     print("Step 1...")
     sys.stdout.flush()
-    curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
-    for doc in all_docs:
+
+    for doc_ in all_docs:
         curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
-        docno = doc.find('docno').text
-        fulltext = doc.find('text').text
+        docno = doc_.find('docno').text
+        fulltext = doc_.find('text').text
         curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         broken_docno = docno.split('-')
         round_ = broken_docno[1]
