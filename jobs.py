@@ -1587,6 +1587,7 @@ def asrc_data_parser(
                                                     'docno': docno}
         else:
             raise Exception("double ID")
+    curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
     print("Step 2...")
     sys.stdout.flush()
     df_dict['AVG_DOC_LEN'] = float(df_dict['AVG_DOC_LEN']) / df_dict['ALL_DOCS_COUNT']
@@ -1596,7 +1597,7 @@ def asrc_data_parser(
         f.write(str(cc_dict))
     with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/df_per_interval_dict.json', 'w') as f:
         f.write(str(df_dict))
-
+    curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
     # calc cc and df list for all
     for query_user_str in big_doc_index:
         for round_ in big_doc_index[query_user_str]:
@@ -1619,7 +1620,7 @@ def asrc_data_parser(
                     query_stem_dict=query_to_stem_mapping[query_user_str.split('-')[0]],
                     df_dict=df_dict,
                     doc_dict=big_doc_index[query_user_str][round_]['json'])
-
+    curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
     print("Step 3...")
     sys.stdout.flush()
     col_list = [
@@ -1637,7 +1638,7 @@ def asrc_data_parser(
                  'QueryWords_RMG', 'Stopwords_RMG', 'TextLen_RMG', '-Query-SW_RMG','LMScore_RMG','BM25Score_RMG',
                  # 'Relevance',
                  'QueryNum', 'Docno']
-    curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
+
     fin_df = pd.DataFrame({})
     for col in col_list:
         fin_df[col] = None
