@@ -1731,6 +1731,7 @@ def create_base_features_for_asrc(
     # fin_df.to_csv(os.path.join(save_folder, filename + '_raw.tsv'), sep = '\t', index = False)
     # meta_data_df.to_csv(os.path.join(save_folder, filename + '_Meatdata.tsv'), sep = '\t', index = False)
 
+    meta_data_df['Query'] = meta_data_df['Query'].apply(lambda x: int(x))
     fin_df['QueryNum'] = fin_df['QueryNum'].apply(lambda x: int(x))
     fin_df = pd.merge(
         fin_df,
