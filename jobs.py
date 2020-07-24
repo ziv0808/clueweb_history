@@ -1526,7 +1526,7 @@ def asrc_data_parser(
         user = broken_docno[3]
         if int(round_) == 0:
             continue
-
+        curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', fulltext)
         curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'])
         res_dict = {}
