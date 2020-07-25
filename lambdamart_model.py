@@ -1,7 +1,7 @@
 import sys
 from utils import *
 
-from rank_svm_model import run_bash_command, prepare_svmr_model_data, turn_df_to_feature_str_for_model, split_to_train_test, get_trec_prepared_df_form_res_df, create_sinificance_df
+from rank_svm_model import run_bash_command, prepare_svmr_model_data, turn_df_to_feature_str_for_model, split_to_train_test, get_trec_prepared_df_form_res_df, create_sinificance_df, create_fold_list_for_cv
 
 
 def run_lambdamart_model(test_file, model_file, predictions_folder):
@@ -170,7 +170,8 @@ def train_and_test_model_on_config(
     train_df, test_df, valid_df, seed = split_to_train_test(
         start_test_q=start_test_q,
         end_test_q=end_test_q,
-        feat_df=feat_df)
+        feat_df=feat_df,
+        base_feature_filename=base_feature_filename)
 
 
     valid_df_cp = valid_df.copy()
@@ -263,7 +264,6 @@ def train_and_test_model_on_config(
 
     return test_df, params_df
 
-
 def run_cv_for_config(
         base_feature_filename,
         snapshot_limit,
@@ -275,22 +275,9 @@ def run_cv_for_config(
         train_leave_one_out,
         snap_calc_limit):
 
-    k_fold = 10
-    if '2008' in base_feature_filename:
-        init_q = 1
-        end_q = 20
-        query_bulk = 20
-        num_q = 198
-    else:
-        init_q = 201
-        end_q = 210
-        query_bulk = 10
-        num_q = 100
-
-    if train_leave_one_out == True:
-        k_fold = num_q
-        query_bulk = 1
-        end_q = init_q
+    k_fold, fold_list = create_fold_list_for_cv(
+        base_feature_filename=base_feature_filename,
+        tarin_leave_one_out=train_leave_one_out)
 
     feature_list = []
     broken_feature_groupname = feature_groupname.split('_')
@@ -385,6 +372,8 @@ def run_cv_for_config(
         feature_groupname += 'By' + snap_chosing_method
 
     for i in range(k_fold):
+        init_q = fold_list[i][0]
+        end_q = fold_list[i][1]
         fold_test_df, fold_params_df = train_and_test_model_on_config(
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
@@ -396,11 +385,6 @@ def run_cv_for_config(
             qrel_filepath=qrel_filepath,
             snap_chosing_method=snap_chosing_method,
             snap_calc_limit=snap_calc_limit)
-        init_q += query_bulk
-        end_q += query_bulk
-        if (init_q in [95, 100]) and (init_q == end_q):
-            init_q += 1
-            end_q += 1
         if i == 0:
             params_df = fold_params_df
         else:
@@ -438,6 +422,8 @@ def run_grid_search_over_params_for_config(
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/'
     if '2008' in base_feature_filename:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
+    elif 'ASRC' in base_feature_filename:
+        qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
     else:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
 

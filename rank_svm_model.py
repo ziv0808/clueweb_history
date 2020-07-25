@@ -318,30 +318,17 @@ def split_to_train_test(
         start_test_q,
         end_test_q,
         feat_df,
+        base_feature_filename,
         seed = None):
 
     test_set_q = list(range(start_test_q, end_test_q + 1))
     feat_df['IsTest'] = feat_df['QueryNum'].apply(lambda x: 1 if x in test_set_q else 0)
     test_df = feat_df[feat_df['IsTest'] == 1].copy()
     train_df = feat_df[feat_df['IsTest'] == 0]
-    fold_size = len(test_set_q)
-    if fold_size == 20:
-        potential_folds = [(1,20),(21,40),(41,60),(61,80),(81,100),(101,120)
-                            ,(121,140),(141,160),(161,180),(181,200)]
-    elif fold_size == 10:
-        potential_folds = [(201,210),(211,220),(221,230),(231,240),(241,250),
-                           (251,260),(261,270),(271,280),(281,290),(291,300)]
-    elif fold_size == 1:
-        potential_folds = []
-        if start_test_q in list(range(201, 301)):
-            q_list = list(range(201, 301, 5))
-            for q in q_list:
-                potential_folds.append((q, q + 4))
-        else:
-            q_list = list(range(1, 201, 10))
-            for q in q_list:
-                potential_folds.append((q, q + 9))
 
+    k_fold, potential_folds = create_fold_list_for_cv(
+        base_feature_filename=base_feature_filename,
+        train_leave_one_out=False)
 
     for potential_fold in potential_folds[:]:
         if start_test_q in range(potential_fold[0], potential_fold[1]+1):
@@ -536,7 +523,8 @@ def train_and_test_model_on_config(
     train_df, test_df, valid_df, seed = split_to_train_test(
         start_test_q=start_test_q,
         end_test_q=end_test_q,
-        feat_df=feat_df)
+        feat_df=feat_df,
+        base_feature_filename=base_feature_filename)
 
     with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
         f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
@@ -635,6 +623,38 @@ def train_and_test_model_on_config(
     return test_df, params_df
 
 
+def create_fold_list_for_cv(
+        base_feature_filename,
+        train_leave_one_out):
+
+    k_fold = 10
+    if '2008' in base_feature_filename:
+        fold_list = [(1, 20), (21, 40), (41, 60), (61, 80), (81, 100), (101, 120),
+                     (121, 140), (141, 160), (161, 180), (181, 200)]
+        q_list = list(range(1,201))
+        q_list.remove(95)
+        q_list.remove(100)
+        query_bulk = 20
+    elif 'ASRC' in base_feature_filename:
+        fold_list = [(2, 9), (10, 17), (18, 32), (33, 36), (45, 51), (59, 78),
+                     (98, 144), (161, 166), (167, 180), (182, 195)]
+        q_list = [2, 4, 9, 10, 11, 17, 18, 29, 32, 33, 34, 36, 45, 48, 51, 59, 69, 78, 98, 124, 144, 161, 164, 166, 167, 177, 180, 182, 188, 193, 195]
+        query_bulk = 3
+    else:
+        fold_list = [(201, 210), (211, 220), (221, 230), (231, 240), (241, 250),
+                   (251, 260), (261, 270), (271, 280), (281, 290), (291, 300)]
+        q_list = list(range(201, 301))
+        query_bulk = 10
+
+    if train_leave_one_out == True:
+        k_fold = len(q_list)
+        query_bulk = 1
+        fold_list = []
+        for q in q_list:
+            fold_list.append((q,q))
+
+    return  k_fold, fold_list
+
 def run_cv_for_config(
         base_feature_filename,
         snapshot_limit,
@@ -646,22 +666,9 @@ def run_cv_for_config(
         train_leave_one_out,
         snap_calc_limit):
 
-    k_fold = 10
-    if '2008' in base_feature_filename:
-        init_q = 1
-        end_q = 20
-        query_bulk = 20
-        num_q = 198
-    else:
-        init_q = 201
-        end_q = 210
-        query_bulk = 10
-        num_q = 100
-
-    if train_leave_one_out == True:
-        k_fold = num_q
-        query_bulk = 1
-        end_q = init_q
+    k_fold, fold_list = create_fold_list_for_cv(
+        base_feature_filename=base_feature_filename,
+        tarin_leave_one_out=train_leave_one_out)
 
     feature_list = []
     broken_feature_groupname = feature_groupname.split('_')
@@ -753,6 +760,8 @@ def run_cv_for_config(
         feature_groupname += 'By' + snap_chosing_method
 
     for i in range(k_fold):
+        init_q = fold_list[i][0]
+        end_q = fold_list[i][1]
         fold_test_df, fold_params_df = train_and_test_model_on_config(
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
@@ -764,11 +773,6 @@ def run_cv_for_config(
             qrel_filepath=qrel_filepath,
             snap_chosing_method=snap_chosing_method,
             snap_calc_limit=snap_calc_limit)
-        init_q += query_bulk
-        end_q += query_bulk
-        if (init_q in [95, 100]) and (init_q == end_q):
-            init_q += 1
-            end_q += 1
         if i == 0:
             params_df = fold_params_df
         else:
@@ -805,6 +809,8 @@ def run_grid_search_over_params_for_config(
 
     if '2008' in base_feature_filename:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
+    elif 'ASRC' in base_feature_filename:
+        qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
     else:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
 
@@ -921,7 +927,7 @@ def create_sinificance_df(
                     if sinificance_dict[measure]['Significant'] == True:
                         if per_q_res_dict[key]['all'][measure] > per_q_res_dict[key_2]['all'][measure]:
                             sinificance_list_dict[measure] += key_2+ ','
-                    if (key_2 == 'Static') or (key_2 == 'Basic Retrieval'):
+                    if (key_2 == 'Static') or (key_2 in ['LM','BM25']):
                         sinificance_list_dict[measure + "VSs"] += key_2 + " " +str(sinificance_dict[measure]['Pval']) +\
                                                           "(" + str(sinificance_dict[measure]['%Better'])+ ")(" + str(sinificance_dict[measure]['%BetterOrEqual'])+ "),"
         insert_row = [key]
