@@ -668,7 +668,7 @@ def run_cv_for_config(
 
     k_fold, fold_list = create_fold_list_for_cv(
         base_feature_filename=base_feature_filename,
-        tarin_leave_one_out=train_leave_one_out)
+        train_leave_one_out=train_leave_one_out)
 
     feature_list = []
     broken_feature_groupname = feature_groupname.split('_')
