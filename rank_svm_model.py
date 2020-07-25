@@ -236,6 +236,7 @@ def prepare_svmr_model_data(
         feature_list,
         normalize_relvance = False,
         limited_snaps_num  = None,
+        normalize_method = 'MinMax',
         lambdamart = False):
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                          'QueryWords', 'Stopwords', 'TextLen', '-Query-SW']
@@ -281,10 +282,16 @@ def prepare_svmr_model_data(
         if len(tmp_q_df[tmp_q_df['Relevance'] > 0]) == 0:
             continue
         for feature in feature_list:
-            min_feat = tmp_q_df[feature].min()
-            max_feat = tmp_q_df[feature].max()
-            tmp_q_df[feature] = tmp_q_df[feature].apply(lambda x: (x - min_feat)/ float(max_feat - min_feat) if (max_feat - min_feat) != 0 else 0.0)
-
+            if normalize_method == 'MinMax':
+                min_feat = tmp_q_df[feature].min()
+                max_feat = tmp_q_df[feature].max()
+                tmp_q_df[feature] = tmp_q_df[feature].apply(lambda x: (x - min_feat)/ float(max_feat - min_feat) if (max_feat - min_feat) != 0 else 0.0)
+            elif normalize_method == 'ZScore':
+                mean_feat = tmp_q_df[feature].mean()
+                std_feat = tmp_q_df[feature].std()
+                tmp_q_df[feature] = tmp_q_df[feature].apply(lambda x: (x - mean_feat) / float(std_feat) if (std_feat) != 0 else 0.0)
+            else:
+                raise Exception('Unknown normalization...')
         fin_df = fin_df.append(tmp_q_df, ignore_index=True)
 
     fin_df.fillna(0.0, inplace=True)
@@ -488,7 +495,7 @@ def train_and_test_model_on_config(
         start_test_q,
         end_test_q,
         feature_groupname,
-        normalize_relevance,
+        normalize_method,
         qrel_filepath,
         snap_chosing_method = None,
         snap_calc_limit = None):
@@ -496,8 +503,7 @@ def train_and_test_model_on_config(
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit)
     feature_folder = feature_groupname
-    if normalize_relevance == True:
-        feature_folder += '_NR'
+    feature_folder += '_' + normalize_method
     fold_folder = str(start_test_q) + '_' + str(end_test_q) + "_" + str(snap_chosing_method)
 
     for hirarcy_folder in [model_inner_folder, feature_folder, fold_folder]:
@@ -522,7 +528,7 @@ def train_and_test_model_on_config(
         base_feature_filename=base_feature_filename,
         snapshot_limit=int(snapshot_limit),
         feature_list=feature_list,
-        normalize_relvance=normalize_relevance,
+        normalize_method=normalize_method,
         limited_snaps_num=best_snap_num)
 
     print("Model Data Prepared...")
@@ -634,7 +640,7 @@ def run_cv_for_config(
         snapshot_limit,
         feature_groupname,
         retrieval_model,
-        normalize_relevance,
+        normalize_method,
         qrel_filepath,
         snap_chosing_method,
         train_leave_one_out,
@@ -754,7 +760,7 @@ def run_cv_for_config(
             start_test_q=init_q,
             end_test_q=end_q,
             feature_groupname=feature_groupname +'_'+retrieval_model,
-            normalize_relevance=normalize_relevance,
+            normalize_method=normalize_method,
             qrel_filepath=qrel_filepath,
             snap_chosing_method=snap_chosing_method,
             snap_calc_limit=snap_calc_limit)
@@ -774,7 +780,7 @@ def run_grid_search_over_params_for_config(
         base_feature_filename,
         snapshot_limit,
         retrieval_model,
-        normalize_relevance,
+        normalize_method,
         snap_chosing_method,
         tarin_leave_one_out,
         feat_group_list):
@@ -818,8 +824,8 @@ def run_grid_search_over_params_for_config(
         os.mkdir(os.path.join(save_folder, model_base_filename))
     save_folder = os.path.join(save_folder, model_base_filename)
 
-    if normalize_relevance == True:
-        model_base_filename += '_NR'
+
+    model_base_filename += '_' + normalize_method
     if tarin_leave_one_out == True:
         model_base_filename += '_LoO'
     model_summary_df = pd.DataFrame(columns = ['FeatureGroup', 'Map', 'P@5', 'P@10'])
@@ -827,7 +833,7 @@ def run_grid_search_over_params_for_config(
     per_q_res_dict = {}
     feat_group_list_str = ""
     for curr_feat_group in optional_feat_groups_list:
-        feat_group_list_str += "__" + curr_feat_group
+        feat_group_list_str += "__" + curr_feat_group.replace('XXSnap','')
         if 'XXSnap' in curr_feat_group:
             snap_limit_list = snap_limit_options
         else:
@@ -842,7 +848,7 @@ def run_grid_search_over_params_for_config(
                 snapshot_limit=snapshot_limit,
                 feature_groupname=feat_group,
                 retrieval_model=retrieval_model,
-                normalize_relevance=normalize_relevance,
+                normalize_method=normalize_method,
                 qrel_filepath=qrel_filepath,
                 snap_chosing_method=snap_chosing_method,
                 train_leave_one_out=tarin_leave_one_out,
@@ -850,14 +856,14 @@ def run_grid_search_over_params_for_config(
 
             tmp_params_df['FeatGroup'] = feat_group
             if 'XXSnap' in feat_group:
-                feat_group += 'By' + snap_chosing_method
+                feat_group = feat_group.replace('XXSnap','') + 'By' + snap_chosing_method
 
             if next_idx == 0:
                 curr_res_df = get_trec_prepared_df_form_res_df(
                     scored_docs_df=test_res_df,
                     score_colname=retrieval_model+'Score')
-                insert_row = ['Basic Retrieval']
-                curr_file_name =  model_base_filename + '_Benchmark.txt'
+                insert_row = [retrieval_model]
+                curr_file_name =  model_base_filename + '_' + retrieval_model + '.txt'
                 with open(os.path.join(save_folder ,curr_file_name), 'w') as f:
                     f.write(convert_df_to_trec(curr_res_df))
 
@@ -867,7 +873,7 @@ def run_grid_search_over_params_for_config(
                     qrel_filepath=qrel_filepath)
                 for measure in ['Map', 'P_5', 'P_10']:
                     insert_row.append(res_dict['all'][measure])
-                per_q_res_dict['Basic Retrieval'] = res_dict
+                per_q_res_dict[retrieval_model] = res_dict
                 model_summary_df.loc[next_idx] = insert_row
                 next_idx+=1
                 params_df = tmp_params_df
@@ -909,14 +915,15 @@ def create_sinificance_df(
     for key in per_q_res_dict:
         sinificance_list_dict = {'Map' : "", "P_5" : "", "P_10" : "", 'MapVSs' : "", "P_5VSs" : "", "P_10VSs" : ""}
         for key_2 in per_q_res_dict:
-            sinificance_dict = check_statistical_significance(per_q_res_dict[key], per_q_res_dict[key_2])
-            for measure in ['Map', 'P_5', 'P_10']:
-                if sinificance_dict[measure]['Significant'] == True:
-                    if per_q_res_dict[key]['all'][measure] > per_q_res_dict[key_2]['all'][measure]:
-                        sinificance_list_dict[measure] += key_2+ ','
-                if (key_2 == 'Static') or (key_2 == 'Basic Retrieval'):
-                    sinificance_list_dict[measure + "VSs"] += key_2 + " " +str(sinificance_dict[measure]['Pval']) +\
-                                                      "(" + str(sinificance_dict[measure]['%Better'])+ "),"
+            if key != key_2:
+                sinificance_dict = check_statistical_significance(res_dict_1=per_q_res_dict[key], res_dict_2=per_q_res_dict[key_2])
+                for measure in ['Map', 'P_5', 'P_10']:
+                    if sinificance_dict[measure]['Significant'] == True:
+                        if per_q_res_dict[key]['all'][measure] > per_q_res_dict[key_2]['all'][measure]:
+                            sinificance_list_dict[measure] += key_2+ ','
+                    if (key_2 == 'Static') or (key_2 == 'Basic Retrieval'):
+                        sinificance_list_dict[measure + "VSs"] += key_2 + " " +str(sinificance_dict[measure]['Pval']) +\
+                                                          "(" + str(sinificance_dict[measure]['%Better'])+ ")(" + str(sinificance_dict[measure]['%BetterOrEqual'])+ "),"
         insert_row = [key]
         for measure in ['Map', 'P_5', 'P_10','MapVSs', 'P_5VSs', 'P_10VSs']:
             insert_row.append(sinificance_list_dict[measure])
@@ -1112,7 +1119,7 @@ if __name__ == '__main__':
         base_feature_filename = sys.argv[2]
         snapshot_limit = int(sys.argv[3])
         retrieval_model = sys.argv[4]
-        normalize_relevance = ast.literal_eval(sys.argv[5])
+        normalize_method = sys.argv[5]
         snap_chosing_method = sys.argv[6]
         tarin_leave_one_out = ast.literal_eval(sys.argv[7])
         feat_group_list = ast.literal_eval(sys.argv[8])
@@ -1121,7 +1128,7 @@ if __name__ == '__main__':
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
             retrieval_model=retrieval_model,
-            normalize_relevance=normalize_relevance,
+            normalize_method=normalize_method,
             snap_chosing_method=snap_chosing_method,
             tarin_leave_one_out=tarin_leave_one_out,
             feat_group_list=feat_group_list)

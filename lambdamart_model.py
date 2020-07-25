@@ -127,7 +127,7 @@ def train_and_test_model_on_config(
         start_test_q,
         end_test_q,
         feature_groupname,
-        normalize_relevance,
+        normalize_method,
         qrel_filepath,
         snap_chosing_method=None,
         snap_calc_limit=None):
@@ -135,8 +135,8 @@ def train_and_test_model_on_config(
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/'
     model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit)
     feature_folder = feature_groupname
-    if normalize_relevance == True:
-        feature_folder += '_NR'
+    # if normalize_relevance == True:
+    feature_folder += '_' + normalize_method
     fold_folder = str(start_test_q) + '_' + str(end_test_q) + "_" + str(snap_chosing_method)
 
     for hirarcy_folder in [model_inner_folder, feature_folder, fold_folder]:
@@ -161,7 +161,7 @@ def train_and_test_model_on_config(
         base_feature_filename=base_feature_filename,
         snapshot_limit=int(snapshot_limit),
         feature_list=feature_list,
-        normalize_relvance=normalize_relevance,
+        normalize_method=normalize_method,
         limited_snaps_num=best_snap_num,
         lambdamart=True)
 
@@ -269,7 +269,7 @@ def run_cv_for_config(
         snapshot_limit,
         feature_groupname,
         retrieval_model,
-        normalize_relevance,
+        normalize_method,
         qrel_filepath,
         snap_chosing_method,
         train_leave_one_out,
@@ -392,7 +392,7 @@ def run_cv_for_config(
             start_test_q=init_q,
             end_test_q=end_q,
             feature_groupname=feature_groupname + '_' + retrieval_model,
-            normalize_relevance=normalize_relevance,
+            normalize_method=normalize_method,
             qrel_filepath=qrel_filepath,
             snap_chosing_method=snap_chosing_method,
             snap_calc_limit=snap_calc_limit)
@@ -413,7 +413,7 @@ def run_grid_search_over_params_for_config(
         base_feature_filename,
         snapshot_limit,
         retrieval_model,
-        normalize_relevance,
+        normalize_method,
         snap_chosing_method,
         tarin_leave_one_out,
         feat_group_list):
@@ -459,8 +459,8 @@ def run_grid_search_over_params_for_config(
         os.mkdir(os.path.join(save_folder, model_base_filename))
     save_folder = os.path.join(save_folder, model_base_filename)
 
-    if normalize_relevance == True:
-        model_base_filename += '_NR'
+
+    model_base_filename += '_' + normalize_method
     if tarin_leave_one_out == True:
         model_base_filename += '_LoO'
     model_summary_df = pd.DataFrame(columns=['FeatureGroup', 'Map', 'P@5', 'P@10'])
@@ -469,7 +469,7 @@ def run_grid_search_over_params_for_config(
     feat_group_list_str = ""
     # for optional_c in optional_c_list:
     for curr_feat_group in optional_feat_groups_list:
-        feat_group_list_str +=  "__" + curr_feat_group
+        feat_group_list_str +=  "__" + curr_feat_group.replace('XXSnap','')
         if 'XXSnap' in curr_feat_group:
             snap_limit_list = snap_limit_options
         else:
@@ -484,7 +484,7 @@ def run_grid_search_over_params_for_config(
                 snapshot_limit=snapshot_limit,
                 feature_groupname=feat_group,
                 retrieval_model=retrieval_model,
-                normalize_relevance=normalize_relevance,
+                normalize_method=normalize_method,
                 qrel_filepath=qrel_filepath,
                 snap_chosing_method=snap_chosing_method,
                 train_leave_one_out=tarin_leave_one_out,
@@ -492,14 +492,14 @@ def run_grid_search_over_params_for_config(
 
             tmp_params_df['FeatGroup'] = feat_group
             if 'XXSnap' in feat_group:
-                feat_group += 'By' + snap_chosing_method
+                feat_group = feat_group.replace('XXSnap','') + 'By' + snap_chosing_method
 
             if next_idx == 0:
                 curr_res_df = get_trec_prepared_df_form_res_df(
                     scored_docs_df=test_res_df,
                     score_colname=retrieval_model + 'Score')
-                insert_row = ['Basic Retrieval']
-                curr_file_name = model_base_filename + '_Benchmark.txt'
+                insert_row = [retrieval_model]
+                curr_file_name = model_base_filename + '_' + retrieval_model + '.txt'
                 with open(os.path.join(save_folder, curr_file_name), 'w') as f:
                     f.write(convert_df_to_trec(curr_res_df))
 
@@ -509,7 +509,7 @@ def run_grid_search_over_params_for_config(
                     qrel_filepath=qrel_filepath)
                 for measure in ['Map', 'P_5', 'P_10']:
                     insert_row.append(res_dict['all'][measure])
-                per_q_res_dict['Basic Retrieval'] = res_dict
+                per_q_res_dict[retrieval_model] = res_dict
                 model_summary_df.loc[next_idx] = insert_row
                 next_idx += 1
                 params_df = tmp_params_df
@@ -552,7 +552,7 @@ if __name__ == '__main__':
         base_feature_filename = sys.argv[2]
         snapshot_limit = int(sys.argv[3])
         retrieval_model = sys.argv[4]
-        normalize_relevance = ast.literal_eval(sys.argv[5])
+        normalize_method = sys.argv[5]
         snap_chosing_method = sys.argv[6]
         tarin_leave_one_out = ast.literal_eval(sys.argv[7])
         feat_group_list = ast.literal_eval(sys.argv[8])
@@ -561,7 +561,7 @@ if __name__ == '__main__':
             base_feature_filename=base_feature_filename,
             snapshot_limit=snapshot_limit,
             retrieval_model=retrieval_model,
-            normalize_relevance=normalize_relevance,
+            normalize_method=normalize_method,
             snap_chosing_method=snap_chosing_method,
             tarin_leave_one_out=tarin_leave_one_out,
             feat_group_list=feat_group_list)
