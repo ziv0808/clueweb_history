@@ -1645,25 +1645,26 @@ def create_base_features_for_asrc(
                  # 'Relevance',
                  'QueryNum', 'Docno']
 
-    fin_df = pd.DataFrame({})
-    for col in col_list:
-        fin_df[col] = None
-    print(fin_df)
+    all_rounds = ['01', '02', '03', '04', '05', '06', '07', '08']
+    fin_df_dict = {}
+    for round_ in all_rounds:
+        fin_df_dict[round_] = {}
+        fin_df_dict[round_]['FinDF'] = pd.DataFrame(columns = col_list)
+        fin_df_dict[round_]['SnapDF'] = pd.DataFrame({})
+        fin_df_dict[round_]['NextIdx'] = 0
     sys.stdout.flush()
 
-    all_snaps_df = pd.DataFrame({})
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                          'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score']
-    next_index = 0
     for query_user_str in big_doc_index:
         all_rounds = list(big_doc_index[query_user_str].keys())
         query_num = query_user_str.split('-')[0]
-        for round_ in all_rounds:
-            docno = big_doc_index[query_user_str][round_]['docno'].replace('ROUND','EPOCH')
+        for round_num in all_rounds:
+            docno = big_doc_index[query_user_str][round_num]['docno'].replace('ROUND','EPOCH')
             print(docno)
             sys.stdout.flush()
-            res_dict = {'ClueWeb09' : big_doc_index[query_user_str][round_]['json']}
-            round_ = int(round_)
+            res_dict = {'ClueWeb09' : big_doc_index[query_user_str][round_num]['json']}
+            round_ = int(round_num)
             for additional_round in all_rounds:
                 if int(additional_round) < round_:
                     diff = str(int(additional_round) - round_)
@@ -1717,12 +1718,13 @@ def create_base_features_for_asrc(
                     insert_row.append(curr_doc_df[feature + '_RGrad'].mean())
 
             insert_row.extend([query_num, docno])
-            fin_df.loc[next_index] = insert_row
-            next_index += 1
+            fin_df_dict[round_num]['FinDF'].loc[fin_df_dict[round_num]['NextIdx']] = insert_row
+            fin_df_dict[round_num]['NextIdx'] += 1
 
             curr_doc_df['NumSnapshots'] = len(curr_doc_df)
             curr_doc_df['SnapNum'] = list(range((len(curr_doc_df) - 1) * (-1), 1))
-            all_snaps_df = all_snaps_df.append(curr_doc_df, ignore_index=True)
+            fin_df_dict[round_num]['SnapDF'] = fin_df_dict[round_num]['SnapDF'].append(curr_doc_df, ignore_index=True)
+
     print("Finished features!")
     sys.stdout.flush()
     meta_data_df = get_relevant_docs_df(rel_filepath)
@@ -1732,16 +1734,17 @@ def create_base_features_for_asrc(
     # meta_data_df.to_csv(os.path.join(save_folder, filename + '_Meatdata.tsv'), sep = '\t', index = False)
 
     meta_data_df['Query'] = meta_data_df['Query'].apply(lambda x: int(x))
-    fin_df['QueryNum'] = fin_df['QueryNum'].apply(lambda x: int(x))
-    fin_df = pd.merge(
-        fin_df,
-        meta_data_df.rename(columns = {'Query' : 'QueryNum'}),
-        on=['QueryNum', 'Docno'],
-        how='inner')
+    for round_ in all_rounds:
+        fin_df_dict[round_]['FinDF']['QueryNum'] = fin_df_dict[round_]['FinDF']['QueryNum'].apply(lambda x: int(x))
+        fin_df_dict[round_]['FinDF'] = pd.merge(
+            fin_df_dict[round_]['FinDF'],
+            meta_data_df.rename(columns = {'Query' : 'QueryNum'}),
+            on=['QueryNum', 'Docno'],
+            how='inner')
 
-    save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
-    fin_df.to_csv(os.path.join(save_folder, filename + '_with_meta.tsv'), sep='\t', index=False)
-    all_snaps_df.to_csv(os.path.join(save_folder, filename + '_all_snaps.tsv'), sep='\t', index=False)
+        save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
+        fin_df_dict[round_]['FinDF'].to_csv(os.path.join(save_folder, filename +'_Round' + round_ +'_with_meta.tsv'), sep='\t', index=False)
+        fin_df_dict[round_]['SnapDF'].to_csv(os.path.join(save_folder, filename + '_Round' + round_ + '_all_snaps.tsv'), sep='\t', index=False)
 
 
 if __name__ == '__main__':
