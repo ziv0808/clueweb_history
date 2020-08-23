@@ -723,7 +723,7 @@ def calc_ndcg_mrr_for_file(
         res_dict[q]['nMRR'] = nmrr
         for measure in ['NDCG@1','NDCG@3','nMRR']:
             res_dict['all'][measure] += res_dict[q][measure]
-        if np.isnan(mrr):
+        if not np.isnan(mrr):
             res_dict['all']['MRR'] += mrr
             mrr_denom += 1
 
@@ -737,7 +737,9 @@ def calc_ndcg(
         k):
     discount = 1 / np.log2(np.arange(len(y_true[:k])) + 2)
     dcg = np.dot(np.array(y_true[:k]), discount)
-    best_dcg = np.dot(sorted(np.array(y_true[:k]),reverse =True), discount)
+    best_dcg = np.dot(np.array(sorted(y_true,reverse =True)[:k]), discount)
+    if best_dcg == 0.0:
+        return 0.0
     return dcg / best_dcg
 
 def calc_mrr_nmrr(
