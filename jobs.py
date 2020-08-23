@@ -1746,6 +1746,62 @@ def create_base_features_for_asrc(
         fin_df_dict[round_]['FinDF'].to_csv(os.path.join(save_folder, filename +'_Round' + round_ +'_with_meta.tsv'), sep='\t', index=False)
         fin_df_dict[round_]['SnapDF'].to_csv(os.path.join(save_folder, filename + '_Round' + round_ + '_all_snaps.tsv'), sep='\t', index=False)
 
+def unite_asrc_data_results(
+        big_model,
+        snap_limit,
+        ret_model,
+        feat_list):
+    base_folder = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
+    if big_model == 'SVMRank':
+        base_folder = os.path.join(base_folder, 'rank_svm_res')
+    else:
+        base_folder = os.path.join(base_folder, 'lambdamart_res')
+    feature_list = ['NDCG@1', 'NDCG@3', 'MRR']
+    feat_col_list = feature_list[:]
+    for feat in feature_list:
+        feat_col_list.append(feat + '_sign')
+
+    res_dict  = {}
+    num_files = 0
+    for filename in os.listdir(base_folder):
+        if (filename.startswith('ASRC')) and ('_Round0' in filename) and (ret_model in filename) and ('SNL' + str(snap_limit) in filename) and (not filename.endswith('_Params.tsv')):
+            if feat_list is None:
+                print(filename)
+                num_files += 1
+                sys.stdout.flush()
+                tmp_df = pd.read_csv(os.path.join(base_folder, filename), sepo = '\t', index_col = False)
+                for index, row in tmp_df.iterrows():
+                    if row['FeatureGroup'] not in res_dict:
+                        res_dict[row['FeatureGroup']] = {}
+                        for col in feat_col_list:
+                            if '_sign' in col:
+                                res_dict[row['FeatureGroup']][col] = {}
+                            else:
+                                res_dict[row['FeatureGroup']][col] = 0.0
+                    for feat in feature_list:
+                        res_dict[row['FeatureGroup']][feat] += float(row[feat])
+                        all_sign = row[feat + '_sign'].split(',')
+                        for feat_group in all_sign[:-1]:
+                            if feat_group in res_dict[row['FeatureGroup']][feat + '_sign']:
+                                res_dict[row['FeatureGroup']][feat + '_sign'][feat_group] += 1
+                            else:
+                                res_dict[row['FeatureGroup']][feat + '_sign'][feat_group] = 1
+    fin_df = pd.DataFrame(columns=['FeatureGroup'] + feat_col_list)
+    next_idx = 0
+    for feat_group in res_dict:
+        insert_row = [feat_group]
+        for col in feat_col_list:
+            if '_sign' in col:
+                inst_str = ""
+                for key in res_dict[feat_group][col]:
+                    inst_str += key +"(" +str(res_dict[feat_group][col][key]) +"),"
+                insert_row.append(inst_str)
+            else:
+                insert_row.append(res_dict[feat_group][col] / float(num_files))
+        fin_df.loc[next_idx] = insert_row
+        next_idx += 1
+    fin_df.to_csv(os.path.join(base_folder, 'ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'.tsv'), sep = '\t' ,index = False)
+
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -1884,6 +1940,18 @@ if __name__ == '__main__':
     elif operation == 'ASRCFeat':
         rel_filepath = sys.argv[2]
         create_base_features_for_asrc(rel_filepath)
+
+    elif operation == 'ASRCFileUnite':
+        big_model = sys.argv[2]
+        snap_limit = int(sys.argv[3])
+        ret_model = sys.argv[4]
+        feat_list = ast.literal_eval(sys.argv[5])
+
+        unite_asrc_data_results(
+            big_model=big_model,
+            snap_limit=snap_limit,
+            ret_model=ret_model,
+            feat_list=feat_list)
 
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
