@@ -1780,7 +1780,7 @@ def unite_asrc_data_results(
                                 res_dict[row['FeatureGroup']][col] = 0.0
                     for feat in feature_list:
                         res_dict[row['FeatureGroup']][feat] += float(row[feat])
-                        if not pd.np.isnan(row[feat + '_sign']):
+                        if type(row[feat + '_sign']) == str:
                             all_sign = row[feat + '_sign'].split(',')
                             for feat_group in all_sign[:-1]:
                                 if feat_group in res_dict[row['FeatureGroup']][feat + '_sign']:
