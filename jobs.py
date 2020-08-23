@@ -1769,7 +1769,7 @@ def unite_asrc_data_results(
                 print(filename)
                 num_files += 1
                 sys.stdout.flush()
-                tmp_df = pd.read_csv(os.path.join(base_folder, filename), sepo = '\t', index_col = False)
+                tmp_df = pd.read_csv(os.path.join(base_folder, filename), sep = '\t', index_col = False)
                 for index, row in tmp_df.iterrows():
                     if row['FeatureGroup'] not in res_dict:
                         res_dict[row['FeatureGroup']] = {}
