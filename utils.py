@@ -3,6 +3,7 @@ import ast
 import math
 import subprocess
 import pandas as pd
+import numpy as np
 from scipy import stats
 from scipy import spatial
 
@@ -283,7 +284,8 @@ def get_ranking_effectiveness_for_res_file(
 def get_ranking_effectiveness_for_res_file_per_query(
         file_path,
         filename,
-        qrel_filepath=QRELS_FILE_PATH):
+        qrel_filepath=QRELS_FILE_PATH,
+        calc_ndcg_mrr = False):
     bashCommand = TREC_EVAL_PATH + ' -q ' + qrel_filepath + ' ' + \
                   os.path.join(file_path, filename)
 
@@ -310,7 +312,14 @@ def get_ranking_effectiveness_for_res_file_per_query(
             elif splitted_line[0].replace(' ', '') == 'P_10':
                 p_10 = float(splitted_line[2])
                 res_dict[curr_q]['P_10'] = p_10
-
+    if calc_ndcg_mrr == True:
+        ndcg_mrr_dict = calc_ndcg_mrr_for_file(
+            filename=filename,
+            filepath=file_path,
+            qrel_file=qrel_filepath)
+        for key in ndcg_mrr_dict:
+            for inner_key in ndcg_mrr_dict[key]:
+                res_dict[key][inner_key] = ndcg_mrr_dict[key][inner_key]
     return res_dict
 
 def get_ranking_effectiveness_for_res_file_for_all_query_groups(
@@ -569,13 +578,17 @@ def calc_releational_measure(
 
 def check_statistical_significance(
         res_dict_1,
-        res_dict_2):
+        res_dict_2,
+        ndcg_mrr = False):
     try:
         q_list = list(res_dict_1.keys())
         if 'all' in q_list:
             q_list.remove('all')
         res_dict = {}
-        for measure in ['Map', 'P_5', 'P_10']:
+        additional_measures = []
+        if ndcg_mrr == True:
+            additional_measures = ['NDCG@1', 'NDCG@3', 'MRR','nMRR']
+        for measure in ['Map', 'P_5', 'P_10'] + additional_measures:
             l1 = []
             l2 = []
             for q in q_list:
@@ -660,3 +673,84 @@ def lm_score_doc_for_query(
         kl_score += (-1) * stem_q_prob * (math.log((stem_q_prob / stem_d_proba), 2))
 
     return kl_score
+
+
+def get_relevant_docs_df_utils(
+        qurls_path='/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc'):
+
+
+    relevant_docs_df = pd.DataFrame(columns=['Query', 'Docno', 'Relevance'])
+    next_index = 0
+    with open(qurls_path, 'r') as f:
+        file_lines = f.readlines()
+
+    for line in file_lines:
+        line = line.strip()
+        splitted_line = line.split(' ')
+        relevant_docs_df.loc[next_index] = [splitted_line[0], splitted_line[2], splitted_line[3]]
+        next_index += 1
+
+    return relevant_docs_df
+
+def calc_ndcg_mrr_for_file(
+        filepath,
+        filename,
+        qrel_file):
+    qrel_df = get_relevant_docs_df_utils(qrel_file)
+    qrel_df['Relevance'] = qrel_df['Relevance'].apply(lambda x: int(x))
+    res_df = convert_trec_results_file_to_pandas_df(os.path.join(filepath, filename))
+    res_df.rename(columns = {'Query_ID' : 'Query'}, inplace = True)
+    res_df = pd.merge(
+        res_df,
+        qrel_df,
+        on = ['Query', 'Docno'],
+        how = 'left')
+    res_df.fillna(0, inplace = True)
+    res_dict = {'all' : {'NDCG@1'  :0.0 , 'NDCG@3'  :0.0 , 'MRR' : 0.0, 'nMRR' : 0.0}}
+    all_q = list(res_df['Query'].drop_duplicates())
+    mrr_denom = 0
+    for q in all_q:
+        q_df = res_df[res_df['Query'] == q]
+        q = int(q)
+        res_dict[q] = {}
+        true_val_list = q_df['Relevance'].values
+        ndcg1 = calc_ndcg(true_val_list, 1)
+        ndcg3 = calc_ndcg(true_val_list, 3)
+        mrr, nmrr = calc_mrr_nmrr(true_val_list)
+        res_dict[q]['NDCG@1'] = ndcg1
+        res_dict[q]['NDCG@3'] = ndcg3
+        res_dict[q]['MRR'] = mrr
+        res_dict[q]['nMRR'] = nmrr
+        for measure in ['NDCG@1','NDCG@3','nMRR']:
+            res_dict['all'][measure] += res_dict[q][measure]
+        if np.isnan(mrr):
+            res_dict['all']['MRR'] += mrr
+            mrr_denom += 1
+
+    for measure in ['NDCG@1', 'NDCG@3', 'nMRR']:
+        res_dict['all'][measure] = res_dict['all'][measure] / float(len(all_q))
+    res_dict['all']['MRR'] = res_dict['all']['MRR'] / float(mrr_denom)
+    return res_dict
+
+def calc_ndcg(
+        y_true,
+        k):
+    discount = 1 / np.log2(np.arange(len(y_true[:k])) + 2)
+    dcg = np.dot(np.array(y_true[:k]), discount)
+    best_dcg = np.dot(sorted(np.array(y_true[:k]),reverse =True), discount)
+    return dcg / best_dcg
+
+def calc_mrr_nmrr(
+        y_true):
+
+    min_val = y_true.min()
+    if min_val <= 0:
+        ret_idx = np.where(y_true <= 0)[0].min()
+        return ret_idx + 1, ret_idx + 1
+    else:
+        ret_idx = np.where(y_true <= min_val)[0].min()
+        return np.nan, ret_idx + 1
+
+
+
+

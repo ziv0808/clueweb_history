@@ -400,7 +400,8 @@ def run_grid_search_over_params_for_config(
         normalize_method,
         snap_chosing_method,
         tarin_leave_one_out,
-        feat_group_list):
+        feat_group_list,
+        calc_ndcg_mrr):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
     ## num 1
@@ -449,7 +450,10 @@ def run_grid_search_over_params_for_config(
     model_base_filename += '_' + normalize_method
     if tarin_leave_one_out == True:
         model_base_filename += '_LoO'
-    model_summary_df = pd.DataFrame(columns=['FeatureGroup', 'Map', 'P@5', 'P@10'])
+    additional_measures = []
+    if calc_ndcg_mrr == True:
+        additional_measures =  ['NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
+    model_summary_df = pd.DataFrame(columns=['FeatureGroup', 'Map', 'P@5', 'P@10'] +additional_measures)
     next_idx = 0
     per_q_res_dict = {}
     feat_group_list_str = ""
@@ -492,8 +496,9 @@ def run_grid_search_over_params_for_config(
                 res_dict = get_ranking_effectiveness_for_res_file_per_query(
                     file_path=save_folder,
                     filename=curr_file_name,
-                    qrel_filepath=qrel_filepath)
-                for measure in ['Map', 'P_5', 'P_10']:
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=calc_ndcg_mrr)
+                for measure in ['Map', 'P_5', 'P_10']+additional_measures:
                     insert_row.append(res_dict['all'][measure])
                 per_q_res_dict[retrieval_model] = res_dict
                 model_summary_df.loc[next_idx] = insert_row
@@ -513,14 +518,15 @@ def run_grid_search_over_params_for_config(
             res_dict = get_ranking_effectiveness_for_res_file_per_query(
                 file_path=save_folder,
                 filename=curr_file_name,
-                qrel_filepath=qrel_filepath)
-            for measure in ['Map', 'P_5', 'P_10']:
+                qrel_filepath=qrel_filepath,
+                calc_ndcg_mrr=calc_ndcg_mrr)
+            for measure in ['Map', 'P_5', 'P_10']+additional_measures:
                 insert_row.append(res_dict['all'][measure])
             per_q_res_dict[feat_group.replace('_', '+')] = res_dict
             model_summary_df.loc[next_idx] = insert_row
             next_idx += 1
 
-    significance_df = create_sinificance_df(per_q_res_dict)
+    significance_df = create_sinificance_df(per_q_res_dict, calc_ndcg_mrr)
     model_summary_df = pd.merge(
         model_summary_df,
         significance_df,
@@ -542,6 +548,7 @@ if __name__ == '__main__':
         snap_chosing_method = sys.argv[6]
         tarin_leave_one_out = ast.literal_eval(sys.argv[7])
         feat_group_list = ast.literal_eval(sys.argv[8])
+        calc_ndcg_mrr = ast.literal_eval(sys.argv[9])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
@@ -550,4 +557,5 @@ if __name__ == '__main__':
             normalize_method=normalize_method,
             snap_chosing_method=snap_chosing_method,
             tarin_leave_one_out=tarin_leave_one_out,
-            feat_group_list=feat_group_list)
+            feat_group_list=feat_group_list,
+            calc_ndcg_mrr=calc_ndcg_mrr)
