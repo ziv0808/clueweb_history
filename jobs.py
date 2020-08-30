@@ -1886,10 +1886,10 @@ def handle_rank_svm_params_asrc(
             all_cols = list(work_df.columns)
             all_feat_groups = list(work_df['FeatGroup'].drop_duplicates())
             for featgroup in all_feat_groups:
-                featgroup = featgroup.replace('XXSnap', '').replace('_All', '').replace('_','+')
+                tmp_df = work_df[work_df['FeatGroup'] == featgroup]
+                featgroup = featgroup.replace('XXSnap', '').replace('_All', '').replace('_', '+')
                 if featgroup not in weight_dict:
                     weight_dict[featgroup] = {}
-                tmp_df = work_df[work_df['FeatGroup'] == featgroup]
                 for col in all_cols:
                     if col not in ['FeatGroup', 'C', 'SnapLimit', 'Fold']:
                         if col in weight_dict[featgroup]:
