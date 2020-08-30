@@ -1818,8 +1818,10 @@ def unite_asrc_data_results(
     for feat_group in big_res_dict:
         insert_row = [feat_group.replace('_', '+')]
         for measure in measure_list:
+            if measure == 'P@5' or measure == 'P@10':
+                measure = measure.replace('@', '_')
             insert_row.append(big_res_dict[feat_group]['all'][measure])
-            big_summary_df.loc[next_idx] = insert_row
+        big_summary_df.loc[next_idx] = insert_row
         next_idx += 1
     significance_df = create_sinificance_df(
         big_res_dict,
