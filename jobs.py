@@ -1770,6 +1770,7 @@ def unite_asrc_data_results(
     for round_ in range(2,9):
         inner_fold = 'ASRC_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
         inner_fold = os.path.join(base_2_folder, inner_fold)
+        round_res_dict[round_] = {}
         num_rounds += 1
         for filename in os.listdir(inner_fold):
             print(inner_fold + '/'+filename)
@@ -1782,7 +1783,6 @@ def unite_asrc_data_results(
                 calc_ndcg_mrr=True)
 
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
-            round_res_dict[round_] = {}
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
             if feat_group.replace('_', '+') in big_res_dict:
