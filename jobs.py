@@ -1770,7 +1770,7 @@ def unite_asrc_data_results(
         inner_fold = 'ASRC_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
         inner_fold = os.path.join(base_2_folder, inner_fold)
         for filename in os.listdir(inner_fold):
-            print(inner_fold + filename)
+            print(inner_fold + '/'+filename)
             num_files += 1
             sys.stdout.flush()
             tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
@@ -1779,7 +1779,7 @@ def unite_asrc_data_results(
                 qrel_filepath=qrel_filepath,
                 calc_ndcg_mrr=True)
 
-            feat_group = filename.replace(inner_fold + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '')
+            feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '')
             round_res_dict[round_] = {}
             round_res_dict[round_][feat_group] = tmp_res_dict
             print(feat_group)
