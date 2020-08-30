@@ -1843,7 +1843,7 @@ def unite_asrc_data_results(
         measure_df = pd.DataFrame({})
         for round_ in range(2, 9):
             round_df = round_res_dict[str(round_) + '_Sum'].rename(columns = {measure : str(round_)})
-            round_df[str(round_)] = round_df[str(round_)].apply(lambda x: str(round(x, 3)))
+            round_df[str(round_)] = round_df[str(round_)].apply(lambda x: round(x, 3))
             if measure_df.empty == True:
                 measure_df = round_df[['FeatureGroup', str(round_)]].copy()
             else:
