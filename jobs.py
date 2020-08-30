@@ -1785,7 +1785,7 @@ def unite_asrc_data_results(
             round_res_dict[round_] = {}
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
-            if feat_group in big_res_dict:
+            if feat_group.replace('_', '+') in big_res_dict:
                 print(num_files)
                 sys.stdout.flush()
                 for q in tmp_res_dict:
@@ -1849,7 +1849,7 @@ def unite_asrc_data_results(
             else:
                 measure_df = pd.merge(
                     measure_df,
-                    round_df['FeatureGroup', str(round_)],
+                    round_df[['FeatureGroup', str(round_)]],
                     on = ['FeatureGroup'],
                     how = 'inner')
 
