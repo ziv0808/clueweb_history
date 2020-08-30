@@ -1749,8 +1749,7 @@ def create_base_features_for_asrc(
 def unite_asrc_data_results(
         big_model,
         snap_limit,
-        ret_model,
-        feat_list):
+        ret_model):
     from rank_svm_model import create_sinificance_df
     base_folder = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
     qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
@@ -1798,6 +1797,8 @@ def unite_asrc_data_results(
         for feat_group in round_res_dict[round_]:
             insert_row = [feat_group.replace('_', '+')]
             for measure in measure_list:
+                if measure == 'P@5' or measure == 'P@10':
+                    measure = measure.replace('@','_')
                 insert_row.append(round_res_dict[round_][feat_group]['all'][measure])
             round_summary_df.loc[next_idx] = insert_row
             next_idx += 1
@@ -1998,13 +1999,11 @@ if __name__ == '__main__':
         big_model = sys.argv[2]
         snap_limit = int(sys.argv[3])
         ret_model = sys.argv[4]
-        feat_list = ast.literal_eval(sys.argv[5])
 
         unite_asrc_data_results(
             big_model=big_model,
             snap_limit=snap_limit,
-            ret_model=ret_model,
-            feat_list=feat_list)
+            ret_model=ret_model)
 
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
