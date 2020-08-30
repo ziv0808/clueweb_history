@@ -1861,7 +1861,7 @@ def unite_asrc_data_results(
         plt.title(measure + ' Over Rounds')
         plt.xlabel('round')
         plt.ylabel(measure)
-        plt.savefig('ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+big_model+ '_' +measure + '.pnd', dpi =300)
+        plt.savefig('ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+big_model+ '_' +measure + '.png', dpi =300)
 
 
 
