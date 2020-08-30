@@ -1769,8 +1769,6 @@ def unite_asrc_data_results(
     for round_ in range(2,9):
         inner_fold = 'ASRC_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
         inner_fold = os.path.join(base_2_folder, inner_fold)
-        measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
-        round_summary_df = pd.DataFrame(columns=['FeatureGroup']+ measure_list)
         for filename in os.listdir(inner_fold):
             print(inner_fold + filename)
             num_files += 1
@@ -1785,10 +1783,14 @@ def unite_asrc_data_results(
             round_res_dict[round_] = {}
             round_res_dict[round_][feat_group] = tmp_res_dict
             if feat_group in big_res_dict:
+                print(num_files)
+                sys.stdout.flush()
                 for q in tmp_res_dict:
                     for measure in tmp_res_dict[q]:
                         big_res_dict[feat_group][q][measure] = (float(big_res_dict[feat_group][q][measure])*(num_files - 1) + tmp_res_dict[q][measure])/float(num_files)
             else:
+                print ("here!")
+                sys.stdout.flush()
                 big_res_dict[feat_group] = tmp_res_dict
 
         measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
