@@ -1751,57 +1751,109 @@ def unite_asrc_data_results(
         snap_limit,
         ret_model,
         feat_list):
+    from rank_svm_model import create_sinificance_df
     base_folder = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
+    qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
     if big_model == 'SVMRank':
         base_folder = os.path.join(base_folder, 'rank_svm_res')
     else:
         base_folder = os.path.join(base_folder, 'lambdamart_res')
+    base_2_folder = os.path.join(base_folder, 'ret_res')
     feature_list = ['NDCG@1', 'NDCG@3', 'MRR']
     feat_col_list = feature_list[:]
     for feat in feature_list:
         feat_col_list.append(feat + '_sign')
 
-    res_dict  = {}
+    big_res_dict  = {}
+    round_res_dict = {}
     num_files = 0
-    for filename in os.listdir(base_folder):
-        if (filename.startswith('ASRC')) and ('_Round0' in filename) and (ret_model in filename) and ('SNL' + str(snap_limit) in filename) and (not filename.endswith('_Params.tsv')):
-            if feat_list is None:
-                print(filename)
-                num_files += 1
-                sys.stdout.flush()
-                tmp_df = pd.read_csv(os.path.join(base_folder, filename), sep = '\t', index_col = False)
-                for index, row in tmp_df.iterrows():
-                    if row['FeatureGroup'] not in res_dict:
-                        res_dict[row['FeatureGroup']] = {}
-                        for col in feat_col_list:
-                            if '_sign' in col:
-                                res_dict[row['FeatureGroup']][col] = {}
-                            else:
-                                res_dict[row['FeatureGroup']][col] = 0.0
-                    for feat in feature_list:
-                        res_dict[row['FeatureGroup']][feat] += float(row[feat])
-                        if type(row[feat + '_sign']) == str:
-                            all_sign = row[feat + '_sign'].split(',')
-                            for feat_group in all_sign[:-1]:
-                                if feat_group in res_dict[row['FeatureGroup']][feat + '_sign']:
-                                    res_dict[row['FeatureGroup']][feat + '_sign'][feat_group] += 1
-                                else:
-                                    res_dict[row['FeatureGroup']][feat + '_sign'][feat_group] = 1
-    fin_df = pd.DataFrame(columns=['FeatureGroup'] + feat_col_list)
-    next_idx = 0
-    for feat_group in res_dict:
-        insert_row = [feat_group]
-        for col in feat_col_list:
-            if '_sign' in col:
-                inst_str = ""
-                for key in res_dict[feat_group][col]:
-                    inst_str += key +"(" +str(res_dict[feat_group][col][key]) +"),"
-                insert_row.append(inst_str)
+    for round_ in range(2,9):
+        inner_fold = 'ASRC_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
+        inner_fold = os.path.join(base_2_folder, inner_fold)
+        measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
+        round_summary_df = pd.DataFrame(columns=['FeatureGroup']+ measure_list)
+        for filename in os.listdir(inner_fold):
+            print(inner_fold + filename)
+            num_files += 1
+            sys.stdout.flush()
+            tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                file_path=inner_fold,
+                filename=filename,
+                qrel_filepath=qrel_filepath,
+                calc_ndcg_mrr=True)
+
+            feat_group = filename.replace(inner_fold + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '')
+            round_res_dict[round_] = {}
+            round_res_dict[round_][feat_group] = tmp_res_dict
+            if feat_group in big_res_dict:
+                for q in tmp_res_dict:
+                    for measure in tmp_res_dict[q]:
+                        big_res_dict[feat_group][q][measure] = (float(big_res_dict[feat_group][q][measure])*(num_files - 1) + tmp_res_dict[q][measure])/float(num_files)
             else:
-                insert_row.append(res_dict[feat_group][col] / float(num_files))
-        fin_df.loc[next_idx] = insert_row
+                big_res_dict[feat_group] = tmp_res_dict
+
+        measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
+        round_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
+        next_idx = 0
+        for feat_group in round_res_dict[round_]:
+            insert_row = [feat_group.replace('_', '+')]
+            for measure in measure_list:
+                insert_row.append(round_res_dict[round_][feat_group]['all'][measure])
+            round_summary_df.loc[next_idx] = insert_row
+            next_idx += 1
+        significance_df = create_sinificance_df(
+            round_res_dict[round_],
+            calc_ndcg_mrr=True)
+        round_summary_df = pd.merge(
+            round_summary_df,
+            significance_df,
+            on=['FeatureGroup'],
+            how='inner')
+        round_res_dict[str(round_) + '_Sum'] = round_summary_df
+
+    measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
+    big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
+    next_idx = 0
+    for feat_group in big_res_dict:
+        insert_row = [feat_group.replace('_', '+')]
+        for measure in measure_list:
+            insert_row.append(big_res_dict[feat_group]['all'][measure])
+            big_summary_df.loc[next_idx] = insert_row
         next_idx += 1
-    fin_df.to_csv(os.path.join(base_folder, 'ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'.tsv'), sep = '\t' ,index = False)
+    significance_df = create_sinificance_df(
+        big_res_dict,
+        calc_ndcg_mrr=True)
+    big_summary_df = pd.merge(
+        big_summary_df,
+        significance_df,
+        on=['FeatureGroup'],
+        how='inner')
+
+    big_summary_df.to_csv(os.path.join(base_folder, 'ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'.tsv'), sep = '\t' ,index = False)
+
+    for measure in ['NDCG@1', 'NDCG@3', 'MRR']:
+        measure_df = pd.DataFrame({})
+        for round_ in range(2, 9):
+            round_df = round_res_dict[str(round_) + '_Sum'].rename(columns = {measure : str(round_)})
+            round_df[str(round_)] = round_df[str(round_)].apply(lambda x: str(round(x, 3)))
+            if measure_df.empty == True:
+                measure_df = round_df['FeatureGroup', str(round_)].copy()
+            else:
+                measure_df = pd.merge(
+                    measure_df,
+                    round_df['FeatureGroup', str(round_)],
+                    on = ['FeatureGroup'],
+                    how = 'inner')
+
+        measure_df.set_index('FeatureGroup', inplace = True)
+        measure_df.transpose(inplace = True)
+        measure_df.plot(legend = 'best')
+        plt.title(measure + ' Over Rounds')
+        plt.xlabel('round')
+        plt.ylabel(measure)
+        plt.savefig('ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model + '_' +measure + '.pnd', dpi =300)
+
+
 
 
 if __name__ == '__main__':

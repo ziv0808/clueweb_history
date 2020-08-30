@@ -748,10 +748,10 @@ def calc_mrr_nmrr(
     min_val = y_true.min()
     if min_val <= 0:
         ret_idx = np.where(y_true <= 0)[0].min()
-        return ret_idx + 1, ret_idx + 1
+        return 1.0/(ret_idx + 1), 1.0/(ret_idx + 1)
     else:
         ret_idx = np.where(y_true <= min_val)[0].min()
-        return np.nan, ret_idx + 1
+        return np.nan, 1.0/(ret_idx + 1)
 
 
 
