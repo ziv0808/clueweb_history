@@ -1854,7 +1854,7 @@ def unite_asrc_data_results(
                     how = 'inner')
 
         measure_df.set_index('FeatureGroup', inplace = True)
-        measure_df.transpose(inplace = True)
+        measure_df = measure_df.transpose()
         measure_df.plot(legend = 'best')
         plt.title(measure + ' Over Rounds')
         plt.xlabel('round')
