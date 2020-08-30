@@ -1898,6 +1898,7 @@ def handle_rank_svm_params_asrc(
                             weight_dict[featgroup][col] = tmp_df[col].mean()
 
     for feat_group in weight_dict:
+        print(feat_group)
         feat_df = pd.DataFrame(columns = ['Feature', 'Weight'])
         next_idx = 0
         for feature in weight_dict[feat_group]:
