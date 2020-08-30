@@ -1913,7 +1913,7 @@ def handle_rank_svm_params_asrc(
         plt.ylabel('Weight')
         plt.title(feat_group +' SVM Weights')
         plt.yticks(rotation = 90)
-        plt.subplots_adjust(bottom=0.18)
+        plt.subplots_adjust(bottom=0.4)
         plt.savefig(feat_group + '_RankSVM_Weights.png', dpi = 200)
 
 
