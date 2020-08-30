@@ -1491,6 +1491,7 @@ def handle_rank_svm_params(
                 print(col + " -> Mean : " + str(tmp_df[col].mean()) + ", Std: " + str(tmp_df[col].std()) + ", Min: " + str(tmp_df[col].min()) + ", Max: " + str(tmp_df[col].max()) + addition)
 
 
+
 def asrc_data_parser(
         filepath):
 
@@ -1868,6 +1869,52 @@ def unite_asrc_data_results(
         plt.savefig('ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+big_model+ '_' +measure + '.png', dpi =300)
 
 
+def handle_rank_svm_params_asrc(
+        snap_limit,
+        ret_model):
+
+    data_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
+    num_rounds = 0
+    weight_dict = {}
+    for filename in os.listdir(data_folder):
+        if (filename.startswith('ASRC_All_features_Round0')) and ('SNL' + str(snap_limit) in filename) and (ret_model in filename) and (filename.endswith('_Params.tsv')):
+            print(filename)
+            sys.stdout.flush()
+            num_rounds += 1
+            work_df = pd.read_csv(os.path.join(data_folder, filename), sep = '\t', index_col = False)
+            # round_num = filename.replace('ASRC_All_features_Round0','')[0]
+            all_cols = list(work_df.columns)
+            all_feat_groups = list(work_df['FeatGroup'].drop_duplicates())
+            for featgroup in all_feat_groups:
+                featgroup = featgroup.replace('XXSnap', '').replace('_All', '').replace('_','+')
+                if featgroup not in weight_dict:
+                    weight_dict[featgroup] = {}
+                tmp_df = work_df[work_df['FeatGroup'] == featgroup]
+                for col in all_cols:
+                    if col not in ['FeatGroup', 'C', 'SnapLimit', 'Fold']:
+                        if col in weight_dict[featgroup]:
+                            weight_dict[featgroup][col] = (weight_dict[featgroup][col]*(num_rounds - 1) +  tmp_df[col].mean())/float(num_rounds)
+                        else:
+                            weight_dict[featgroup][col] = tmp_df[col].mean()
+
+    for feat_group in weight_dict:
+        feat_df = pd.DataFrame(columns = ['Feature', 'Weight'])
+        next_idx = 0
+        for feature in weight_dict[feat_group]:
+            if not pd.np.isnan(weight_dict[feat_group][feature]):
+                feat_df.loc[next_idx] = [feature.replace('XXSnap', ''), weight_dict[feat_group][feature]]
+                next_idx += 1
+        feat_df.set_index('Feature', inplace = True)
+        feat_df.sort_values('Weight', inplace = True)
+        plt.cla()
+        plt.clf()
+        feat_df.plot(legend=False, kind='bar', color='b')
+        plt.ylabel('Weight')
+        plt.title(feat_group +' SVM Weights')
+        plt.yticks(rotation = 90)
+        plt.subplots_adjust(bottom=0.18)
+        plt.savefig(feat_group + '_RankSVM_Weights.png', dpi = 200)
+
 
 
 if __name__ == '__main__':
@@ -2017,7 +2064,11 @@ if __name__ == '__main__':
             big_model=big_model,
             snap_limit=snap_limit,
             ret_model=ret_model)
+    elif operation == 'ASRCSVMWeights':
+        snap_limit = int(sys.argv[2])
+        ret_model = sys.argv[3]
 
+        handle_rank_svm_params_asrc(snap_limit=snap_limit, ret_model=ret_model)
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
