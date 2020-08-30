@@ -1766,9 +1766,11 @@ def unite_asrc_data_results(
     big_res_dict  = {}
     round_res_dict = {}
     num_files = 0
+    num_rounds = 0
     for round_ in range(2,9):
         inner_fold = 'ASRC_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
         inner_fold = os.path.join(base_2_folder, inner_fold)
+        num_rounds += 1
         for filename in os.listdir(inner_fold):
             print(inner_fold + '/'+filename)
             num_files += 1
@@ -1788,7 +1790,7 @@ def unite_asrc_data_results(
                 sys.stdout.flush()
                 for q in tmp_res_dict:
                     for measure in tmp_res_dict[q]:
-                        big_res_dict[feat_group][q][measure] = (float(big_res_dict[feat_group][q][measure])*(num_files - 1) + tmp_res_dict[q][measure])/float(num_files)
+                        big_res_dict[feat_group][q][measure] = (float(big_res_dict[feat_group][q][measure])*(num_rounds - 1) + tmp_res_dict[q][measure])/float(num_rounds)
             else:
                 print ("here!")
                 sys.stdout.flush()
