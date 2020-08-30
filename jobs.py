@@ -1783,18 +1783,18 @@ def unite_asrc_data_results(
 
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '')
             round_res_dict[round_] = {}
-            round_res_dict[round_][feat_group] = tmp_res_dict
+            round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
             if feat_group in big_res_dict:
                 print(num_files)
                 sys.stdout.flush()
                 for q in tmp_res_dict:
                     for measure in tmp_res_dict[q]:
-                        big_res_dict[feat_group][q][measure] = (float(big_res_dict[feat_group][q][measure])*(num_rounds - 1) + tmp_res_dict[q][measure])/float(num_rounds)
+                        big_res_dict[feat_group.replace('_', '+')][q][measure] = (float(big_res_dict[feat_group][q][measure])*(num_rounds - 1) + tmp_res_dict[q][measure])/float(num_rounds)
             else:
                 print ("here!")
                 sys.stdout.flush()
-                big_res_dict[feat_group] = tmp_res_dict
+                big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
 
         measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
         round_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
@@ -1845,7 +1845,7 @@ def unite_asrc_data_results(
             round_df = round_res_dict[str(round_) + '_Sum'].rename(columns = {measure : str(round_)})
             round_df[str(round_)] = round_df[str(round_)].apply(lambda x: str(round(x, 3)))
             if measure_df.empty == True:
-                measure_df = round_df['FeatureGroup', str(round_)].copy()
+                measure_df = round_df[['FeatureGroup', str(round_)]].copy()
             else:
                 measure_df = pd.merge(
                     measure_df,
@@ -1859,7 +1859,7 @@ def unite_asrc_data_results(
         plt.title(measure + ' Over Rounds')
         plt.xlabel('round')
         plt.ylabel(measure)
-        plt.savefig('ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model + '_' +measure + '.pnd', dpi =300)
+        plt.savefig('ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+big_model+ '_' +measure + '.pnd', dpi =300)
 
 
 
