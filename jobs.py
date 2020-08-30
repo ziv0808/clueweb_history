@@ -1855,6 +1855,8 @@ def unite_asrc_data_results(
 
         measure_df.set_index('FeatureGroup', inplace = True)
         measure_df = measure_df.transpose()
+        print(measure_df)
+        sys.stdout.flush()
         measure_df.plot(legend = 'best')
         plt.title(measure + ' Over Rounds')
         plt.xlabel('round')
