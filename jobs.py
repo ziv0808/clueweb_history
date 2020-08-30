@@ -1782,6 +1782,7 @@ def unite_asrc_data_results(
             feat_group = filename.replace(inner_fold + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '')
             round_res_dict[round_] = {}
             round_res_dict[round_][feat_group] = tmp_res_dict
+            print(feat_group)
             if feat_group in big_res_dict:
                 print(num_files)
                 sys.stdout.flush()
