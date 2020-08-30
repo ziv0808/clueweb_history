@@ -1903,7 +1903,7 @@ def handle_rank_svm_params_asrc(
         next_idx = 0
         for feature in weight_dict[feat_group]:
             if not pd.np.isnan(weight_dict[feat_group][feature]):
-                feat_df.loc[next_idx] = [feature.replace('XXSnap', ''), weight_dict[feat_group][feature]]
+                feat_df.loc[next_idx] = [feature.replace('XXSnaps', '').replace('SimClueWeb', 'Similarity'), weight_dict[feat_group][feature]]
                 next_idx += 1
         feat_df.set_index('Feature', inplace = True)
         feat_df.sort_values('Weight', inplace = True)
@@ -1913,7 +1913,7 @@ def handle_rank_svm_params_asrc(
         plt.ylabel('Weight')
         plt.title(feat_group +' SVM Weights')
         plt.yticks(rotation = 90)
-        plt.subplots_adjust(bottom=0.4)
+        plt.subplots_adjust(bottom=0.35)
         plt.savefig(feat_group + '_RankSVM_Weights.png', dpi = 200)
 
 
