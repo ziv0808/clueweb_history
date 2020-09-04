@@ -1630,7 +1630,8 @@ def create_base_features_for_asrc(
     with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/RawData.json', 'r') as f:
         big_doc_index = ast.literal_eval(f.read())
 
-    processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/asrc/2008/'
+    dataset_name = 'asrc'
+    meta_data_base_fold = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/'
     col_list = ['NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                  'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score',
                  'QueryTermsRatio_M', 'StopwordsRatio_M', 'Entropy_M', 'SimClueWeb_M',
@@ -1653,6 +1654,11 @@ def create_base_features_for_asrc(
         fin_df_dict[round_]['FinDF'] = pd.DataFrame(columns = col_list)
         fin_df_dict[round_]['SnapDF'] = pd.DataFrame({})
         fin_df_dict[round_]['NextIdx'] = 0
+        if not os.path.exists('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+ dataset_name+ '_' + round_ + '/'):
+            os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+ dataset_name+ '_' + round_ + '/')
+            os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + dataset_name + '_' + round_ + '/2008/')
+            os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + dataset_name + '_' + round_ + '/2008/SIM/')
+            os.mkdir(os.path._join(meta_data_base_fold, dataset_name + '_' + round_))
     sys.stdout.flush()
 
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
@@ -1670,7 +1676,7 @@ def create_base_features_for_asrc(
                 if int(additional_round) < round_:
                     diff = str(int(additional_round) - round_)
                     res_dict[diff]= big_doc_index[query_user_str][additional_round]['json']
-            with open(os.path.join(os.path.join(processed_docs_folder, 'SIM'), docno +'.json'), 'w') as f:
+            with open(os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+ dataset_name+ '_' + round_num + '/2008/SIM', docno +'.json'), 'w') as f:
                 f.write(str(res_dict))
 
             curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'] + base_feature_list)
@@ -1737,6 +1743,7 @@ def create_base_features_for_asrc(
     meta_data_df['Query'] = meta_data_df['Query'].apply(lambda x: int(x))
     for round_ in all_rounds:
         fin_df_dict[round_]['FinDF']['QueryNum'] = fin_df_dict[round_]['FinDF']['QueryNum'].apply(lambda x: int(x))
+        fin_df_dict[round_]['FinDF'][['Docno','QueryNum']].to_csv(os.path.join(os.path.join(meta_data_base_fold, dataset_name + '_' + round_), 'all_urls_no_spam_filtered.tsv'), sep = '\t', index = False)
         fin_df_dict[round_]['FinDF'] = pd.merge(
             fin_df_dict[round_]['FinDF'],
             meta_data_df.rename(columns = {'Query' : 'QueryNum'}),
