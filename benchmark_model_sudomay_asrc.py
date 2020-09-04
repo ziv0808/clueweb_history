@@ -15,8 +15,9 @@ class Benchmark:
             retrieval_model = 'KL'):
 
         # create interval list
+        asrc_round = int(inner_fold.split('_')[1])
         self.interval_list = build_interval_list_asrc(
-            inner_fold=inner_fold,
+            asrc_round=asrc_round,
             add_last=True)
 
         self.retrieval_model = retrieval_model
