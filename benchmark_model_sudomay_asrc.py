@@ -224,6 +224,8 @@ class Benchmark:
         for index, row in self.stemmed_queries_df.iterrows():
             query_num = int(row['QueryNum'])
             if (query_num in query_list):
+                print("Query: " + str(query_num))
+                sys.stdout.flush()
                 relevant_df = self.query_to_doc_mapping_df[self.query_to_doc_mapping_df['QueryNum'] == query_num].copy()
                 res_query_df = self.get_scored_df_for_query(
                     query_num=query_num,
@@ -276,7 +278,7 @@ if __name__=="__main__":
     for fold in fold_list:
         start_test_q = int(fold[0])
         end_test_q = int(fold[1])
-        affix = inner_fold + '_' + str(start_test_q) + '_' + str(end_test_q) + "_"
+        affix = inner_fold + '_' + str(start_test_q) + '_' + str(end_test_q) + "_" + retrieval_model + '_'
         train_q_list = query_list[:]
         test_q_list = []
         for q in range(start_test_q, end_test_q):
