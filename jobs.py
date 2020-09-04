@@ -1658,7 +1658,7 @@ def create_base_features_for_asrc(
             os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+ dataset_name+ '_' + round_ + '/')
             os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + dataset_name + '_' + round_ + '/2008/')
             os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + dataset_name + '_' + round_ + '/2008/SIM/')
-            os.mkdir(os.path._join(meta_data_base_fold, dataset_name + '_' + round_))
+            os.mkdir(os.path.join(meta_data_base_fold, dataset_name + '_' + round_))
     sys.stdout.flush()
 
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
