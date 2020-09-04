@@ -261,7 +261,7 @@ if __name__=="__main__":
 
     print('Retrivel Model: ' + retrieval_model)
     qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel'
-    save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark_sudomay'
+    save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark_sudomay/'
 
     print('Time: ' + str(datetime.datetime.now()))
 
