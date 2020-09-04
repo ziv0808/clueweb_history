@@ -247,8 +247,11 @@ def rmv_sw_from_string(
     return new_strng[:-1]
 
 def create_query_to_doc_mapping_df(
-        inner_fold = INNER_FOLD):
-    query_to_doc_mapping_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/all_urls_no_spam_filtered.tsv',
+        inner_fold = None):
+    if inner_fold is None:
+        query_to_doc_mapping_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + INNER_FOLD + '/all_urls_no_spam_filtered.tsv'
+    else:
+        query_to_doc_mapping_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/all_urls_no_spam_filtered.tsv'
     return pd.read_csv(query_to_doc_mapping_file, sep = '\t', index_col = False)
 
 def convert_str_to_bool(strng):
