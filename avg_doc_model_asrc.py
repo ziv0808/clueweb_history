@@ -71,7 +71,7 @@ if __name__=='__main__':
 
     query_to_doc_mapping_df = create_query_to_doc_mapping_df(inner_fold=inner_fold)
     limited_q_list = list(query_to_doc_mapping_df['QueryNum'].drop_duplicates())
-    stemmed_queries_df = create_stemmed_queries_df(sw_rmv=sw_rmv, limited_q_list=limited_q_list)
+
 
     wieght_for_last_interval_options = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     optional_decay_weights_k = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95]
@@ -93,6 +93,7 @@ if __name__=='__main__':
         else:
             raise Exception("Unknown model")
 
+        stemmed_queries_df = create_stemmed_queries_df(sw_rmv=sw_rmv, limited_q_list=limited_q_list)
         interval_list = build_interval_list_asrc(asrc_round)
         cv_summary_df = pd.DataFrame(columns=interval_list + ['Map', 'P@5', 'P@10', ''])
         next_idx = 0
