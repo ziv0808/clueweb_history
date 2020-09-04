@@ -62,6 +62,11 @@ def score_doc_for_query_bm25(
             raise Exception('Problem!')
         avg_doc_len = df_dict['AVG_DOC_LEN']
 
+        if stem_df == 0:
+            if doc_stem_tf != 0:
+                raise Exception('Big Bugggg')
+            continue
+
         idf = math.log(all_docs_count / float(stem_df), 10)
         stem_d_proba = (doc_stem_tf * (k1 + 1)) / (
         doc_stem_tf + k1 * ((1 - b) + b * (float(doc_len) / avg_doc_len)))
