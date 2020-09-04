@@ -44,6 +44,19 @@ QUERY_PERSON_LOC_ORG_LIST_MANUAL = [1, 2, 5, 15, 16,21,22,23, 27, 35, 39, 41, 44
 CHECK_QUERIRES_LIST = [(QUERY_ENETITY_LIST, 'QUERY_ENETITY_LIST'),(QUERY_ENETITY_LIST_MANUAL, 'QUERY_ENETITY_LIST_MANUAL'),
                         (QUERY_PERSON_LOC_ORG_LIST, 'QUERY_PERSON_LOC_ORG_LIST'),(QUERY_PERSON_LOC_ORG_LIST_MANUAL, 'QUERY_PERSON_LOC_ORG_LIST_MANUAL') ]
 
+def build_interval_list_asrc(
+        asrc_round,
+        add_last = True):
+
+    interval_list = []
+    for i in list(reversed(range(1, asrc_round))):
+        interval_list.append(str((-1)*i))
+
+    if (add_last == True):
+        interval_list.append('ClueWeb09')
+
+    return interval_list
+
 def build_interval_list(
         work_year,
         frequency,
@@ -206,13 +219,18 @@ def convert_query_to_tf_dict(
 
 def create_stemmed_queries_df(
         stemmed_query_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/Stemmed_Query_Words',
-        sw_rmv = False):
+        sw_rmv = False,
+        limited_q_list = None):
     df = pd.read_csv(stemmed_query_file, sep = '\t', index_col = False)
     df['QueryInt'] = df['QueryNum'].apply(lambda x: int(x))
     if WORK_YEAR == '2011':
         df = df[df['QueryInt'] > 200]
     else:
         df = df[df['QueryInt'] <= 200]
+    if limited_q_list is not None:
+        df['Filter'] = df['QueryInt'].apply(lambda x: True if x not in limited_q_list else False)
+        df = df[df['Filter'] == False]
+        del df['Filter']
     del df['QueryInt']
     if sw_rmv == True:
         sw_list = get_stopword_list()
@@ -229,7 +247,8 @@ def rmv_sw_from_string(
     return new_strng[:-1]
 
 def create_query_to_doc_mapping_df(
-        query_to_doc_mapping_file='/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+INNER_FOLD+'/all_urls_no_spam_filtered.tsv'):
+        inner_fold = INNER_FOLD):
+    query_to_doc_mapping_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/all_urls_no_spam_filtered.tsv',
     return pd.read_csv(query_to_doc_mapping_file, sep = '\t', index_col = False)
 
 def convert_str_to_bool(strng):
@@ -754,5 +773,10 @@ def calc_mrr_nmrr(
         return np.nan, 1.0/(ret_idx + 1)
 
 
+def get_asrc_q_list_and_fold_list():
+    fold_list = [(2, 9), (10, 17), (18, 32), (33, 36), (45, 51), (59, 78),
+                 (98, 144), (161, 166), (167, 180), (182, 195)]
 
-
+    q_list = [2, 4, 9, 10, 11, 17, 18, 29, 32, 33, 34, 36, 45, 48, 51, 59, 69, 78, 98, 124, 144, 161, 164, 166, 167, 177,
+              180, 182, 188, 193, 195]
+    return q_list, fold_list
