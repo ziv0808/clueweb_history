@@ -129,7 +129,7 @@ class WeightedListRanker():
                 query_df.sort_values('Score', ascending=False, inplace=True)
             else:
                 raise Exception("Uknown measure...")
-
+            query_df['Query_ID'] = query_df['Query_ID'].apply(lambda x: "0" * (3 - len(str(x))) + str(x))
             query_df['Rank'] = list(range(1, len(query_df) + 1))
             res_df = res_df.append(query_df, ignore_index=True)
 
