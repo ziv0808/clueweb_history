@@ -52,6 +52,8 @@ class WeightedListRanker():
         # initiate all scores df
         first = True
         for interval in self.interval_list[::-1]:
+            print("Interval : " + interval)
+            sys.stdout.flush()
             if interval == 'ClueWeb09':
                 filename = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/','ASRC_All_features_Round0' +str(len(self.interval_list)) + '_with_meta.tsv')
                 curr_df = pd.read_csv(filename, sep = '\t', index_col = False)
