@@ -1802,7 +1802,7 @@ def unite_asrc_data_results(
                 filename=filename,
                 qrel_filepath=qrel_filepath,
                 calc_ndcg_mrr=True)
-
+            print(tmp_res_dict.keys())
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
