@@ -1820,6 +1820,7 @@ def unite_asrc_data_results(
         for model in additional_models_to_include:
             filename = additional_models_to_include[model]['FileTemplate'].replace('<RoundNum>',str(round_))
             path = additional_models_to_include[model]['Folder']
+            print(filename)
             feat_group = model
             tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
                 file_path=path,
