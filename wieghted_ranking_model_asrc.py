@@ -177,8 +177,8 @@ class WeightedListRanker():
         self.wieght_multiplier_df['IsTest'] = self.wieght_multiplier_df['Query_ID'].apply(lambda x: True if x in test_q_list else False)
         train_df = self.data_df[self.data_df['IsTest'] == False].copy()
         test_df = self.data_df[self.data_df['IsTest'] == True].copy()
-        train_wieght_mul_df = self.wieght_multiplier_df[self.wieght_multiplier_df['IsTest'] == False].copy()
-        test_wieght_mul_df = self.wieght_multiplier_df[self.wieght_multiplier_df['IsTest'] == True].copy()
+        train_wieght_mul_df = self.wieght_multiplier_df[self.wieght_multiplier_df['IsTest'] == False][self.interval_list].copy()
+        test_wieght_mul_df = self.wieght_multiplier_df[self.wieght_multiplier_df['IsTest'] == True][self.interval_list].copy()
 
         if self.rank_or_score == 'Rank':
             k_list = [10,20,30,40,50,60,70,80,90,100]
