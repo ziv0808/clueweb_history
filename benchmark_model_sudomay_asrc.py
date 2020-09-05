@@ -288,32 +288,52 @@ if __name__=="__main__":
         hyper_param_dict = {'S': {'Mue': 1500, 'Lambda': 0.45},
                             'M': {'Mue': 1500, 'Lambda': 0.45},
                             'L': {'Mue': 5, 'Lambda': 0.1}}
-        optional_mue_list = [5, 10, 100, 500, 800, 1000, 1200, 1500, 1800]
-        optional_lambda_list = [0.1, 0.2, 0.3, 0.4, 0.5,0.6, 0.7, 0.8, 0.9]
+        optional_mue_list = [10, 100, 500, 800, 1000, 1200, 1500, 1800]
+        optional_lambda_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
         max_ndcg = 0.0
         best_config = None
+        l_labmda = optional_lambda_list[0]
         for s_mue in optional_mue_list:
             for m_mue in optional_mue_list:
                 for l_mue in optional_mue_list:
-                    for l_labmda in optional_lambda_list:
-                        hyper_param_dict = {'S': {'Mue': s_mue, 'Lambda': (1-l_labmda)/2.0},
-                                            'M': {'Mue': m_mue, 'Lambda': (1-l_labmda)/2.0},
-                                            'L': {'Mue': l_mue, 'Lambda': l_labmda}}
+                    hyper_param_dict = {'S': {'Mue': s_mue, 'Lambda': (1-l_labmda)/2.0},
+                                        'M': {'Mue': m_mue, 'Lambda': (1-l_labmda)/2.0},
+                                        'L': {'Mue': l_mue, 'Lambda': l_labmda}}
 
-                        print(hyper_param_dict)
-                        big_df = benchmark_obj.score_queries(query_list=train_q_list,
-                                                             hyper_param_dict=hyper_param_dict)
+                    print(hyper_param_dict)
+                    big_df = benchmark_obj.score_queries(query_list=train_q_list,
+                                                         hyper_param_dict=hyper_param_dict)
 
-                        res_dict = get_score_retrieval_score_for_df(
-                            affix=affix,
-                            big_df=big_df,
-                            qrel_filepath=qrel_filepath,
-                            save_folder=save_folder)
-                        print(res_dict['all'])
-                        sys.stdout.flush()
-                        if res_dict['all']['NDCG@3'] > max_ndcg:
-                            max_ndcg = res_dict['all']['NDCG@3']
-                            best_config = hyper_param_dict
+                    res_dict = get_score_retrieval_score_for_df(
+                        affix=affix,
+                        big_df=big_df,
+                        qrel_filepath=qrel_filepath,
+                        save_folder=save_folder)
+                    print(res_dict['all'])
+                    sys.stdout.flush()
+                    if res_dict['all']['NDCG@3'] > max_ndcg:
+                        max_ndcg = res_dict['all']['NDCG@3']
+                        best_config = hyper_param_dict
+
+        for l_labmda in optional_lambda_list:
+            hyper_param_dict =  {'S': {'Mue': best_config['S']['Mue'], 'Lambda': (1-l_labmda)/2.0},
+                                 'M': {'Mue': best_config['M']['Mue'], 'Lambda': (1-l_labmda)/2.0},
+                                 'L': {'Mue': best_config['L']['Mue'], 'Lambda': l_labmda}}
+
+            big_df = benchmark_obj.score_queries(query_list=train_q_list,
+                                                hyper_param_dict=hyper_param_dict)
+
+            res_dict = get_score_retrieval_score_for_df(
+                affix=affix,
+                big_df=big_df,
+                qrel_filepath=qrel_filepath,
+                save_folder=save_folder)
+            print(res_dict['all'])
+            sys.stdout.flush()
+            if res_dict['all']['NDCG@3'] > max_ndcg:
+                max_ndcg = res_dict['all']['NDCG@3']
+                best_config = hyper_param_dict
+
         print("Best Config: " + str(best_config) + " NDCG@3 : " + str(max_ndcg))
         sys.stdout.flush()
         big_df = benchmark_obj.score_queries(query_list=test_q_list,
@@ -324,3 +344,4 @@ if __name__=="__main__":
     curr_file_name = inner_fold + '_' + retrieval_model + "_Results.txt"
     with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
         f.write(convert_df_to_trec(all_folds_df))
+        
