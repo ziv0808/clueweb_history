@@ -281,7 +281,7 @@ if __name__=="__main__":
         affix = inner_fold + '_' + str(start_test_q) + '_' + str(end_test_q) + "_" + retrieval_model + '_'
         train_q_list = query_list[:]
         test_q_list = []
-        for q in range(start_test_q, end_test_q):
+        for q in range(start_test_q, end_test_q + 1):
             if q in train_q_list:
                 train_q_list.remove(q)
                 test_q_list.append(q)
@@ -314,7 +314,6 @@ if __name__=="__main__":
                     if res_dict['all']['NDCG@3'] > max_ndcg:
                         max_ndcg = res_dict['all']['NDCG@3']
                         best_config = hyper_param_dict
-
         for l_labmda in optional_lambda_list:
             hyper_param_dict =  {'S': {'Mue': best_config['S']['Mue'], 'Lambda': (1-l_labmda)/2.0},
                                  'M': {'Mue': best_config['M']['Mue'], 'Lambda': (1-l_labmda)/2.0},
@@ -344,4 +343,3 @@ if __name__=="__main__":
     curr_file_name = inner_fold + '_' + retrieval_model + "_Results.txt"
     with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
         f.write(convert_df_to_trec(all_folds_df))
-        

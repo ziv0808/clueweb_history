@@ -272,7 +272,7 @@ if __name__=="__main__":
         start_test_q = int(fold[0])
         end_test_q = int(fold[1])
         test_q_list = []
-        for q in range(start_test_q, end_test_q):
+        for q in range(start_test_q, end_test_q + 1):
             if q in query_list:
                 test_q_list.append(q)
         fold_df = weighted_list_object.check_wieght_options_for_fold(test_q_list=test_q_list)
