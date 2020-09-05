@@ -1827,6 +1827,7 @@ def unite_asrc_data_results(
                 filename=filename,
                 qrel_filepath=qrel_filepath,
                 calc_ndcg_mrr=True)
+            print (len(tmp_res_dict.keys()))
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
             if feat_group.replace('_', '+') in big_res_dict:
