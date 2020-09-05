@@ -1828,7 +1828,7 @@ def unite_asrc_data_results(
                 qrel_filepath=qrel_filepath,
                 calc_ndcg_mrr=True)
             print (tmp_res_dict.keys())
-            if round_ == 6:
+            if round_ in [6,7]:
                 del tmp_res_dict[193]
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
