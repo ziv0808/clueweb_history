@@ -279,7 +279,7 @@ if __name__=="__main__":
 
         all_folds_df = all_folds_df.append(fold_df, ignore_index=True)
 
-    curr_file_name = inner_fold + '_' + retrieval_model + "_Results.txt"
+    curr_file_name = inner_fold + '_' + retrieval_model + '_' + rank_or_score + "_Results.txt"
     with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
         f.write(convert_df_to_trec(all_folds_df))
 
