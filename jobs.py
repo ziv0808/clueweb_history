@@ -1757,7 +1757,20 @@ def create_base_features_for_asrc(
 def unite_asrc_data_results(
         big_model,
         snap_limit,
-        ret_model):
+        ret_model,
+        additional_models_to_include = {
+            'F1' : {'Folder' : '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
+                    'FileTemplate' : 'asrc_0<RoundNum>_BM25_Results.txt'},
+            'F2': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+                   'FileTemplate': 'asrc_0<RoundNum>_BM25_Score_Results.txt'},
+            # 'F3': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+            #        'FileTemplate': 'asrc_0<RoundNum>_BM25_Results.txt'},
+            'ED KL': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark_sudomay/final_res/',
+                   'FileTemplate': 'asrc_0<RoundNum>_KL_Results.txt'},
+            'ED LM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark_sudomay/final_res/',
+                      'FileTemplate': 'asrc_0<RoundNum>_LM_Results.txt'},
+
+        }):
     from rank_svm_model import create_sinificance_df
     base_folder = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
     qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
@@ -1804,6 +1817,30 @@ def unite_asrc_data_results(
                 sys.stdout.flush()
                 big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
 
+        for model in additional_models_to_include:
+            filename = additional_models_to_include[model]['FileTemplate'].replace('<RoundNum>',str(round_))
+            path = additional_models_to_include[model]['Folder']
+            feat_group = model
+            tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                file_path=path,
+                filename=filename,
+                qrel_filepath=qrel_filepath,
+                calc_ndcg_mrr=True)
+            round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
+            print(feat_group)
+            if feat_group.replace('_', '+') in big_res_dict:
+                print(num_files)
+                sys.stdout.flush()
+                for q in tmp_res_dict:
+                    for measure in tmp_res_dict[q]:
+                        big_res_dict[feat_group.replace('_', '+')][q][measure] = (float(
+                            big_res_dict[feat_group][q][measure]) * (num_rounds - 1) + tmp_res_dict[q][measure]) / float(
+                            num_rounds)
+            else:
+                print("here!")
+                sys.stdout.flush()
+                big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
+
         measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
         round_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
         next_idx = 0
@@ -1824,6 +1861,7 @@ def unite_asrc_data_results(
             on=['FeatureGroup'],
             how='inner')
         round_res_dict[str(round_) + '_Sum'] = round_summary_df
+        round_summary_df.to_csv('ASRC_round_' + str(round_) + '_Summary.tsv', sep = '\t', index = False)
 
     measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
     big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
