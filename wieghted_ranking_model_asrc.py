@@ -237,11 +237,11 @@ class WeightedListRanker():
             big_df):
 
         curr_file_name = affix + "_Results.txt"
-        with open(os.path.join(self.save_folder, curr_file_name), 'w') as f:
+        with open(os.path.join(self.save_dirname, curr_file_name), 'w') as f:
             f.write(convert_df_to_trec(big_df))
 
         res_dict = get_ranking_effectiveness_for_res_file_per_query(
-            file_path=self.save_folder,
+            file_path=self.save_dirname,
             filename=curr_file_name,
             qrel_filepath=self.qrel_filepath,
             calc_ndcg_mrr=True)
