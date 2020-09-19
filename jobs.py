@@ -1493,7 +1493,9 @@ def handle_rank_svm_params(
 
 
 def asrc_data_parser(
-        filepath):
+        filepath,
+        inner_fold,
+        round_limit = None):
 
 
     with open(filepath, 'r') as f:
@@ -1524,7 +1526,7 @@ def asrc_data_parser(
         round_ = broken_docno[1]
         query_num = broken_docno[2]
         user = broken_docno[3]
-        if int(round_) == 0:
+        if (int(round_) == 0) or ((round_limit is not None) and (int(round_) > int(round_limit))):
             continue
 
         fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', fulltext)
@@ -1583,7 +1585,7 @@ def asrc_data_parser(
             big_doc_index[query_user_str] = {}
         if round_ not in big_doc_index[query_user_str]:
             big_doc_index[query_user_str][round_] = {'json' : res_dict,
-                                                    'docno': docno}
+                                                        'docno': docno}
         else:
             raise Exception("double ID")
 
@@ -1593,9 +1595,9 @@ def asrc_data_parser(
     df_dict['AVG_DOC_LEN'] = float(df_dict['AVG_DOC_LEN']) / df_dict['ALL_DOCS_COUNT']
     df_dict['AVG_DOC_LEN_NO_SW'] = float(df_dict['AVG_DOC_LEN_NO_SW']) / df_dict['ALL_DOCS_COUNT']
     # save cc and df dicts
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/cc_per_interval_dict.json', 'w') as f:
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+inner_fold+'/cc_per_interval_dict.json', 'w') as f:
         f.write(str(cc_dict))
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/df_per_interval_dict.json', 'w') as f:
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+inner_fold+'/df_per_interval_dict.json', 'w') as f:
         f.write(str(df_dict))
 
     # calc cc and df list for all
@@ -1620,17 +1622,19 @@ def asrc_data_parser(
                     query_stem_dict=query_to_stem_mapping[query_user_str.split('-')[0]],
                     df_dict=df_dict,
                     doc_dict=big_doc_index[query_user_str][round_]['json'])
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/RawData.json' , 'w') as f:
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+inner_fold+'/RawData.json' , 'w') as f:
         f.write(str(big_doc_index))
 
 
 def create_base_features_for_asrc(
-        rel_filepath):
+        rel_filepath,
+        inner_fold,
+        round_limit=None):
 
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/RawData.json', 'r') as f:
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/'+inner_fold+'/RawData.json', 'r') as f:
         big_doc_index = ast.literal_eval(f.read())
 
-    dataset_name = 'asrc'
+    # dataset_name = 'asrc'
     meta_data_base_fold = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/'
     col_list = ['NumSnapshots', 'QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
                  'QueryWords', 'Stopwords', 'TextLen', '-Query-SW','LMScore','BM25Score',
@@ -1648,17 +1652,19 @@ def create_base_features_for_asrc(
                  'QueryNum', 'Docno']
 
     all_rounds = ['01', '02', '03', '04', '05', '06', '07', '08']
+    if round_limit is not None:
+        all_rounds = all_rounds[:int(round_limit)]
     fin_df_dict = {}
     for round_ in all_rounds:
         fin_df_dict[round_] = {}
         fin_df_dict[round_]['FinDF'] = pd.DataFrame(columns = col_list)
         fin_df_dict[round_]['SnapDF'] = pd.DataFrame({})
         fin_df_dict[round_]['NextIdx'] = 0
-        if not os.path.exists('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+ dataset_name+ '_' + round_ + '/'):
-            os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+ dataset_name+ '_' + round_ + '/')
-            os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + dataset_name + '_' + round_ + '/2008/')
-            os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + dataset_name + '_' + round_ + '/2008/SIM/')
-            os.mkdir(os.path.join(meta_data_base_fold, dataset_name + '_' + round_))
+        if not os.path.exists('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+ inner_fold+ '_' + round_ + '/'):
+            os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+ inner_fold+ '_' + round_ + '/')
+            os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '_' + round_ + '/2008/')
+            os.mkdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + inner_fold + '_' + round_ + '/2008/SIM/')
+            os.mkdir(os.path.join(meta_data_base_fold, inner_fold + '_' + round_))
     sys.stdout.flush()
 
     base_feature_list = ['QueryTermsRatio', 'StopwordsRatio', 'Entropy', 'SimClueWeb',
@@ -1676,7 +1682,7 @@ def create_base_features_for_asrc(
                 if int(additional_round) < round_:
                     diff = str(int(additional_round) - round_)
                     res_dict[diff]= big_doc_index[query_user_str][additional_round]['json']
-            with open(os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+ dataset_name+ '_' + round_num + '/2008/SIM', docno +'.json'), 'w') as f:
+            with open(os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+ inner_fold+ '_' + round_num + '/2008/SIM', docno +'.json'), 'w') as f:
                 f.write(str(res_dict))
 
             curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'] + base_feature_list)
@@ -1735,7 +1741,7 @@ def create_base_features_for_asrc(
     print("Finished features!")
     sys.stdout.flush()
     meta_data_df = get_relevant_docs_df(rel_filepath)
-    filename = 'ASRC_All_features'
+    filename = inner_fold.upper() + '_All_features'
 
     # fin_df.to_csv(os.path.join(save_folder, filename + '_raw.tsv'), sep = '\t', index = False)
     # meta_data_df.to_csv(os.path.join(save_folder, filename + '_Meatdata.tsv'), sep = '\t', index = False)
@@ -1743,7 +1749,7 @@ def create_base_features_for_asrc(
     meta_data_df['Query'] = meta_data_df['Query'].apply(lambda x: int(x))
     for round_ in all_rounds:
         fin_df_dict[round_]['FinDF']['QueryNum'] = fin_df_dict[round_]['FinDF']['QueryNum'].apply(lambda x: int(x))
-        fin_df_dict[round_]['FinDF'][['Docno','QueryNum']].to_csv(os.path.join(os.path.join(meta_data_base_fold, dataset_name + '_' + round_), 'all_urls_no_spam_filtered.tsv'), sep = '\t', index = False)
+        fin_df_dict[round_]['FinDF'][['Docno','QueryNum']].to_csv(os.path.join(os.path.join(meta_data_base_fold, inner_fold + '_' + round_), 'all_urls_no_spam_filtered.tsv'), sep = '\t', index = False)
         fin_df_dict[round_]['FinDF'] = pd.merge(
             fin_df_dict[round_]['FinDF'],
             meta_data_df.rename(columns = {'Query' : 'QueryNum'}),
