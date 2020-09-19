@@ -2107,11 +2107,15 @@ if __name__ == '__main__':
 
     elif operation == 'ASRCMeta':
         filepath = sys.argv[2]
-        asrc_data_parser(filepath)
+        inner_fold = sys.argv[3]
+        round_limit = sys.argv[4]
+        asrc_data_parser(filepath, inner_fold, round_limit)
 
     elif operation == 'ASRCFeat':
         rel_filepath = sys.argv[2]
-        create_base_features_for_asrc(rel_filepath)
+        inner_fold = sys.argv[3]
+        round_limit = sys.argv[4]
+        create_base_features_for_asrc(rel_filepath, inner_fold, round_limit)
 
     elif operation == 'ASRCFileUnite':
         big_model = sys.argv[2]
