@@ -199,14 +199,14 @@ if __name__=='__main__':
         for weight_list_type in ['Uniform', 'Decaying', 'RDecaying']:
             # run on test set
             big_df, weight_list = run_test_on_config(
-                weight_list=best_config_dict[weight_list_type]['WList'],
+                weight_list=best_config_dict[weight_list_type]['BestWieghts'],
                 tmp_weights_df=best_config_dict[weight_list_type]['WDf'],
                 stemmed_queries_df=test_queries_df,
                 query_to_doc_mapping_df=query_to_doc_mapping_df,
                 all_global_params_dict=all_global_params_dict,
                 retrival_model=retrival_model,
                 params=params,
-                cw_interval_weight=best_config_dict[weight_list_type]['WList'][-1])
+                cw_interval_weight=best_config_dict[weight_list_type]['BestWieghts'][-1])
 
             all_folds_df_dict[weight_list_type] = all_folds_df_dict[weight_list_type].append(big_df , ignore_index=True)
             all_fold_params_summary[weight_list_type] += start_test_q + '_' + end_test_q + '\t' + str(best_config_dict[weight_list_type]['BestWieghts']) + '\n'
