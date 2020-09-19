@@ -209,7 +209,7 @@ if __name__=='__main__':
                 cw_interval_weight=best_config_dict[weight_list_type]['BestWieghts'][-1])
 
             all_folds_df_dict[weight_list_type] = all_folds_df_dict[weight_list_type].append(big_df , ignore_index=True)
-            all_fold_params_summary[weight_list_type] += start_test_q + '_' + end_test_q + '\t' + str(best_config_dict[weight_list_type]['BestWieghts']) + '\n'
+            all_fold_params_summary[weight_list_type] += str(start_test_q) + '_' + str(end_test_q) + '\t' + str(best_config_dict[weight_list_type]['BestWieghts']) + '\n'
 
     for weight_list_type in ['Uniform', 'Decaying', 'RDecaying']:
         curr_file_name = inner_fold + '_' + retrival_model + '_' + weight_list_type + "_Results.txt"

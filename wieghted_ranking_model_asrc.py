@@ -291,7 +291,7 @@ if __name__=="__main__":
 
         for weight_list_type in ['Uniform', 'Decaying', 'RDecaying']:
             all_folds_df_dict[weight_list_type] = all_folds_df_dict[weight_list_type].append(fold_df_dict[weight_list_type], ignore_index=True)
-            all_fold_params_summary[weight_list_type] += start_test_q + '_' + end_test_q + '\t' + str(best_params_dict[weight_list_type]['BestK']) +\
+            all_fold_params_summary[weight_list_type] += str(start_test_q) + '_' + str(end_test_q) + '\t' + str(best_params_dict[weight_list_type]['BestK']) +\
                                                         '\t' + str(best_params_dict[weight_list_type]['BestWieghts']) + '\n'
 
     for weight_list_type in ['Uniform','Decaying','RDecaying']:
