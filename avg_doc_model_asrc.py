@@ -76,8 +76,11 @@ if __name__=='__main__':
     wieght_for_last_interval_options = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     optional_decay_weights_k = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95]
 
-
-    all_folds_df = pd.DataFrame({})
+    all_folds_df_dict = {}
+    all_fold_params_summary = {}
+    for weight_list_type in ['Uniform', 'Decaying', 'RDecaying']:
+        all_folds_df_dict[weight_list_type] = pd.DataFrame({})
+        all_fold_params_summary[weight_list_type] = "Fold" + '\t' + "Weights" + '\n'
     q_list, fold_list = get_asrc_q_list_and_fold_list()
     for fold in fold_list:
         start_test_q = int(fold[0])
@@ -116,8 +119,11 @@ if __name__=='__main__':
         for element in all_global_params_dict:
             all_global_params_dict[element] = all_global_params_dict[element].applymap(lambda x: 0.0 if np.isnan(x) else x)
 
-        best_ndcg = 0.0
-        best_config = {'WList' : None, 'WDf' : None}
+        best_config_dict = {
+            'Uniform': {'BestNDCG': 0.0, 'WDf': None, 'BestWieghts': None},
+            'Decaying': {'BestNDCG': 0.0, 'WDf': None, 'BestWieghts': None},
+            'RDecaying': {'BestNDCG': 0.0, 'WDf': None, 'BestWieghts': None},
+        }
         for i in range(len(interval_list) - 1):
             for cw_interval_weight in wieght_for_last_interval_options:
                 ignore_idxs = list(range(i))
@@ -127,7 +133,9 @@ if __name__=='__main__':
                     ignore_idxs=ignore_idxs,
                     interval_list=interval_list,
                     optional_decay_weights_k=optional_decay_weights_k)
-                for weight_list in weight_list_options:
+                for weight_list_config in weight_list_options:
+                    weight_list = weight_list_config[0]
+                    weight_list_type = weight_list_config[1]
                     tmp_weights_df = create_weights_matrix(
                         all_weights_df=all_weights_df,
                         weight_list=weight_list,
@@ -153,10 +161,10 @@ if __name__=='__main__':
                     print(affix  + " " + "SCORE : " + str(res_dict['all']))
                     sys.stdout.flush()
 
-                    if res_dict['all']['NDCG@3'] > best_ndcg:
-                        best_ndcg = res_dict['all']['NDCG@3']
-                        best_config['WList'] = weight_list
-                        best_config['WDf'] = tmp_weights_df
+                    if res_dict['all']['NDCG@3'] > best_config_dict[weight_list_type]['BestNDCG']:
+                        best_config_dict[weight_list_type]['BestNDCG'] = res_dict['all']['NDCG@3']
+                        best_config_dict[weight_list_type]['BestWieghts'] = weight_list
+                        best_config_dict[weight_list_type]['WDf'] = tmp_weights_df
 
         # test the benchmark case - only last interval
         tmp_weights_df = tmp_weights_df.applymap(lambda x: 0.0)
@@ -182,28 +190,33 @@ if __name__=='__main__':
         print(affix + " " + str(weight_list))
         print(affix + " " + "SCORE : " + str(res_dict['all']))
         sys.stdout.flush()
+        for weight_list_type in ['Uniform','Decaying','RDecaying']:
+            if res_dict['all']['NDCG@3'] >  best_config_dict[weight_list_type]['BestNDCG']:
+                best_config_dict[weight_list_type]['BestNDCG'] = res_dict['all']['NDCG@3']
+                best_config_dict[weight_list_type]['BestWieghts'] = weight_list
+                best_config_dict[weight_list_type]['WDf'] = tmp_weights_df
 
-        if res_dict['all']['NDCG@3'] > best_ndcg:
-            best_ndcg = res_dict['all']['NDCG@3']
-            best_config['WList'] = weight_list
-            best_config['WDf'] = tmp_weights_df
+        for weight_list_type in ['Uniform', 'Decaying', 'RDecaying']:
+            # run on test set
+            big_df, weight_list = run_test_on_config(
+                weight_list=best_config_dict[weight_list_type]['WList'],
+                tmp_weights_df=best_config_dict[weight_list_type]['WDf'],
+                stemmed_queries_df=test_queries_df,
+                query_to_doc_mapping_df=query_to_doc_mapping_df,
+                all_global_params_dict=all_global_params_dict,
+                retrival_model=retrival_model,
+                params=params,
+                cw_interval_weight=best_config_dict[weight_list_type]['WList'][-1])
 
-        # run on test set
-        big_df, weight_list = run_test_on_config(
-            weight_list=best_config['WList'],
-            tmp_weights_df=best_config['WDf'],
-            stemmed_queries_df=test_queries_df,
-            query_to_doc_mapping_df=query_to_doc_mapping_df,
-            all_global_params_dict=all_global_params_dict,
-            retrival_model=retrival_model,
-            params=params,
-            cw_interval_weight=best_config['WList'][-1])
+            all_folds_df_dict[weight_list_type] = all_folds_df_dict[weight_list_type].append(big_df , ignore_index=True)
+            all_fold_params_summary[weight_list_type] += start_test_q + '_' + end_test_q + '\t' + str(best_config_dict[weight_list_type]['BestWieghts']) + '\n'
 
-        all_folds_df = all_folds_df.append(big_df , ignore_index=True)
-
-    curr_file_name = inner_fold + '_' + retrival_model + "_Results.txt"
-    with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
-        f.write(convert_df_to_trec(all_folds_df))
+    for weight_list_type in ['Uniform', 'Decaying', 'RDecaying']:
+        curr_file_name = inner_fold + '_' + retrival_model + '_' + weight_list_type + "_Results.txt"
+        with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
+            f.write(convert_df_to_trec(all_folds_df_dict[weight_list_type]))
+        with open(os.path.join(save_folder + 'final_res/', curr_file_name.replace('_Results', '_Params')), 'w') as f:
+            f.write(all_fold_params_summary[weight_list_type])
 
 
 

@@ -253,11 +253,12 @@ def make_weight_list_options(
         ignore_idxs,
         interval_list,
         optional_decay_weights_k):
+
     weight_list_options = []
     weight_list = create_uniform_wieghts_list(
         interval_list=interval_list,
         skip_idx_list=ignore_idxs)
-    weight_list_options.append(weight_list)
+    weight_list_options.append((weight_list, 'Uniform'))
     if len(ignore_idxs) < (len(interval_list) - 1):
         for k in optional_decay_weights_k:
             weight_list = create_decaying_wieghts_list(
@@ -265,13 +266,13 @@ def make_weight_list_options(
                 decaying_factor = k,
                 skip_idx_list = ignore_idxs,
                 reverse = True)
-            weight_list_options.append(weight_list)
+            weight_list_options.append((weight_list, 'RDecaying'))
             weight_list = create_decaying_wieghts_list(
                 interval_list=interval_list,
                 decaying_factor=k,
                 skip_idx_list=ignore_idxs,
                 reverse=False)
-            weight_list_options.append(weight_list)
+            weight_list_options.append((weight_list, 'Decaying'))
     return weight_list_options
 
 def run_test_on_config(

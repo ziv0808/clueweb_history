@@ -171,7 +171,11 @@ class WeightedListRanker():
             self,
             test_q_list):
 
-        max_ndcg = 0.0
+        best_config_dict = {
+            'Uniform'   : {'BestNDCG' : 0.0, 'BestK' : None, 'BestWieghts' : None},
+            'Decaying'  : {'BestNDCG': 0.0, 'BestK': None, 'BestWieghts': None},
+            'RDecaying' : {'BestNDCG': 0.0, 'BestK': None, 'BestWieghts': None},
+        }
         all_inteval_indexs = list(range(len(self.interval_list)))
         self.data_df['IsTest'] = self.data_df['Query_ID'].apply(lambda x: True if x in test_q_list else False)
         self.wieght_multiplier_df['IsTest'] = self.wieght_multiplier_df['Query_ID'].apply(lambda x: True if x in test_q_list else False)
@@ -192,21 +196,23 @@ class WeightedListRanker():
                 # uniform weights
                 list_of_weight_lists = []
                 weight_list = self.create_uniform_wieghts(curr_ignore_idx_list)
-                list_of_weight_lists.append(weight_list)
+                list_of_weight_lists.append((weight_list, 'Uniform'))
                 for decay_factor in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95]:
                     # decying weights
                     weight_list = self.create_decaying_wieghts(
                         decaying_factor=decay_factor,
                         skip_idx_list=curr_ignore_idx_list,
                         reverse=False)
-                    list_of_weight_lists.append(weight_list)
+                    list_of_weight_lists.append((weight_list, 'Decaying'))
                     weight_list = self.create_decaying_wieghts(
                         decaying_factor=decay_factor,
                         skip_idx_list=curr_ignore_idx_list,
                         reverse=True)
-                    list_of_weight_lists.append(weight_list)
+                    list_of_weight_lists.append((weight_list, 'RDecaying'))
 
-                for weight_list in list_of_weight_lists:
+                for weight_list_config in list_of_weight_lists:
+                    weight_list = weight_list_config[0]
+                    weight_list_type = weight_list_config[1]
                     res_df = self.get_score_for_weight_vector(
                             work_data_df=train_df,
                             wieght_multiplier_df=train_wieght_mul_df,
@@ -216,20 +222,22 @@ class WeightedListRanker():
                         affix=self.affix + str(test_q_list[0]) +'_' + str(test_q_list[-1]),
                         big_df=res_df)
 
-                    if res_dict['all']['NDCG@3'] > max_ndcg:
-                        max_ndcg = res_dict['all']['NDCG@3']
-                        best_wieghts = weight_list
-                        best_k = K
-                        print("Curr Best config gets NDCG@3: " +str(max_ndcg))
+                    if res_dict['all']['NDCG@3'] > best_config_dict[weight_list_type]['BestNDCG']:
+                        best_config_dict[weight_list_type]['BestNDCG'] = res_dict['all']['NDCG@3']
+                        best_config_dict[weight_list_type]['BestWieghts'] = weight_list
+                        best_config_dict[weight_list_type]['BestK'] = K
+                        print("Curr Best " + weight_list_type + " config gets NDCG@3: " +str(best_config_dict[weight_list_type]['BestNDCG']))
                         sys.stdout.flush()
+        res_df_dict = {}
+        for weight_list_type in best_config_dict.keys():
+            res_df = self.get_score_for_weight_vector(
+                work_data_df=test_df,
+                wieght_multiplier_df=test_wieght_mul_df,
+                weight_list=best_config_dict[weight_list_type]['BestWieghts'],
+                rank_at_k=best_config_dict[weight_list_type]['BestK'])
+            res_df_dict[weight_list_type] = res_df
 
-        res_df = self.get_score_for_weight_vector(
-            work_data_df=test_df,
-            wieght_multiplier_df=test_wieght_mul_df,
-            weight_list=best_wieghts,
-            rank_at_k=best_k)
-
-        return res_df
+        return res_df_dict, best_config_dict
 
     def get_score_retrieval_score_for_df(
             self,
@@ -267,7 +275,11 @@ if __name__=="__main__":
     sys.stdout.flush()
 
     query_list, fold_list = get_asrc_q_list_and_fold_list()
-    all_folds_df = pd.DataFrame({})
+    all_folds_df_dict = {}
+    all_fold_params_summary = {}
+    for weight_list_type in ['Uniform','Decaying','RDecaying']:
+        all_folds_df_dict[weight_list_type] = pd.DataFrame({})
+        all_fold_params_summary[weight_list_type] = "Fold" + '\t' + "K" + '\t' + "Weights" + '\n'
     for fold in fold_list:
         start_test_q = int(fold[0])
         end_test_q = int(fold[1])
@@ -275,14 +287,19 @@ if __name__=="__main__":
         for q in range(start_test_q, end_test_q + 1):
             if q in query_list:
                 test_q_list.append(q)
-        fold_df = weighted_list_object.check_wieght_options_for_fold(test_q_list=test_q_list)
+        fold_df_dict, best_params_dict = weighted_list_object.check_wieght_options_for_fold(test_q_list=test_q_list)
 
-        all_folds_df = all_folds_df.append(fold_df, ignore_index=True)
+        for weight_list_type in ['Uniform', 'Decaying', 'RDecaying']:
+            all_folds_df_dict[weight_list_type] = all_folds_df_dict[weight_list_type].append(fold_df_dict[weight_list_type], ignore_index=True)
+            all_fold_params_summary[weight_list_type] += start_test_q + '_' + end_test_q + '\t' + str(best_params_dict[weight_list_type]['BestK']) +\
+                                                        '\t' + str(best_params_dict[weight_list_type]['BestWieghts']) + '\n'
 
-    curr_file_name = inner_fold + '_' + retrieval_model + '_' + rank_or_score + "_Results.txt"
-    with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
-        f.write(convert_df_to_trec(all_folds_df))
-
+    for weight_list_type in ['Uniform','Decaying','RDecaying']:
+        curr_file_name = inner_fold + '_' + retrieval_model + '_' + rank_or_score + '_' + weight_list_type + "_Results.txt"
+        with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
+            f.write(convert_df_to_trec(all_folds_df_dict[weight_list_type]))
+        with open(os.path.join(save_folder + 'final_res/', curr_file_name.replace('_Results', '_Params')), 'w') as f:
+            f.write(all_fold_params_summary[weight_list_type])
 
 
 
