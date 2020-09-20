@@ -650,7 +650,10 @@ def bm25_score_doc_for_query(
                 doc_stem_tf = float(doc_dict['TfDict'][stem])
 
         if stem not in df_dict:
-            raise Exception('Unexpected Situation')
+            if doc_stem_tf == 0:
+                continue
+            else:
+                raise Exception('Unexpected Situation on ' + str(stem))
 
         idf = math.log(df_dict['ALL_DOCS_COUNT'] / float(df_dict[stem]), 10)
         stem_d_proba = (doc_stem_tf * (k1 + 1)) / (
@@ -677,7 +680,10 @@ def lm_score_doc_for_query(
 
 
         if stem not in cc_dict:
-            raise Exception('Unexpected Situation on ' + str(stem))
+            if doc_stem_tf == 0:
+                continue
+            else:
+                raise Exception('Unexpected Situation on ' + str(stem))
 
         query_tf = 0
         if stem in query_stem_dict:
