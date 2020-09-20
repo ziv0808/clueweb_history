@@ -677,7 +677,7 @@ def lm_score_doc_for_query(
 
 
         if stem not in cc_dict:
-            raise Exception('Unexpected Situation')
+            raise Exception('Unexpected Situation on ' + str(stem))
 
         query_tf = 0
         if stem in query_stem_dict:
