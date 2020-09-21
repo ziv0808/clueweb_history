@@ -15,7 +15,7 @@ class Benchmark:
             retrieval_model = 'KL'):
 
         # create interval list
-        asrc_round = int(inner_fold.split('_')[1])
+        asrc_round = int(inner_fold.split('_')[-1])
         self.interval_list = build_interval_list_asrc(
             asrc_round=asrc_round,
             add_last=True)
@@ -262,7 +262,14 @@ if __name__=="__main__":
     retrieval_model = sys.argv[2]
 
     print('Retrivel Model: ' + retrieval_model)
-    qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel'
+
+    if 'asrc' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel'
+    elif 'bot' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents_fixed.relevance'
+    elif 'herd_control' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel'
+
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark_sudomay/'
 
     print('Time: ' + str(datetime.datetime.now()))
@@ -273,7 +280,7 @@ if __name__=="__main__":
     print("Obj Created!")
     print('Time: ' + str(datetime.datetime.now()))
     sys.stdout.flush()
-    query_list, fold_list = get_asrc_q_list_and_fold_list()
+    query_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold)
     all_folds_df = pd.DataFrame({})
     for fold in fold_list:
         start_test_q = int(fold[0])

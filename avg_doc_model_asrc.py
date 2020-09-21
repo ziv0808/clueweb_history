@@ -63,9 +63,15 @@ if __name__=='__main__':
     retrival_model = sys.argv[2]
     sw_rmv = True
     filter_params = {}
-    asrc_round = int(inner_fold.split('_')[1])
+    asrc_round = int(inner_fold.split('_')[-1])
 
-    qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel'
+    if 'asrc' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel'
+    elif 'bot' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents_fixed.relevance'
+    elif 'herd_control' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel'
+
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+inner_fold+'/2008/SIM/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/'
 
@@ -81,7 +87,7 @@ if __name__=='__main__':
     for weight_list_type in ['Uniform', 'Decaying', 'RDecaying']:
         all_folds_df_dict[weight_list_type] = pd.DataFrame({})
         all_fold_params_summary[weight_list_type] = "Fold" + '\t' + "Weights" + '\n'
-    q_list, fold_list = get_asrc_q_list_and_fold_list()
+    q_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold)
     for fold in fold_list:
         start_test_q = int(fold[0])
         end_test_q = int(fold[1])

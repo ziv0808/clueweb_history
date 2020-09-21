@@ -16,7 +16,7 @@ class WeightedListRanker():
             base_save_folder,
             retrieval_model = 'BM25'):
 
-        asrc_round = int(inner_fold.split('_')[1])
+        asrc_round = int(inner_fold.split('_')[-1])
         self.interval_list = build_interval_list_asrc(
             asrc_round=asrc_round,
             add_last=True)
@@ -48,18 +48,19 @@ class WeightedListRanker():
     def pre_process_data(
             self,
             rank_or_score,
-            retrieval_model):
+            retrieval_model,
+            inner_fold):
         # initiate all scores df
         first = True
         for interval in self.interval_list[::-1]:
             print("Interval : " + interval)
             sys.stdout.flush()
             if interval == 'ClueWeb09':
-                filename = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/','ASRC_All_features_Round0' +str(len(self.interval_list)) + '_with_meta.tsv')
+                filename = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/',inner_fold.replace('_0'+str(len(self.interval_list)),'').upper()+'_All_features_Round0' +str(len(self.interval_list)) + '_with_meta.tsv')
                 curr_df = pd.read_csv(filename, sep = '\t', index_col = False)
             else:
                 filename = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/',
-                                        'ASRC_All_features_Round0' + str(len(self.interval_list)) + '_all_snaps.tsv')
+                                        inner_fold.replace('_0'+str(len(self.interval_list)),'').upper()+ '_All_features_Round0' + str(len(self.interval_list)) + '_all_snaps.tsv')
                 curr_df = pd.read_csv(filename, sep='\t', index_col=False)
                 curr_df = curr_df[curr_df['Interval'] == int(interval)]
             print("filename : " + filename)
@@ -261,7 +262,13 @@ if __name__=="__main__":
     retrieval_model = sys.argv[2]
     rank_or_score = sys.argv[3]
     print('Retrivel Model: ' + retrieval_model)
-    qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel'
+    if 'asrc' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel'
+    elif 'bot' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents_fixed.relevance'
+    elif 'herd_control' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel'
+
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/'
 
     weighted_list_object = WeightedListRanker(
@@ -274,7 +281,7 @@ if __name__=="__main__":
     print("Object Created...")
     sys.stdout.flush()
 
-    query_list, fold_list = get_asrc_q_list_and_fold_list()
+    query_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold)
     all_folds_df_dict = {}
     all_fold_params_summary = {}
     for weight_list_type in ['Uniform','Decaying','RDecaying']:
