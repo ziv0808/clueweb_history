@@ -34,7 +34,7 @@ class WeightedListRanker():
         # for i in range(len(self.test_set_q)):
         #     self.test_set_q[i] = '0'*(3-len(str(self.test_set_q[i]))) + str(self.test_set_q[i])
 
-        self.pre_process_data(rank_or_score=rank_or_score,retrieval_model=retrieval_model)
+        self.pre_process_data(rank_or_score=rank_or_score,retrieval_model=retrieval_model,inner_fold=inner_fold)
 
     def save_log(self):
         with open(os.path.join(self.save_dirname, "Log_" + self.save_files_suffix ), 'a') as f:
