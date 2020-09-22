@@ -640,6 +640,17 @@ def create_fold_list_for_cv(
                      (98, 144), (161, 166), (167, 180), (182, 195)]
         q_list = [2, 4, 9, 10, 11, 17, 18, 29, 32, 33, 34, 36, 45, 48, 51, 59, 69, 78, 98, 124, 144, 161, 164, 166, 167, 177, 180, 182, 188, 193, 195]
         query_bulk = 3
+    elif 'BOT' in base_feature_filename:
+        fold_list = [(10, 13), (18, 32), (33, 34), (48, 51), (69, 167), (177, 177),
+                     (180, 180), (182, 182), (193, 193), (195, 195)]
+
+        q_list = [10, 13, 18, 32, 33, 34, 48, 51, 69, 167, 177, 180, 182, 193, 195]
+    elif 'HERD_CONTROL' in base_feature_filename:
+        fold_list = [(4, 10), (11, 18), (29, 33), (34, 45), (48, 59), (69, 98),
+                     (124, 161), (164, 167), (177, 182), (188, 195)]
+
+        q_list = [4, 9, 10, 11, 17, 18, 29, 32, 33, 34, 36, 45, 48, 51, 59, 69, 78, 98, 124, 144, 161, 164, 166, 167, 177,
+                  180, 182, 188, 193, 195]
     else:
         fold_list = [(201, 210), (211, 220), (221, 230), (231, 240), (241, 250),
                    (251, 260), (261, 270), (271, 280), (281, 290), (291, 300)]
@@ -812,6 +823,10 @@ def run_grid_search_over_params_for_config(
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
     elif 'ASRC' in base_feature_filename:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
+    elif 'BOT' in base_feature_filename:
+        qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents_fixed.relevance"
+    elif 'HERD_CONTROL' in base_feature_filename:
+        qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel"
     else:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
 
