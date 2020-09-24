@@ -651,6 +651,12 @@ def create_fold_list_for_cv(
 
         q_list = [4, 9, 10, 11, 13, 17, 18, 29, 32, 33, 34, 45, 48, 51, 59, 69, 78, 98, 124, 144, 161, 164, 166, 167, 177,
                   180, 182, 188, 193, 195]
+    elif 'UNITED' in base_feature_filename:
+        fold_list = [(2, 9), (10, 17), (18, 32), (33, 36), (45, 51), (59, 78),
+                     (98, 144), (161, 166), (167, 180), (182, 195)]
+
+        q_list = [2, 4, 9, 10, 11, 13, 17, 18, 29, 32, 33, 34, 36, 45, 48, 51, 59, 69, 78, 98, 124, 144, 161, 164, 166, 167, 177,
+                  180, 182, 188, 193, 195]
     else:
         fold_list = [(201, 210), (211, 220), (221, 230), (231, 240), (241, 250),
                    (251, 260), (261, 270), (271, 280), (281, 290), (291, 300)]
@@ -827,6 +833,8 @@ def run_grid_search_over_params_for_config(
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents_fixed.relevance"
     elif 'HERD_CONTROL' in base_feature_filename:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel"
+    elif 'UNITED' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel'
     else:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
 

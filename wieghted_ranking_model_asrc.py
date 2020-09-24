@@ -268,6 +268,8 @@ if __name__=="__main__":
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents_fixed.relevance'
     elif 'herd_control' in inner_fold:
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel'
+    elif 'united' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel'
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/'
 
