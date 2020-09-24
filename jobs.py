@@ -1587,7 +1587,7 @@ def asrc_data_parser(
             big_doc_index[query_user_str][round_] = {'json' : res_dict,
                                                         'docno': docno}
         else:
-            raise Exception("double ID")
+            raise Exception("double ID " + docno)
 
 
     print("Step 2...")
