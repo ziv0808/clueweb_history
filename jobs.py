@@ -2136,7 +2136,7 @@ if __name__ == '__main__':
         snap_limit = int(sys.argv[3])
         ret_model = sys.argv[4]
         dataset_name = sys.argv[5]
-        round_limit = sys.argv[6]
+        round_limit = int(sys.argv[6])
 
         unite_asrc_data_results(
             big_model=big_model,
