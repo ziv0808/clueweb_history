@@ -1764,17 +1764,31 @@ def unite_asrc_data_results(
         big_model,
         snap_limit,
         ret_model,
+        dataset_name,
+        round_limit,
         additional_models_to_include = {
-            'F1' : {'Folder' : '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
-                    'FileTemplate' : 'asrc_0<RoundNum>_BM25_Results.txt'},
-            'F2': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
-                   'FileTemplate': 'asrc_0<RoundNum>_BM25_Score_Results.txt'},
-            'F3': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
-                   'FileTemplate': 'asrc_0<RoundNum>_BM25_Results.txt'},
+            'F1 UW' : {'Folder' : '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
+                    'FileTemplate' : '<DatasetName>_0<RoundNum>_BM25_Uniform_Results.txt'},
+            'F2 UW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+                   'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Score_Uniform_Results.txt'},
+            'F3 UW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+                   'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Uniform_Results.txt'},
+            'F1 IW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
+                      'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Decaying_Results.txt'},
+            'F2 IW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+                      'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Score_Decaying_Results.txt'},
+            'F3 IW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+                      'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Decaying_Results.txt'},
+            'F1 DW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
+                      'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_RDecaying_Results.txt'},
+            'F2 DW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+                      'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Score_RDecaying_Results.txt'},
+            'F3 DW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+                      'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_RDecaying_Results.txt'},
             'ED KL': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark_sudomay/final_res/',
-                   'FileTemplate': 'asrc_0<RoundNum>_KL_Results.txt'},
+                   'FileTemplate': '<DatasetName>_0<RoundNum>_KL_Results.txt'},
             'ED LM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark_sudomay/final_res/',
-                      'FileTemplate': 'asrc_0<RoundNum>_LM_Results.txt'},
+                      'FileTemplate': '<DatasetName>_0<RoundNum>_LM_Results.txt'},
 
         }):
     from rank_svm_model import create_sinificance_df
@@ -1794,8 +1808,8 @@ def unite_asrc_data_results(
     round_res_dict = {}
     num_files = 0
     num_rounds = 0
-    for round_ in range(2,9):
-        inner_fold = 'ASRC_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
+    for round_ in range(2,round_limit + 1):
+        inner_fold = dataset_name.upper() + '_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
         inner_fold = os.path.join(base_2_folder, inner_fold)
         round_res_dict[round_] = {}
         num_rounds += 1
@@ -1824,7 +1838,7 @@ def unite_asrc_data_results(
                 big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
 
         for model in additional_models_to_include:
-            filename = additional_models_to_include[model]['FileTemplate'].replace('<RoundNum>',str(round_))
+            filename = additional_models_to_include[model]['FileTemplate'].replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset_name)
             path = additional_models_to_include[model]['Folder']
             print(filename)
             feat_group = model
@@ -2121,6 +2135,8 @@ if __name__ == '__main__':
         big_model = sys.argv[2]
         snap_limit = int(sys.argv[3])
         ret_model = sys.argv[4]
+        dataset_name = sys.argv[5]
+        round_limit = sys.argv[6]
 
         unite_asrc_data_results(
             big_model=big_model,
