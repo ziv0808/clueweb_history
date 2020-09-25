@@ -833,7 +833,7 @@ def run_grid_search_over_params_for_config(
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents_fixed.relevance"
     elif 'HERD_CONTROL' in base_feature_filename:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel"
-    elif 'UNITED' in inner_fold:
+    elif 'UNITED' in base_feature_filename:
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel'
     else:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels_cw12.adhoc"
