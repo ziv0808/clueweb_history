@@ -2141,7 +2141,9 @@ if __name__ == '__main__':
         unite_asrc_data_results(
             big_model=big_model,
             snap_limit=snap_limit,
-            ret_model=ret_model)
+            ret_model=ret_model,
+            dataset_name=dataset_name,
+            round_limit=round_limit)
     elif operation == 'ASRCSVMWeights':
         snap_limit = int(sys.argv[2])
         ret_model = sys.argv[3]
