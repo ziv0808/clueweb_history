@@ -1921,7 +1921,7 @@ def unite_asrc_data_results(
         on=['FeatureGroup'],
         how='inner')
 
-    big_summary_df.to_csv(os.path.join(base_folder, 'ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'.tsv'), sep = '\t' ,index = False)
+    big_summary_df.to_csv(os.path.join(base_folder, dataset_name.upper()+ '_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'.tsv'), sep = '\t' ,index = False)
 
     for measure in ['NDCG@1', 'NDCG@3', 'MRR']:
         measure_df = pd.DataFrame({})
@@ -1949,7 +1949,7 @@ def unite_asrc_data_results(
         plt.title(measure + ' Over Rounds')
         plt.xlabel('round')
         plt.ylabel(measure)
-        plt.savefig('ASRC_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+big_model+ '_' +measure + '.png', dpi =300)
+        plt.savefig(dataset_name.upper()+'_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+big_model+ '_' +measure + '.png', dpi =300)
 
 
 def handle_rank_svm_params_asrc(
