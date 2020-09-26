@@ -1858,7 +1858,7 @@ def unite_asrc_data_results(
                 qrel_filepath=qrel_filepath,
                 calc_ndcg_mrr=True)
             print (tmp_res_dict.keys())
-            if round_ == 2 and dataset_name == 'herd_control':
+            if dataset_name == 'herd_control':
                 del tmp_res_dict[59]
             if round_ in [6,7]:
                 del tmp_res_dict[193]
