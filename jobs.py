@@ -1834,7 +1834,7 @@ def unite_asrc_data_results(
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
-            if dataset_name == 'herd_control':
+            if dataset_name == 'herd_control' and round_ != 2:
                 del tmp_res_dict[59]
             if feat_group.replace('_', '+') in big_res_dict:
                 print(num_files)
