@@ -1793,7 +1793,15 @@ def unite_asrc_data_results(
         }):
     from rank_svm_model import create_sinificance_df
     base_folder = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
-    qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
+    if dataset_name == 'asrc':
+        qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
+    elif dataset_name == 'bot':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents_fixed.relevance'
+    elif dataset_name == 'herd_control':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel'
+    elif dataset_name == 'united':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel'
+
     if big_model == 'SVMRank':
         base_folder = os.path.join(base_folder, 'rank_svm_res')
     else:
