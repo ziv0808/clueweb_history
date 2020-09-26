@@ -1921,7 +1921,7 @@ def unite_asrc_data_results(
 
     for measure in ['NDCG@1', 'NDCG@3', 'MRR']:
         measure_df = pd.DataFrame({})
-        for round_ in range(2, 9):
+        for round_ in range(2, round_limit + 1):
             round_df = round_res_dict[str(round_) + '_Sum'].rename(columns = {measure : str(round_)})
             round_df[str(round_)] = round_df[str(round_)].apply(lambda x: round(x, 3))
             if measure_df.empty == True:
