@@ -114,6 +114,7 @@ def create_df_cc_dict(
 
 
 def get_results_for_params(
+        stemmed_queries_df,
         all_query_doc_df,
         all_global_params_dict,
         interval_list,
@@ -324,7 +325,8 @@ if __name__=='__main__':
         for balpha in alpha_for_burst_options:
             init_params['BAlpha'] = balpha
             big_df = get_results_for_params(
-                all_query_doc_df = train_queries_df,
+                stemmed_queries_df = train_queries_df,
+                all_query_doc_df = query_to_doc_mapping_df,
                 all_global_params_dict = all_global_params_dict,
                 interval_list = interval_list,
                 df_cc_dict = df_cc_dict,
@@ -359,7 +361,8 @@ if __name__=='__main__':
             for param_option in alpha_beta_decay_weights:
                 init_params[parameter_to_opt] = param_option
                 big_df = get_results_for_params(
-                    all_query_doc_df=train_queries_df,
+                    stemmed_queries_df=train_queries_df,
+                    all_query_doc_df=query_to_doc_mapping_df,
                     all_global_params_dict=all_global_params_dict,
                     interval_list=interval_list,
                     df_cc_dict=df_cc_dict,
@@ -393,7 +396,8 @@ if __name__=='__main__':
                     init_params['Burst']  = wieght_option_b
                     init_params['Reg']    = wieght_option_r
                     big_df = get_results_for_params(
-                        all_query_doc_df=train_queries_df,
+                        stemmed_queries_df=train_queries_df,
+                        all_query_doc_df=query_to_doc_mapping_df,
                         all_global_params_dict=all_global_params_dict,
                         interval_list=interval_list,
                         df_cc_dict=df_cc_dict,
@@ -418,7 +422,8 @@ if __name__=='__main__':
                         print(best_config_dict)
         # test set run
         test_fold_df = get_results_for_params(
-            all_query_doc_df=test_queries_df,
+            stemmed_queries_df=test_queries_df,
+            all_query_doc_df=query_to_doc_mapping_df,
             all_global_params_dict=all_global_params_dict,
             interval_list=interval_list,
             df_cc_dict=df_cc_dict,
