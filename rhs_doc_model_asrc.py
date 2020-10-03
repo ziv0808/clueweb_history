@@ -135,7 +135,7 @@ def get_results_for_params(
         interval_list=interval_list,
         beta=beta_decay)
 
-    if burst_inidcation_mat is not None:
+    if burst_inidcation_mat is None:
         burst_inidcation_mat = create_burst_indication_matrix(
             doc_version_len_df=all_global_params_dict['NumWords'],
             interval_list=interval_list,
