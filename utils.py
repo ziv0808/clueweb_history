@@ -649,7 +649,7 @@ def bm25_score_doc_for_query(
             if stem in doc_dict['TfDict']:
                 doc_stem_tf = float(doc_dict['TfDict'][stem])
 
-        if stem not in df_dict:
+        if stem not in df_dict or df_dict[stem] == 0:
             if doc_stem_tf == 0:
                 continue
             else:
