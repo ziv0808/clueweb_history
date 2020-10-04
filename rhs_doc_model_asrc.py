@@ -218,7 +218,15 @@ def get_scored_df_for_query(
                     collection_count_for_word=cc_df_dict[stem_],
                     collection_len=cc_df_dict['ALL_TERMS_COUNT'],
                     mue=params['Mue'])
-                stem_d_proba = lambda_dict['Global']*(global_stem_tf/float(global_denom_tf)) + lambda_dict['Burst']*(burst_stem_tf/float(burst_denom_tf)) + lambda_dict['Reg']*stem_reg_proba
+                if global_denom_tf == 0:
+                    raise Exception("Problem!")
+                if global_denom_tf != 0:
+                    stem_d_proba = lambda_dict['Global']*(global_stem_tf/float(global_denom_tf)) + lambda_dict['Burst']*(burst_stem_tf/float(burst_denom_tf)) + lambda_dict['Reg']*stem_reg_proba
+                else:
+                    if burst_stem_tf != 0:
+                        raise Exception("Problemm 2!")
+                    else:
+                        stem_d_proba = lambda_dict['Global'] * (global_stem_tf / float(global_denom_tf)) + lambda_dict['Reg'] * stem_reg_proba
                 kl_score += (-1) * stem_q_prob * (math.log((stem_q_prob / stem_d_proba), 2))
 
             doc_score = kl_score
