@@ -1789,6 +1789,10 @@ def unite_asrc_data_results(
                    'FileTemplate': '<DatasetName>_0<RoundNum>_KL_Results.txt'},
             'ED LM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark_sudomay/final_res/',
                       'FileTemplate': '<DatasetName>_0<RoundNum>_LM_Results.txt'},
+            'RHS BM25': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rhs_model_asrc/final_res/',
+                      'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Results.txt'},
+            'RHS LM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rhs_model_asrc/final_res/',
+                      'FileTemplate': '<DatasetName>_0<RoundNum>_LM_Results.txt'},
 
         }):
     from rank_svm_model import create_sinificance_df
@@ -1834,7 +1838,7 @@ def unite_asrc_data_results(
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
-            if dataset_name == 'herd_control' and round_ != 2:
+            if dataset_name == 'herd_control':
                 del tmp_res_dict[59]
             if feat_group.replace('_', '+') in big_res_dict:
                 print(num_files)
@@ -1899,7 +1903,7 @@ def unite_asrc_data_results(
             on=['FeatureGroup'],
             how='inner')
         round_res_dict[str(round_) + '_Sum'] = round_summary_df
-        round_summary_df.to_csv('ASRC_round_' + str(round_) + '_Summary.tsv', sep = '\t', index = False)
+        round_summary_df.to_csv(dataset_name.upper()+ '_round_' + str(round_) + '_Summary.tsv', sep = '\t', index = False)
 
     measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
     big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
