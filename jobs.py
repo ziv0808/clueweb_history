@@ -2014,8 +2014,8 @@ def create_all_files_for_competition_features(
         inner_fold,
         round_limit,
         doc_file_path):
-
-    fold_list ,q_list = get_asrc_q_list_and_fold_list(inner_fold=inner_fold)
+    
+    q_list ,fold_list  = get_asrc_q_list_and_fold_list(inner_fold=inner_fold)
     with open("/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/query_num_to_text.txt", 'r') as f:
         query_texts = f.read()
     query_xml_str = ""
@@ -2071,7 +2071,7 @@ def create_all_files_for_competition_features(
     res = subprocess.check_call(['/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex',
                                  '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(inner_fold) + '.xml'])
     print('Index built...')
-    scripts_path = '~/ziv/content_modification_code/scripts/'
+    scripts_path = '/lv_local/home/zivvasilisky/ziv/content_modification_code/scripts/'
     command = scripts_path + "LTRFeatures " + queries_file + ' -stream=doc -index=' + index_path + ' -repository=' + index_path + ' -useWorkingSet=true -workingSetFile=' + working_set_file + ' -workingSetFormat=trec'
     print(command)
     out = run_bash_command(command)
