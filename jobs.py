@@ -1838,8 +1838,8 @@ def unite_asrc_data_results(
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
-            if dataset_name == 'herd_control' and 59 in tmp_res_dict:
-                del tmp_res_dict[59]
+            # if (dataset_name == 'herd_control') and (59 in tmp_res_dict):
+            #     del tmp_res_dict[59]
             if feat_group.replace('_', '+') in big_res_dict:
                 print(num_files)
                 sys.stdout.flush()
@@ -1862,8 +1862,8 @@ def unite_asrc_data_results(
                 qrel_filepath=qrel_filepath,
                 calc_ndcg_mrr=True)
             print (tmp_res_dict.keys())
-            if dataset_name == 'herd_control':
-                del tmp_res_dict[59]
+            # if dataset_name == 'herd_control':
+            #     del tmp_res_dict[59]
             if round_ in [6,7]:
                 del tmp_res_dict[193]
                 if round_ == 7:
@@ -2003,6 +2003,78 @@ def handle_rank_svm_params_asrc(
         plt.subplots_adjust(bottom=0.35)
         plt.savefig(feat_group + '_RankSVM_Weights.png', dpi = 200)
 
+def run_bash_command(command):
+    p = subprocess.Popen(command,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT, shell=True)
+    out, err = p.communicate()
+    return out
+
+def create_all_files_for_competition_features(
+        inner_fold,
+        round_limit,
+        doc_file_path):
+
+    fold_list ,q_list = get_asrc_q_list_and_fold_list(inner_fold=inner_fold)
+    with open("/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/query_num_to_text.txt", 'r') as f:
+        query_texts = f.read()
+    query_xml_str = ""
+    query_texts = query_texts.split('\n')
+    num_qs = 0
+    for row_ in query_texts:
+        splitted_row = row_.split(':')
+        if int(splitted_row[0]) in q_list:
+            query_xml_str += "<query>" + '\n' + '<number>' + splitted_row[0] + '</number>' + '\n' + \
+                            "<text>" + splitted_row[1] + '</text>' + '\n' + '</query>' + '\n'
+            num_qs += 1
+    print('#Queries: ' + str(num_qs))
+    queries_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/QueriesFile.xml'
+    with open(queries_file, 'w') as f:
+        f.write(query_xml_str)
+
+    doc_xml_str = ""
+    workingset_str = ""
+    with open(doc_file_path, 'r') as f:
+        soup = BeautifulSoup(f.read())
+
+    all_docs = soup.find_all('doc')
+    for doc_ in list(all_docs):
+        docno = (doc_.find('docno').text).replace('ROUND','EPOCH')
+        fulltext = doc_.find('text').text
+        broken_docno = docno.split('-')
+        round_ = broken_docno[1]
+        query_num = broken_docno[2]
+        if (int(round_) == 0) or ((round_limit is not None) and (int(round_) > int(round_limit))):
+            continue
+        doc_xml_str += "<DOC>" +'\n' + "<DOCNO>" + docno + "</DOCNO>" + '\n' + "<TEXT>" + fulltext +\
+                       "</TEXT>" + '\n' + "</DOC>" + '\n'
+        workingset_str += query_num + ' Q0 ' + docno + " 0 0 indri" + '\n'
+
+    doc_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/DocumentsFile.trectext'
+    with open(doc_filepath, 'w') as f:
+        f.write(doc_xml_str)
+
+    working_set_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/workingset.trec'
+    with open(working_set_file, 'w') as f:
+        f.write(workingset_str)
+
+    index_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold +'/IndexFile'
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/IndriBuildIndex_ForASRC.xml', 'r') as f:
+        params_text = f.read()
+
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(inner_fold) + '.xml',
+              'w') as f:
+        f.write(params_text.replace('###', index_path).replace('%%%',doc_filepath))
+    print('Params fixed...')
+    sys.stdout.flush()
+    res = subprocess.check_call(['/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex',
+                                 '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(inner_fold) + '.xml'])
+    print('Index built...')
+    scripts_path = '~/ziv/content_modification_code/scripts/'
+    command = scripts_path + "LTRFeatures " + queries_file + ' -stream=doc -index=' + index_path + ' -repository=' + index_path + ' -useWorkingSet=true -workingSetFile=' + working_set_file + ' -workingSetFormat=trec'
+    print(command)
+    out = run_bash_command(command)
+    print(out)
 
 
 if __name__ == '__main__':
@@ -2165,6 +2237,15 @@ if __name__ == '__main__':
         ret_model = sys.argv[3]
 
         handle_rank_svm_params_asrc(snap_limit=snap_limit, ret_model=ret_model)
+
+    elif operation == 'ASRCFeatLTR':
+        doc_file_path = sys.argv[2]
+        inner_fold = sys.argv[3]
+        round_limit = sys.argv[4]
+        create_all_files_for_competition_features(
+            inner_fold=inner_fold,
+            round_limit=round_limit,
+            doc_file_path=doc_file_path)
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
