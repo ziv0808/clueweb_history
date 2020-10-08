@@ -2047,7 +2047,7 @@ def create_all_files_for_competition_features(
         query_num = broken_docno[2]
         if (int(round_) == 0) or ((round_limit is not None) and (int(round_) > int(round_limit))):
             continue
-        doc_xml_str += "<DOC>" +'\n' + "<DOCNO>" + docno + "</DOCNO>" + '\n' + "<TEXT>" + fulltext +\
+        doc_xml_str += "<DOC>" +'\n' + "<DOCNO>" + docno + "</DOCNO>" + '\n' + "<TEXT>" + fulltext.encode('utf-8') +\
                        "</TEXT>" + '\n' + "</DOC>" + '\n'
         workingset_str += query_num + ' Q0 ' + docno + " 0 0 indri" + '\n'
 
