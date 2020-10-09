@@ -2014,11 +2014,11 @@ def create_all_files_for_competition_features(
         inner_fold,
         round_limit,
         doc_file_path):
-    
+
     q_list ,fold_list  = get_asrc_q_list_and_fold_list(inner_fold=inner_fold)
     with open("/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/query_num_to_text.txt", 'r') as f:
         query_texts = f.read()
-    query_xml_str = ""
+    query_xml_str = "<parameters>" + '\n'
     query_texts = query_texts.split('\n')
     num_qs = 0
     for row_ in query_texts:
@@ -2031,7 +2031,7 @@ def create_all_files_for_competition_features(
     print('#Queries: ' + str(num_qs))
     queries_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/QueriesFile.xml'
     with open(queries_file, 'w') as f:
-        f.write(query_xml_str)
+        f.write(query_xml_str + '</parameters>')
 
     doc_xml_str = ""
     workingset_str = ""
