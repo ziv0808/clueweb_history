@@ -2026,7 +2026,7 @@ def create_all_files_for_competition_features(
         if len(splitted_row) > 1:
             if int(splitted_row[0]) in q_list:
                 query_xml_str += "<query>" + '\n' + '<number>' + splitted_row[0] + '</number>' + '\n' + \
-                                "<text>#combine(" + splitted_row[1] + ')</text>' + '\n' + '</query>' + '\n'
+                                "<text>#combine( " + splitted_row[1] + ' )</text>' + '\n' + '</query>' + '\n'
                 num_qs += 1
     print('#Queries: ' + str(num_qs))
     queries_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/QueriesFile.xml'
@@ -2060,6 +2060,7 @@ def create_all_files_for_competition_features(
         f.write(workingset_str)
 
     index_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold +'/IndexFile'
+    run_bash_command("rm -r " + index_path)
     with open('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/IndriBuildIndex_ForASRC.xml', 'r') as f:
         params_text = f.read()
 
@@ -2071,12 +2072,17 @@ def create_all_files_for_competition_features(
     res = subprocess.check_call(['/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex',
                                  '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(inner_fold) + '.xml'])
     print('Index built...')
+    features_dir = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/feat_dir/'
+    run_bash_command("rm -r " + features_dir)
+    if not os.path.exists(features_dir):
+        os.makedirs(features_dir)
     scripts_path = '/lv_local/home/zivvasilisky/ziv/content_modification_code/scripts/'
     command = scripts_path + "LTRFeatures " + queries_file + ' -stream=doc -index=' + index_path + ' -repository=' + index_path + ' -useWorkingSet=true -workingSetFile=' + working_set_file + ' -workingSetFormat=trec'
     print(command)
     out = run_bash_command(command)
     print(out)
-
+    run_bash_command("mv doc*_* " + features_dir)
+    run_bash_command("mv " + features_dir +'doc_snapshot_stats_compare.py .')
 
 if __name__ == '__main__':
     operation = sys.argv[1]
