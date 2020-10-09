@@ -2026,7 +2026,7 @@ def create_all_files_for_competition_features(
         if len(splitted_row) > 1:
             if int(splitted_row[0]) in q_list:
                 query_xml_str += "<query>" + '\n' + '<number>' + splitted_row[0] + '</number>' + '\n' + \
-                                "<text>" + splitted_row[1] + '</text>' + '\n' + '</query>' + '\n'
+                                "<text>#combine(" + splitted_row[1] + ')</text>' + '\n' + '</query>' + '\n'
                 num_qs += 1
     print('#Queries: ' + str(num_qs))
     queries_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/QueriesFile.xml'
