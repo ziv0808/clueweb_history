@@ -1819,7 +1819,7 @@ def create_base_features_for_asrc_with_ltr_features(
         fin_df_dict[round_]['SnapDF'] = pd.DataFrame({})
         fin_df_dict[round_]['NextIdx'] = 0
 
-    feature_ref_dict = create_ltr_feature_dict(os.path.join(os.path.join(os.path.join(meta_data_base_fold,'datasets'),inner_fold),'feat_dir'))
+    feature_ref_dict = create_ltr_feature_dict(os.path.join(os.path.join(os.path.join(meta_data_base_fold,'datsets'),inner_fold),'feat_dir'))
     for query_user_str in big_doc_index:
         all_rounds = list(big_doc_index[query_user_str].keys())
         query_num = query_user_str.split('-')[0]
