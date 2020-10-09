@@ -1764,9 +1764,9 @@ def create_ltr_feature_dict(
         feature_folder):
     res_dict = {}
     for filename in os.listdir(feature_folder):
-        print(filename)
-        sys.stdout.flush()
         if filename.startswith('doc') and '_' in filename:
+            print(filename)
+            sys.stdout.flush()
             feature = filename.split('_')[0].replace('doc', '')
             if feature == 'BM25':
                 feature = 'BM25Score'
@@ -1842,7 +1842,7 @@ def create_base_features_for_asrc_with_ltr_features(
                 else:
                     round_str = str((-1) * i)
                 doc_dict = res_dict[round_str]
-                curr_docno = doc_dict['docno']
+                curr_docno = doc_dict['docno'].replace('ROUND','EPOCH')
                 insert_row =[]
                 for feature_name in base_feature_list:
                     insert_row.append(feature_ref_dict[query_num][curr_docno][feature_name])
