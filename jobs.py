@@ -1760,6 +1760,156 @@ def create_base_features_for_asrc(
         fin_df_dict[round_]['FinDF'].to_csv(os.path.join(save_folder, filename +'_Round' + round_ +'_with_meta.tsv'), sep='\t', index=False)
         fin_df_dict[round_]['SnapDF'].to_csv(os.path.join(save_folder, filename + '_Round' + round_ + '_all_snaps.tsv'), sep='\t', index=False)
 
+def create_ltr_feature_dict(
+        feature_folder):
+    res_dict = {}
+    for filename in os.listdir(feature_folder):
+        print(filename)
+        sys.stdout.flush()
+        if filename.startswith('doc') and '_' in filename:
+            feature = filename.split('_')[0].replace('doc', '')
+            if feature == 'BM25':
+                feature = 'BM25Score'
+            query = filename.split('_')[1]
+            if query not in res_dict:
+                res_dict[query] = {}
+            with open(os.path.join(feature_folder, filename), 'r') as f:
+                file_str = f.read()
+            file_lines = file_str.split('\n')
+            for line in file_lines:
+                if line == '':
+                    continue
+                docno = line.split(' ')[0]
+                val = float(line.split(' ')[1])
+                if docno not in res_dict[query]:
+                    res_dict[query][docno] = {}
+                res_dict[query][docno][feature] = val
+    return res_dict
+
+
+def create_base_features_for_asrc_with_ltr_features(
+        rel_filepath,
+        inner_fold,
+        round_limit=None):
+
+
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/RawData.json', 'r') as f:
+        big_doc_index = ast.literal_eval(f.read())
+
+    meta_data_base_fold = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/'
+
+
+    all_rounds = ['01', '02', '03', '04', '05', '06', '07', '08']
+    if round_limit is not None:
+        all_rounds = all_rounds[:int(round_limit)]
+
+
+    base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio','Ent','FracStops',
+                         'IDF', 'Len','LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TF','TFIDF','TFNorm','VSM', 'BM25Score']
+
+    col_list = ['NumSnapshots']
+    for suffix in ["", "_M", "_STD", "_LG", "_MG", "_RMG"]:
+        for feature in base_feature_list:
+            col_list.append(feature + suffix)
+    col_list.extend(['QueryNum', 'Docno'])
+    fin_df_dict = {}
+    for round_ in all_rounds:
+        fin_df_dict[round_] = {}
+        fin_df_dict[round_]['FinDF'] = pd.DataFrame(columns=col_list)
+        fin_df_dict[round_]['SnapDF'] = pd.DataFrame({})
+        fin_df_dict[round_]['NextIdx'] = 0
+
+    feature_ref_dict = create_ltr_feature_dict(os.path.join(os.path.join(os.path.join(meta_data_base_fold,'datasets'),inner_fold),'feat_dir'))
+    for query_user_str in big_doc_index:
+        all_rounds = list(big_doc_index[query_user_str].keys())
+        query_num = query_user_str.split('-')[0]
+        for round_num in all_rounds:
+            docno = big_doc_index[query_user_str][round_num]['docno'].replace('ROUND', 'EPOCH')
+            print(docno)
+            sys.stdout.flush()
+            res_dict = {'ClueWeb09': big_doc_index[query_user_str][round_num]}
+            round_ = int(round_num)
+            for additional_round in all_rounds:
+                if int(additional_round) < round_:
+                    diff = str(int(additional_round) - round_)
+                    res_dict[diff] = big_doc_index[query_user_str][additional_round]
+
+            curr_doc_df = pd.DataFrame(columns=['Docno', 'QueryNum', 'Interval'] + base_feature_list)
+            tmp_idx = 0
+            for i in list(reversed(range(round_))):
+                if i == 0:
+                    round_str = 'ClueWeb09'
+                else:
+                    round_str = str((-1) * i)
+                doc_dict = res_dict[round_str]
+                curr_docno = doc_dict['docno']
+                insert_row =[]
+                for feature_name in base_feature_list:
+                    insert_row.append(feature_ref_dict[query_num][curr_docno][feature_name])
+
+                curr_doc_df.loc[tmp_idx] = [docno, query_num, round_str] + insert_row
+                tmp_idx += 1
+
+            bench_df = curr_doc_df[curr_doc_df['Interval'] == 'ClueWeb09']
+            insert_row = [len(curr_doc_df)]
+            for feature in base_feature_list:
+                insert_row.append(list(bench_df[feature])[0])
+
+            for feature in base_feature_list:
+                insert_row.append(curr_doc_df[feature].mean())
+
+            for feature in base_feature_list:
+                insert_row.append(curr_doc_df[feature].std())
+
+            if len(curr_doc_df) == 1:
+                insert_row.extend([pd.np.nan] * (len(base_feature_list) * 3))
+            else:
+                for feature in base_feature_list:
+                    curr_doc_df[feature + '_Shift'] = curr_doc_df[feature].shift(-1)
+                    curr_doc_df[feature + '_Grad'] = curr_doc_df.apply(
+                        lambda row_: calc_releational_measure(row_[feature + '_Shift'], row_[feature]), axis=1)
+                    curr_doc_df[feature + '_RGrad'] = curr_doc_df.apply(
+                        lambda row_: calc_releational_measure(row_[feature], list(bench_df[feature])[0]), axis=1)
+
+                curr_doc_df = curr_doc_df[curr_doc_df['Interval'] != 'ClueWeb09']
+                for feature in base_feature_list:
+                    insert_row.append(list(curr_doc_df[feature + '_Grad'])[-1])
+
+                for feature in base_feature_list:
+                    insert_row.append(curr_doc_df[feature + '_Grad'].mean())
+
+                for feature in base_feature_list:
+                    insert_row.append(curr_doc_df[feature + '_RGrad'].mean())
+
+            insert_row.extend([query_num, docno])
+            fin_df_dict[round_num]['FinDF'].loc[fin_df_dict[round_num]['NextIdx']] = insert_row
+            fin_df_dict[round_num]['NextIdx'] += 1
+
+            curr_doc_df['NumSnapshots'] = len(curr_doc_df)
+            curr_doc_df['SnapNum'] = list(range((len(curr_doc_df) - 1) * (-1), 1))
+            fin_df_dict[round_num]['SnapDF'] = fin_df_dict[round_num]['SnapDF'].append(curr_doc_df, ignore_index=True)
+
+    print("Finished features!")
+    sys.stdout.flush()
+    meta_data_df = get_relevant_docs_df(rel_filepath)
+    filename = inner_fold.upper() + '_LTR_All_features'
+
+    meta_data_df['Query'] = meta_data_df['Query'].apply(lambda x: int(x))
+    for round_ in all_rounds:
+        fin_df_dict[round_]['FinDF']['QueryNum'] = fin_df_dict[round_]['FinDF']['QueryNum'].apply(lambda x: int(x))
+        fin_df_dict[round_]['FinDF'] = pd.merge(
+            fin_df_dict[round_]['FinDF'],
+            meta_data_df.rename(columns={'Query': 'QueryNum'}),
+            on=['QueryNum', 'Docno'],
+            how='inner')
+
+        save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
+        fin_df_dict[round_]['FinDF'].to_csv(os.path.join(save_folder, filename + '_Round' + round_ + '_with_meta.tsv'),
+                                            sep='\t', index=False)
+        fin_df_dict[round_]['SnapDF'].to_csv(os.path.join(save_folder, filename + '_Round' + round_ + '_all_snaps.tsv'),
+                                             sep='\t', index=False)
+
+
 def unite_asrc_data_results(
         big_model,
         snap_limit,
@@ -2225,6 +2375,12 @@ if __name__ == '__main__':
         inner_fold = sys.argv[3]
         round_limit = sys.argv[4]
         create_base_features_for_asrc(rel_filepath, inner_fold, round_limit)
+
+    elif operation == 'ASRCFeatLTR':
+        rel_filepath = sys.argv[2]
+        inner_fold = sys.argv[3]
+        round_limit = sys.argv[4]
+        create_base_features_for_asrc_with_ltr_features(rel_filepath, inner_fold, round_limit)
 
     elif operation == 'ASRCFileUnite':
         big_model = sys.argv[2]
