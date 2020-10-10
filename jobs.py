@@ -1971,7 +1971,7 @@ def unite_asrc_data_results(
     num_files = 0
     num_rounds = 0
     for round_ in range(2,round_limit + 1):
-        inner_fold = dataset_name.upper() + '_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
+        inner_fold = dataset_name.upper() + '_LTR_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
         inner_fold = os.path.join(base_2_folder, inner_fold)
         round_res_dict[round_] = {}
         num_rounds += 1
