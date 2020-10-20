@@ -1893,7 +1893,8 @@ def create_base_features_for_asrc_with_ltr_features(
     sys.stdout.flush()
     meta_data_df = get_relevant_docs_df(rel_filepath)
     filename = inner_fold.upper() + '_LTR_All_features'
-
+    if inner_fold == 'herd_control':
+        filename = inner_fold.upper() + '_LTR'
     meta_data_df['Query'] = meta_data_df['Query'].apply(lambda x: int(x))
     for round_ in all_rounds:
         fin_df_dict[round_]['FinDF']['QueryNum'] = fin_df_dict[round_]['FinDF']['QueryNum'].apply(lambda x: int(x))
@@ -2225,6 +2226,12 @@ def create_all_files_for_competition_features(
     res = subprocess.check_call(['/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex',
                                  '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(inner_fold) + '.xml'])
     print('Index built...')
+    bash_command = '/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/dumpindex ' + index_path.replace('IndexFile', 'MergedIndexFile')
+    bash_command += ' merge ' + '/mnt/bi-strg3/v/zivvasilisky/index/Index_2019-08-28' + ' ' + index_path
+    out = run_bash_command(bash_command)
+    print(out)
+    index_path = index_path.replace('IndexFile', 'MergedIndexFile')
+    print('Index merged...')
     features_dir = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/feat_dir/'
     run_bash_command("rm -r " + features_dir)
     if not os.path.exists(features_dir):
