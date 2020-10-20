@@ -2227,7 +2227,7 @@ def create_all_files_for_competition_features(
                                  '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(inner_fold) + '.xml'])
     print('Index built...')
     bash_command = '/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/dumpindex ' + index_path.replace('IndexFile', 'MergedIndexFile')
-    bash_command += ' merge ' + '/mnt/bi-strg3/v/zivvasilisky/index/Index_2019-08-28' + ' ' + index_path
+    bash_command += ' merge ' + '/mnt/bi-strg3/v/zivvasilisky/index/CW09ForMerge' + ' ' + index_path
     out = run_bash_command(bash_command)
     print(out)
     index_path = index_path.replace('IndexFile', 'MergedIndexFile')
