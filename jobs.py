@@ -2411,7 +2411,7 @@ if __name__ == '__main__':
 
         handle_rank_svm_params_asrc(snap_limit=snap_limit, ret_model=ret_model)
 
-    elif operation == 'ASRCFeatLTR':
+    elif operation == 'ASRCFeatLTRFiles':
         doc_file_path = sys.argv[2]
         inner_fold = sys.argv[3]
         round_limit = sys.argv[4]
