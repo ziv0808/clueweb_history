@@ -2167,71 +2167,79 @@ def run_bash_command(command):
 def create_all_files_for_competition_features(
         inner_fold,
         round_limit,
-        doc_file_path):
+        doc_file_path,
+        only_feats):
 
-    q_list ,fold_list  = get_asrc_q_list_and_fold_list(inner_fold=inner_fold)
-    with open("/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/query_num_to_text.txt", 'r') as f:
-        query_texts = f.read()
-    query_xml_str = "<parameters>" + '\n'
-    query_texts = query_texts.split('\n')
-    num_qs = 0
-    for row_ in query_texts:
-        splitted_row = row_.split(':')
-        if len(splitted_row) > 1:
-            if int(splitted_row[0]) in q_list:
-                query_xml_str += "<query>" + '\n' + '<number>' + splitted_row[0] + '</number>' + '\n' + \
-                                "<text>#combine( " + splitted_row[1] + ' )</text>' + '\n' + '</query>' + '\n'
-                num_qs += 1
-    print('#Queries: ' + str(num_qs))
-    queries_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/QueriesFile.xml'
-    with open(queries_file, 'w') as f:
-        f.write(query_xml_str + '</parameters>')
+    if only_feats == False:
+        q_list ,fold_list  = get_asrc_q_list_and_fold_list(inner_fold=inner_fold)
+        with open("/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/query_num_to_text.txt", 'r') as f:
+            query_texts = f.read()
+        query_xml_str = "<parameters>" + '\n'
+        query_texts = query_texts.split('\n')
+        num_qs = 0
+        for row_ in query_texts:
+            splitted_row = row_.split(':')
+            if len(splitted_row) > 1:
+                if int(splitted_row[0]) in q_list:
+                    query_xml_str += "<query>" + '\n' + '<number>' + splitted_row[0] + '</number>' + '\n' + \
+                                    "<text>#combine( " + splitted_row[1] + ' )</text>' + '\n' + '</query>' + '\n'
+                    num_qs += 1
+        print('#Queries: ' + str(num_qs))
+        queries_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/QueriesFile.xml'
+        with open(queries_file, 'w') as f:
+            f.write(query_xml_str + '</parameters>')
 
-    doc_xml_str = ""
-    workingset_str = ""
-    with open(doc_file_path, 'r') as f:
-        soup = BeautifulSoup(f.read())
+        doc_xml_str = ""
+        workingset_str = ""
+        with open(doc_file_path, 'r') as f:
+            soup = BeautifulSoup(f.read())
 
-    all_docs = soup.find_all('doc')
-    for doc_ in list(all_docs):
-        docno = (doc_.find('docno').text).replace('ROUND','EPOCH')
-        fulltext = doc_.find('text').text
-        broken_docno = docno.split('-')
-        round_ = broken_docno[1]
-        query_num = broken_docno[2]
-        if (int(round_) == 0) or ((round_limit is not None) and (int(round_) > int(round_limit))):
-            continue
-        doc_xml_str += "<DOC>" +'\n' + "<DOCNO>" + docno + "</DOCNO>" + '\n' + "<TEXT>" + fulltext +\
-                       "</TEXT>" + '\n' + "</DOC>" + '\n'
-        workingset_str += query_num + ' Q0 ' + docno + " 0 0 indri" + '\n'
+        all_docs = soup.find_all('doc')
+        for doc_ in list(all_docs):
+            docno = (doc_.find('docno').text).replace('ROUND','EPOCH')
+            fulltext = doc_.find('text').text
+            broken_docno = docno.split('-')
+            round_ = broken_docno[1]
+            query_num = broken_docno[2]
+            if (int(round_) == 0) or ((round_limit is not None) and (int(round_) > int(round_limit))):
+                continue
+            doc_xml_str += "<DOC>" +'\n' + "<DOCNO>" + docno + "</DOCNO>" + '\n' + "<TEXT>" + fulltext +\
+                           "</TEXT>" + '\n' + "</DOC>" + '\n'
+            workingset_str += query_num + ' Q0 ' + docno + " 0 0 indri" + '\n'
 
-    doc_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/DocumentsFile.trectext'
-    with open(doc_filepath, 'w') as f:
-        f.write(re.sub(r'[^\x00-\x7F]+',' ', doc_xml_str))
+        doc_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/DocumentsFile.trectext'
+        with open(doc_filepath, 'w') as f:
+            f.write(re.sub(r'[^\x00-\x7F]+',' ', doc_xml_str))
 
-    working_set_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/workingset.trec'
-    with open(working_set_file, 'w') as f:
-        f.write(workingset_str)
+        working_set_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/workingset.trec'
+        with open(working_set_file, 'w') as f:
+            f.write(workingset_str)
 
-    index_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold +'/IndexFile'
-    run_bash_command("rm -r " + index_path)
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/IndriBuildIndex_ForASRC.xml', 'r') as f:
-        params_text = f.read()
+        index_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold +'/IndexFile'
+        run_bash_command("rm -r " + index_path)
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/IndriBuildIndex_ForASRC.xml', 'r') as f:
+            params_text = f.read()
 
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(inner_fold) + '.xml',
-              'w') as f:
-        f.write(params_text.replace('###', index_path).replace('%%%',doc_filepath))
-    print('Params fixed...')
-    sys.stdout.flush()
-    res = subprocess.check_call(['/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex',
-                                 '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(inner_fold) + '.xml'])
-    print('Index built...')
-    bash_command = '/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/dumpindex ' + index_path.replace('IndexFile', 'MergedIndexFile')
-    bash_command += ' merge ' + '/mnt/bi-strg3/v/zivvasilisky/index/CW09ForMerge' + ' ' + index_path
-    out = run_bash_command(bash_command)
-    print(out)
-    index_path = index_path.replace('IndexFile', 'MergedIndexFile')
-    print('Index merged...')
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(inner_fold) + '.xml',
+                  'w') as f:
+            f.write(params_text.replace('###', index_path).replace('%%%',doc_filepath))
+        print('Params fixed...')
+        sys.stdout.flush()
+        res = subprocess.check_call(['/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/IndriBuildIndex',
+                                     '/mnt/bi-strg3/v/zivvasilisky/ziv/clueweb_history/Index_params/IndriBuildIndex_' + str(inner_fold) + '.xml'])
+        print('Index built...')
+        bash_command = '/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/indri/bin/dumpindex ' + index_path.replace('IndexFile', 'MergedIndexFile')
+        bash_command += ' merge ' + '/mnt/bi-strg3/v/zivvasilisky/index/CW09ForMerge' + ' ' + index_path
+        out = run_bash_command(bash_command)
+        print(out)
+        index_path = index_path.replace('IndexFile', 'MergedIndexFile')
+        print('Index merged...')
+    else:
+        index_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/IndexFile'
+        index_path = index_path.replace('IndexFile', 'MergedIndexFile')
+        queries_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/QueriesFile.xml'
+        working_set_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/workingset.trec'
+
     features_dir = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + inner_fold + '/feat_dir/'
     run_bash_command("rm -r " + features_dir)
     if not os.path.exists(features_dir):
@@ -2415,10 +2423,12 @@ if __name__ == '__main__':
         doc_file_path = sys.argv[2]
         inner_fold = sys.argv[3]
         round_limit = sys.argv[4]
+        only_feats = ast.literal_eval(sys.argv[5])
         create_all_files_for_competition_features(
             inner_fold=inner_fold,
             round_limit=round_limit,
-            doc_file_path=doc_file_path)
+            doc_file_path=doc_file_path,
+            only_feats=only_feats)
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
