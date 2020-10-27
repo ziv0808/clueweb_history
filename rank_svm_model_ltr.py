@@ -27,8 +27,9 @@ def run_cv_for_config(
     broken_feature_groupname = feature_groupname.split('_')
     len_handled = 0
     base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio', 'Ent', 'FracStops',
-                         'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover', 'TF', 'TFIDF', 'TFNorm', 'VSM',
-                         'BM25Score']
+                         'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
+                         'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
+                         'TFNormMean','TFNormStd', 'VSM', 'SimClueWeb','BM25Score']
 
     if 'Static' in broken_feature_groupname:
         feature_list.extend(base_feature_list)
@@ -250,8 +251,9 @@ def create_all_x_snap_aggregations(
 
     base_file_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
     base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio', 'Ent', 'FracStops',
-                         'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover', 'TF', 'TFIDF', 'TFNorm', 'VSM',
-                         'BM25Score']
+                         'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
+                         'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
+                         'TFNormMean','TFNormStd', 'VSM','SimClueWeb', 'BM25Score']
 
     work_df = pd.read_csv(os.path.join(base_file_folder, base_feature_filename), sep = '\t', index_col = False)
     if '2008' in base_feature_filename:

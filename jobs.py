@@ -1776,14 +1776,23 @@ def create_ltr_feature_dict(
             with open(os.path.join(feature_folder, filename), 'r') as f:
                 file_str = f.read()
             file_lines = file_str.split('\n')
+            first_ = True
             for line in file_lines:
                 if line == '':
                     continue
                 docno = line.split(' ')[0]
-                val = float(line.split(' ')[1])
                 if docno not in res_dict[query]:
                     res_dict[query][docno] = {}
-                res_dict[query][docno][feature] = val
+                if len(line.split(' ')) > 2:
+                    if first_ == True:
+                        print ('multiple Features!')
+                        first_ = False
+                    feature_additions = ['Sum', 'Min', 'Max', 'Mean', 'Std']
+                    for i in range(len(feature_additions)):
+                        res_dict[query][docno][feature + feature_additions[i]] = float(line.split(' ')[i + 1])
+                else:
+                    val = float(line.split(' ')[1])
+                    res_dict[query][docno][feature] = val
     return res_dict
 
 
@@ -1805,7 +1814,9 @@ def create_base_features_for_asrc_with_ltr_features(
 
 
     base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio','Ent','FracStops',
-                         'IDF', 'Len','LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TF','TFIDF','TFNorm','VSM', 'BM25Score']
+                         'IDF', 'Len','LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
+                         'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
+                         'TFNormMean','TFNormStd','VSM', 'SimClueWeb','BM25Score']
 
     col_list = ['NumSnapshots']
     for suffix in ["", "_M", "_STD", "_LG", "_MG", "_RMG"]:
@@ -1843,6 +1854,7 @@ def create_base_features_for_asrc_with_ltr_features(
                     round_str = str((-1) * i)
                 doc_dict = res_dict[round_str]
                 curr_docno = doc_dict['docno'].replace('ROUND','EPOCH')
+                feature_ref_dict[query_num][curr_docno]['SimClueWeb'] = calc_cosine(doc_dict['json']['TfIdf'], res_dict['json']['ClueWeb09']['TfIdf'])
                 insert_row =[]
                 for feature_name in base_feature_list:
                     insert_row.append(feature_ref_dict[query_num][curr_docno][feature_name])
