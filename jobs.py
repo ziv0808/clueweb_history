@@ -1854,7 +1854,7 @@ def create_base_features_for_asrc_with_ltr_features(
                     round_str = str((-1) * i)
                 doc_dict = res_dict[round_str]
                 curr_docno = doc_dict['docno'].replace('ROUND','EPOCH')
-                feature_ref_dict[query_num][curr_docno]['SimClueWeb'] = calc_cosine(doc_dict['json']['TfIdf'], res_dict['json']['ClueWeb09']['TfIdf'])
+                feature_ref_dict[query_num][curr_docno]['SimClueWeb'] = calc_cosine(doc_dict['json']['TfIdf'], res_dict['ClueWeb09']['json']['TfIdf'])
                 insert_row =[]
                 for feature_name in base_feature_list:
                     insert_row.append(feature_ref_dict[query_num][curr_docno][feature_name])
