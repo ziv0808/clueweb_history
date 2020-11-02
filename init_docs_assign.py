@@ -205,31 +205,41 @@ def test_number_of_queries(mapping,number_of_queries):
             return False
     return True
 
+def changeStatus():
+    client = MongoClient('asr2.iem.technion.ac.il',27017)
+    db = client.asr16
+    status = db.status.find_one({})
+    indeterminate = status['indeterminate']
+    status['indeterminate'] = not(indeterminate)
+    db.status.save(status)
 
-seed(9001)
-users = retrieve_users()
-data = read_initial_data("documents.trectext", "topics.full.xml")
-queries = list(data.keys())
-while True:
-    mapping, query_user_map = user_query_mapping_z(
-        users=users,
-        queries=queries,
-        number_of_user_per_query=8,
-        num_of_queries_with_additional_user=1,
-        max_allowed_ovelap=1)
-    if test_number_of_queries(mapping,3):
-        break
-
-# for user in users:
-#     curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002')
-#     print(user_overlap_dict)
+# seed(9001)
+# users = retrieve_users()
+# data = read_initial_data("documents.trectext", "topics.full.xml")
+# queries = list(data.keys())
+# while True:
+#     mapping, query_user_map = user_query_mapping_z(
+#         users=users,
+#         queries=queries,
+#         number_of_user_per_query=8,
+#         num_of_queries_with_additional_user=1,
+#         max_allowed_ovelap=1)
+#     if test_number_of_queries(mapping,3):
+#         break
 #
-# for q in query_user_map:
-#     print(len(query_user_map[q]))
-print(mapping)
-print(query_user_map)
-with open('UserQueryMapping.txt', 'w') as f:
-    f.write(str(mapping))
-with open('QueryUserMapping.txt', 'w') as f:
-    f.write(str(query_user_map))
-upload_data_to_mongo(data,mapping)
+# # for user in users:
+# #     curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002')
+# #     print(user_overlap_dict)
+# #
+# # for q in query_user_map:
+# #     print(len(query_user_map[q]))
+# print(mapping)
+# print(query_user_map)
+# with open('UserQueryMapping.txt', 'w') as f:
+#     f.write(str(mapping))
+# with open('QueryUserMapping.txt', 'w') as f:
+#     f.write(str(query_user_map))
+# upload_data_to_mongo(data,mapping)
+
+
+changeStatus()
