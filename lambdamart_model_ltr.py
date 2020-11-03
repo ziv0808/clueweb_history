@@ -250,11 +250,6 @@ def run_cv_for_config(
     if len_handled != feature_groups_num:
         raise Exception('Undefined feature group!')
 
-    if retrieval_model == 'LM':
-        feature_list.append('LMScore')
-    elif retrieval_model == 'BM25':
-        feature_list.append('BM25Score')
-
     test_score_df = pd.DataFrame({})
     if 'XXSnap' in feature_groupname:
         feature_groupname += 'By' + snap_chosing_method
