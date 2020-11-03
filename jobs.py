@@ -1971,8 +1971,10 @@ def unite_asrc_data_results(
 
     if big_model == 'SVMRank':
         base_folder = os.path.join(base_folder, 'rank_svm_res')
-    else:
+    elif big_model == 'LambdaMART':
         base_folder = os.path.join(base_folder, 'lambdamart_res')
+    else:
+        raise Exception("Unknown base model")
     base_2_folder = os.path.join(base_folder, 'ret_res')
     feature_list = ['NDCG@1', 'NDCG@3', 'MRR']
     feat_col_list = feature_list[:]
@@ -2069,7 +2071,10 @@ def unite_asrc_data_results(
             on=['FeatureGroup'],
             how='inner')
         round_res_dict[str(round_) + '_Sum'] = round_summary_df
-        round_summary_df.to_csv(dataset_name.upper()+ '_round_' + str(round_) + '_Summary.tsv', sep = '\t', index = False)
+        if big_model == 'LambdaMART':
+            round_summary_df.to_csv(dataset_name.upper()+ '_round_' + str(round_) + '_LambdaMART_Summary.tsv', sep = '\t', index = False)
+        else:
+            round_summary_df.to_csv(dataset_name.upper() + '_round_' + str(round_) + '_Summary.tsv', sep='\t', index=False)
 
     measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
     big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
@@ -2090,7 +2095,8 @@ def unite_asrc_data_results(
         significance_df,
         on=['FeatureGroup'],
         how='inner')
-
+    if big_model == 'LambdaMART':
+        ret_model += '_'+ big_model
     big_summary_df.to_csv(os.path.join(base_folder, dataset_name.upper()+ '_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'.tsv'), sep = '\t' ,index = False)
 
     for measure in ['NDCG@1', 'NDCG@3', 'MRR']:
