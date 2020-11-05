@@ -1816,7 +1816,7 @@ def create_base_features_for_asrc_with_ltr_features(
     base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio','Ent','FracStops',
                          'IDF', 'Len','LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
-                         'TFNormMean','TFNormStd','VSM', 'SimClueWeb','BM25Score']
+                         'TFNormMean','TFNormStd','VSM', 'SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BM25Score']
 
     col_list = ['NumSnapshots']
     for suffix in ["", "_M", "_STD", "_LG", "_MG", "_RMG"]:
@@ -1855,6 +1855,9 @@ def create_base_features_for_asrc_with_ltr_features(
                 doc_dict = res_dict[round_str]
                 curr_docno = doc_dict['docno'].replace('ROUND','EPOCH')
                 feature_ref_dict[query_num][curr_docno]['SimClueWeb'] = calc_cosine(doc_dict['json']['TfIdf'], res_dict['ClueWeb09']['json']['TfIdf'])
+                feature_ref_dict[query_num][curr_docno]['StopwordsRatio'] = doc_dict['json']['NumStopWords'] / float(doc_dict['json']['NumWords'] - doc_dict['json']['NumStopWords'])
+                feature_ref_dict[query_num][curr_docno]['Stopwords'] = doc_dict['json']['NumStopWords']
+                feature_ref_dict[query_num][curr_docno]['-Query-SW'] = doc_dict['json']['NumWords'] - (doc_dict['json']['NumQueryWords'] + doc_dict['json']['NumStopWords'])
                 insert_row =[]
                 for feature_name in base_feature_list:
                     insert_row.append(feature_ref_dict[query_num][curr_docno][feature_name])

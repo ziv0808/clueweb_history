@@ -29,7 +29,7 @@ def run_cv_for_config(
     base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio', 'Ent', 'FracStops',
                          'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
-                         'TFNormMean','TFNormStd', 'VSM', 'SimClueWeb','BM25Score']
+                         'TFNormMean','TFNormStd', 'VSM', 'SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BM25Score']
 
     if 'Static' in broken_feature_groupname:
         feature_list.extend(base_feature_list)
