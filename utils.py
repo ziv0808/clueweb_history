@@ -831,7 +831,7 @@ def powerset(iterable):
 
 
 
-def pemutation_test(test_group, control_group, total_number=100000):
+def pemutation_test(test_group, control_group, total_number=10000):
     """
 
     :param test_group:  vector of test group results (originally sorted by qid)
