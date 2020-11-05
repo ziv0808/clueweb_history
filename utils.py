@@ -6,6 +6,8 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 from scipy import spatial
+from itertools import chain, combinations
+
 
 WORK_YEAR = '2008'
 TREC_EVAL_PATH = "/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/trec_eval/trec_eval-9.0.7/trec_eval"
@@ -601,7 +603,8 @@ def calc_releational_measure(
 def check_statistical_significance(
         res_dict_1,
         res_dict_2,
-        ndcg_mrr = False):
+        ndcg_mrr = False,
+        sinificance_type = 'TTest'):
     try:
         q_list = list(res_dict_1.keys())
         if 'all' in q_list:
@@ -614,10 +617,14 @@ def check_statistical_significance(
             l1 = []
             l2 = []
             for q in q_list:
+                if np.isnan(res_dict_1[q][measure]) and np.isnan(res_dict_2[q][measure]):
+                    continue
                 l1.append(res_dict_1[q][measure])
                 l2.append(res_dict_2[q][measure])
-
-            t_stat, p_val = stats.ttest_rel(l1, l2)
+            if sinificance_type == 'TTest':
+                t_stat, p_val = stats.ttest_rel(l1, l2)
+            elif sinificance_type == 'Perm':
+                t_stat, p_val = pemutation_test(l1, l2)
             res_dict[measure] = {}
             if p_val <= 0.05:
                 res_dict[measure]['Significant'] = True
@@ -814,3 +821,67 @@ def get_asrc_q_list_and_fold_list(inner_fold):
         return q_list, fold_list
     else:
         raise Exception('get_asrc_q_list_and_fold_list: Unknown inner fold')
+
+
+
+
+def powerset(iterable):
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+
+
+
+def pemutation_test(test_group, control_group, total_number=None):
+    """
+
+    :param test_group:  vector of test group results (originally sorted by qid)
+    :param control_group: vector of control group results (originally sorted by qid)
+    :param total_number: if number of permutations is too high, this parameter should be different than None.
+    the parameter states the number of permutations sampled
+    :return:
+    """
+    np.random.seed(9002)
+    diff = abs(np.mean(test_group) - np.mean(control_group))
+    indicator_sum=0
+    counter = 0
+    if total_number is None:
+        indices = range(len(test_group))
+        indices_set = set(indices)
+        for permutation in powerset(indices):
+            control_shifted_indices = indices_set - set(permutation)
+            permuted_test = [test_group[i] for i in permutation]
+            permuted_test.extend([control_group[j] for j in control_shifted_indices])
+            permuted_control = [test_group[i] for i in control_shifted_indices]
+            permuted_control.extend([control_group[j] for j in permutation])
+            permutation_diff = abs(np.mean(permuted_test)-np.mean(permuted_control))
+            if permutation_diff>=diff:
+                indicator_sum+=1
+            counter+=1
+    else:
+        seen = [] #avoid repetitions
+        indices = range(len(test_group))
+        step=0
+        while step < total_number:
+            permuted_test = []
+            permuted_control = []
+            sample_indices = list(np.random.choice([0, 1], p=[0.5, 0.5], size=(1, len(indices)))[0])
+            if sample_indices in seen:
+                continue
+            for index,choice in enumerate(sample_indices):
+                if choice==1:
+                    permuted_test.append(test_group[index])
+                    permuted_control.append(control_group[index])
+                else:
+                    permuted_test.append(control_group[index])
+                    permuted_control.append(test_group[index])
+            permutation_diff = abs(np.mean(permuted_test) - np.mean(permuted_control))
+            if permutation_diff >= diff:
+                indicator_sum += 1
+            step+=1
+            seen.append(sample_indices)
+
+        counter=total_number
+
+
+    return diff,indicator_sum/float(counter)
+

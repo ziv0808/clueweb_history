@@ -1932,6 +1932,7 @@ def unite_asrc_data_results(
         ret_model,
         dataset_name,
         round_limit,
+        significance_type,
         additional_models_to_include = {
             'F1 UW' : {'Folder' : '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
                     'FileTemplate' : '<DatasetName>_0<RoundNum>_BM25_Uniform_Results.txt'},
@@ -2067,7 +2068,8 @@ def unite_asrc_data_results(
             next_idx += 1
         significance_df = create_sinificance_df(
             round_res_dict[round_],
-            calc_ndcg_mrr=True)
+            calc_ndcg_mrr=True,
+            sinificance_type=significance_type)
         round_summary_df = pd.merge(
             round_summary_df,
             significance_df,
@@ -2092,7 +2094,8 @@ def unite_asrc_data_results(
         next_idx += 1
     significance_df = create_sinificance_df(
         big_res_dict,
-        calc_ndcg_mrr=True)
+        calc_ndcg_mrr=True,
+        sinificance_type=significance_type)
     big_summary_df = pd.merge(
         big_summary_df,
         significance_df,
@@ -2427,13 +2430,15 @@ if __name__ == '__main__':
         ret_model = sys.argv[4]
         dataset_name = sys.argv[5]
         round_limit = int(sys.argv[6])
+        significance_type = sys.argv[7]
 
         unite_asrc_data_results(
             big_model=big_model,
             snap_limit=snap_limit,
             ret_model=ret_model,
             dataset_name=dataset_name,
-            round_limit=round_limit)
+            round_limit=round_limit,
+            significance_type=significance_type)
     elif operation == 'ASRCSVMWeights':
         snap_limit = int(sys.argv[2])
         ret_model = sys.argv[3]

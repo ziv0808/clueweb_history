@@ -947,7 +947,8 @@ def run_grid_search_over_params_for_config(
 
 def create_sinificance_df(
         per_q_res_dict,
-        calc_ndcg_mrr = False):
+        calc_ndcg_mrr = False,
+        sinificance_type ='TTest'):
 
     additional_measures = []
     if calc_ndcg_mrr == True:
@@ -968,7 +969,7 @@ def create_sinificance_df(
             sinificance_list_dict[col] = ""
         for key_2 in per_q_res_dict:
             if key != key_2:
-                sinificance_dict = check_statistical_significance(res_dict_1=per_q_res_dict[key], res_dict_2=per_q_res_dict[key_2], ndcg_mrr=calc_ndcg_mrr)
+                sinificance_dict = check_statistical_significance(res_dict_1=per_q_res_dict[key], res_dict_2=per_q_res_dict[key_2], ndcg_mrr=calc_ndcg_mrr,sinificance_type=sinificance_type)
                 for measure in measure_list:
                     if sinificance_dict[measure]['Significant'] == True:
                         if per_q_res_dict[key]['all'][measure] > per_q_res_dict[key_2]['all'][measure]:
