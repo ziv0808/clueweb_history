@@ -536,7 +536,7 @@ def train_and_test_model_on_config(
 
     best_c = None
     best_map = 0.0
-    for potential_c in [0.01, 0.1, 0.2, 0.5, 1]:
+    for potential_c in [0.001, 0.01, 0.1, 0.2, 0.5, 1]:
         print("Running valid on C : " +str(potential_c))
         model_filename = learn_svm_rank_model(
             train_file=os.path.join(base_res_folder, 'train.dat'),

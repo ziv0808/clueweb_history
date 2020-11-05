@@ -16,7 +16,7 @@ def run_lambdamart_model(test_file, model_file, predictions_folder):
 
 def learn_lambdamart_model(train_file, models_folder, tree_num, leaf_num):
     model_file = os.path.join(models_folder , "model.txt")
-    command = "java -jar /mnt/bi-strg3/v/zivvasilisky/ziv/env/ranklib/RankLib-2.14.jar -train " + train_file + " -ranker 6 -metric2t NDCG@20 -save " + model_file
+    command = "java -jar /mnt/bi-strg3/v/zivvasilisky/ziv/env/ranklib/RankLib-2.14.jar -train " + train_file + " -ranker 6 -metric2t NDCG@5 -save " + model_file
     command += " -tree " + str(tree_num) + " -leaf " +str(leaf_num)
     out = run_bash_command(command)
     print(out)
