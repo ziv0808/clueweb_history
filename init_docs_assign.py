@@ -239,7 +239,9 @@ queries = list(data.keys())
 #     f.write(str(mapping))
 # with open('QueryUserMapping.txt', 'w') as f:
 #     f.write(str(query_user_map))
-mapping = {'4EE20G' : ['048', '010', '002']}
+# mapping = {'4EE20G' : ['048', '010', '002']}
+mapping = {'4BJPNQ' : ['048', '098', '004']}
+
 upload_data_to_mongo(data,mapping)
 
 
