@@ -2077,9 +2077,9 @@ def unite_asrc_data_results(
             how='inner')
         round_res_dict[str(round_) + '_Sum'] = round_summary_df
         if big_model == 'LambdaMART':
-            round_summary_df.to_csv(dataset_name.upper()+ '_round_' + str(round_) + '_LambdaMART_Summary.tsv', sep = '\t', index = False)
+            round_summary_df.to_csv(dataset_name.upper()+ '_round_' + str(round_) + '_'+significance_type+'_LambdaMART_Summary.tsv', sep = '\t', index = False)
         else:
-            round_summary_df.to_csv(dataset_name.upper() + '_round_' + str(round_) + '_Summary.tsv', sep='\t', index=False)
+            round_summary_df.to_csv(dataset_name.upper() + '_round_' + str(round_) + '_'+significance_type+'_Summary.tsv', sep='\t', index=False)
 
     measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
     big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
@@ -2103,7 +2103,7 @@ def unite_asrc_data_results(
         how='inner')
     if big_model == 'LambdaMART':
         ret_model += '_'+ big_model
-    big_summary_df.to_csv(os.path.join(base_folder, dataset_name.upper()+ '_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'.tsv'), sep = '\t' ,index = False)
+    big_summary_df.to_csv(os.path.join(base_folder, dataset_name.upper()+ '_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+significance_type+'.tsv'), sep = '\t' ,index = False)
 
     for measure in ['NDCG@1', 'NDCG@3', 'MRR']:
         measure_df = pd.DataFrame({})
