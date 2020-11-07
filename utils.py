@@ -1,4 +1,5 @@
 import os
+import sys
 import ast
 import math
 import random
@@ -859,6 +860,8 @@ def pemutation_test(test_group, control_group, total_number=1000):
                 indicator_sum+=1
             counter+=1
     else:
+        print("Got to ths spot!")
+        sys.stdout.flush()
         seen = [] #avoid repetitions
         united_vec = test_group + control_group
         indices = range(len(united_vec))
