@@ -1,6 +1,7 @@
 import os
 import ast
 import math
+import random
 import subprocess
 import pandas as pd
 import numpy as np
@@ -859,26 +860,25 @@ def pemutation_test(test_group, control_group, total_number=1000):
             counter+=1
     else:
         seen = [] #avoid repetitions
-        indices = range(len(test_group))
+        united_vec = test_group + control_group
+        indices = range(len(united_vec))
         step=0
         while step < total_number:
             permuted_test = []
             permuted_control = []
-            sample_indices = list(np.random.choice([0, 1], p=[0.5, 0.5], size=(1, len(indices)))[0])
-            if sample_indices in seen:
+            sample_indices = list(random.sample(indices, len(test_group)))
+            if set(sample_indices) in seen:
                 continue
             for index,choice in enumerate(sample_indices):
                 if choice==1:
-                    permuted_test.append(test_group[index])
-                    permuted_control.append(control_group[index])
+                    permuted_test.append(united_vec[index])
                 else:
-                    permuted_test.append(control_group[index])
-                    permuted_control.append(test_group[index])
+                    permuted_test.append(united_vec[index])
             permutation_diff = abs(np.mean(permuted_test) - np.mean(permuted_control))
             if permutation_diff >= diff:
                 indicator_sum += 1
             step+=1
-            seen.append(sample_indices)
+            seen.append(set(sample_indices))
 
         counter=total_number
 
