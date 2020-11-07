@@ -842,7 +842,7 @@ def pemutation_test(test_group, control_group, total_number=1000):
     the parameter states the number of permutations sampled
     :return:
     """
-    np.random.seed(9002)
+    # np.random.seed(9002)
     diff = abs(np.mean(test_group) - np.mean(control_group))
     indicator_sum=0
     counter = 0
@@ -860,28 +860,20 @@ def pemutation_test(test_group, control_group, total_number=1000):
                 indicator_sum+=1
             counter+=1
     else:
-        # print("Got to ths spot!")
-        # sys.stdout.flush()
-        seen = [] #avoid repetitions
         united_vec = test_group + control_group
         indices = range(len(united_vec))
-        step=0
-        while step < total_number:
+        for i in range(total_number):
             permuted_test = []
             permuted_control = []
             sample_indices = list(random.sample(indices, len(test_group)))
-            if set(sample_indices) in seen:
-                continue
             for index in indices:
                 if index in sample_indices:
                     permuted_test.append(united_vec[index])
                 else:
-                    permuted_test.append(united_vec[index])
+                    permuted_control.append(united_vec[index])
             permutation_diff = abs(np.mean(permuted_test) - np.mean(permuted_control))
             if permutation_diff >= diff:
                 indicator_sum += 1
-            step+=1
-            seen.append(set(sample_indices))
 
         counter=total_number
 
