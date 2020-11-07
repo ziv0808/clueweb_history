@@ -860,17 +860,18 @@ def pemutation_test(test_group, control_group, total_number=1000):
                 indicator_sum+=1
             counter+=1
     else:
-        united_vec = test_group + control_group
-        indices = range(len(united_vec))
+        indices = range(len(test_group))
         for i in range(total_number):
             permuted_test = []
             permuted_control = []
-            sample_indices = list(random.sample(indices, len(test_group)))
-            for index in indices:
-                if index in sample_indices:
-                    permuted_test.append(united_vec[index])
+            sample_indices = list(np.random.choice([0, 1], p=[0.5, 0.5], size=(1, len(indices)))[0])
+            for index, choice in enumerate(sample_indices):
+                if choice == 1:
+                    permuted_test.append(test_group[index])
+                    permuted_control.append(control_group[index])
                 else:
-                    permuted_control.append(united_vec[index])
+                    permuted_test.append(control_group[index])
+                    permuted_control.append(test_group[index])
             permutation_diff = abs(np.mean(permuted_test) - np.mean(permuted_control))
             if permutation_diff >= diff:
                 indicator_sum += 1
