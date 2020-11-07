@@ -869,8 +869,8 @@ def pemutation_test(test_group, control_group, total_number=1000):
             sample_indices = list(random.sample(indices, len(test_group)))
             if set(sample_indices) in seen:
                 continue
-            for index,choice in enumerate(sample_indices):
-                if choice==1:
+            for index in indices:
+                if index in sample_indices:
                     permuted_test.append(united_vec[index])
                 else:
                     permuted_test.append(united_vec[index])
