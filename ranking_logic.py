@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 import os
 import sys
+sys.setdefaultencoding('utf-8')
 import datetime
 import xml.etree.ElementTree as ET
 import csv
@@ -74,7 +75,7 @@ def createTrecTextForCurrentDocuments(baseDir):
             docnos.append(docno)
             queryToDocnos[str(document['query_id']).zfill(3)] = docnos
             f.write('<TEXT>\n')
-            print (type(document['current_document']))
+            # print (type(document['current_document']))
             f.write(bytes(str(document['current_document']), 'cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
             f.write('\n</TEXT>\n')
             f.write('</DOC>\n')
