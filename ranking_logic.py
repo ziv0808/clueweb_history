@@ -66,6 +66,7 @@ def createTrecTextForCurrentDocuments(baseDir):
     f = open(filename, 'w')
     for document in documents:
         if document['username'] in current_users:
+            print(document['query_id'], document['username'])
             f.write('<DOC>\n')
             docno = str(document['query_id']).zfill(3) + '-' + str(document['username'])
             f.write('<DOCNO>' + docno + '</DOCNO>\n')
@@ -73,7 +74,10 @@ def createTrecTextForCurrentDocuments(baseDir):
             docnos.append(docno)
             queryToDocnos[str(document['query_id']).zfill(3)] = docnos
             f.write('<TEXT>\n')
-            f.write(bytes(str(document['current_document']).replace(u"\u2019", "'"), 'cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
+            try:
+                f.write(bytes(str(document['current_document']), 'cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
+            except Exception as e:
+                print(str(document['current_document'])
             f.write('\n</TEXT>\n')
             f.write('</DOC>\n')
     f.close()
