@@ -73,7 +73,7 @@ def createTrecTextForCurrentDocuments(baseDir):
             docnos.append(docno)
             queryToDocnos[str(document['query_id']).zfill(3)] = docnos
             f.write('<TEXT>\n')
-            f.write(bytes(str(document['current_document']), 'cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
+            f.write(bytes(str(document['current_document']).replace(u"\u2019", "'"), 'cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
             f.write('\n</TEXT>\n')
             f.write('</DOC>\n')
     f.close()
@@ -321,9 +321,9 @@ if __name__=="__main__":
     baseDir = '/lv_local/home/zivvasilisky/ASR20/epoch_run/'
     if not os.path.exists(baseDir):
         os.makedirs(baseDir)
-    changeStatus()
-    print('Status Changed!')
-    sys.stdout.flush()
+    # changeStatus()
+    # print('Status Changed!')
+    # sys.stdout.flush()
     trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
     print('Files created!')
     sys.stdout.flush()
