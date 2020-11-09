@@ -74,10 +74,7 @@ def createTrecTextForCurrentDocuments(baseDir):
             docnos.append(docno)
             queryToDocnos[str(document['query_id']).zfill(3)] = docnos
             f.write('<TEXT>\n')
-            try:
-                f.write(bytes(str(document['current_document']), 'cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
-            except Exception as e:
-                print(document['current_document'])
+            f.write(bytes(document['current_document'], 'cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
             f.write('\n</TEXT>\n')
             f.write('</DOC>\n')
     f.close()
