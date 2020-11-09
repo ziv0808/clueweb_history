@@ -77,7 +77,7 @@ def createTrecTextForCurrentDocuments(baseDir):
             try:
                 f.write(bytes(str(document['current_document']), 'cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
             except Exception as e:
-                print(str(document['current_document'])
+                print(str(document['current_document']))
             f.write('\n</TEXT>\n')
             f.write('</DOC>\n')
     f.close()
