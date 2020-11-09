@@ -1,7 +1,6 @@
 from pymongo import MongoClient
 import os
 import sys
-sys.setdefaultencoding('utf-8')
 import datetime
 import xml.etree.ElementTree as ET
 import csv
@@ -76,7 +75,7 @@ def createTrecTextForCurrentDocuments(baseDir):
             queryToDocnos[str(document['query_id']).zfill(3)] = docnos
             f.write('<TEXT>\n')
             # print (type(document['current_document']))
-            f.write(bytes(str(document['current_document']), 'cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
+            f.write(bytes(str(document['current_document'].encode('utf-8')), 'cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
             f.write('\n</TEXT>\n')
             f.write('</DOC>\n')
     f.close()
@@ -330,17 +329,17 @@ if __name__=="__main__":
     trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
     print('Files created!')
     sys.stdout.flush()
-    asrIndex = buildIndex(trecFileName, currentTime, baseDir)
-    print('Index Built!')
-    sys.stdout.flush()
-    mergedIndex = mergeIndices(asrIndex, baseDir)
-    print('Index Merged!')
-    sys.stdout.flush()
-    rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir)
-    print('Ranked docs!')
-    sys.stdout.flush()
-    updateScores((rankedLists,))
-    print('Updated docs!')
-    sys.stdout.flush()
-    backupDocuments(currentTime,baseDir)
-    changeStatus()
+    # asrIndex = buildIndex(trecFileName, currentTime, baseDir)
+    # print('Index Built!')
+    # sys.stdout.flush()
+    # mergedIndex = mergeIndices(asrIndex, baseDir)
+    # print('Index Merged!')
+    # sys.stdout.flush()
+    # rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir)
+    # print('Ranked docs!')
+    # sys.stdout.flush()
+    # updateScores((rankedLists,))
+    # print('Updated docs!')
+    # sys.stdout.flush()
+    # backupDocuments(currentTime,baseDir)
+    # changeStatus()
