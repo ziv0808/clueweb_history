@@ -322,21 +322,21 @@ if __name__=="__main__":
     baseDir = '/lv_local/home/zivvasilisky/ASR20/epoch_run/'
     if not os.path.exists(baseDir):
         os.makedirs(baseDir)
-    # changeStatus()
-    # print('Status Changed!')
-    # sys.stdout.flush()
-    # trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
-    # print('Files created!')
-    # sys.stdout.flush()
-    # asrIndex = buildIndex(trecFileName, currentTime, baseDir)
-    # print('Index Built!')
-    # sys.stdout.flush()
-    # mergedIndex = mergeIndices(asrIndex, baseDir)
-    # print('Index Merged!')
-    # sys.stdout.flush()
-    mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
-    workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2020-11-09-23-55-23-857656'
-    currentTime = '2020-11-09-23-55-23-857656'
+    changeStatus()
+    print('Status Changed!')
+    sys.stdout.flush()
+    trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
+    print('Files created!')
+    sys.stdout.flush()
+    asrIndex = buildIndex(trecFileName, currentTime, baseDir)
+    print('Index Built!')
+    sys.stdout.flush()
+    mergedIndex = mergeIndices(asrIndex, baseDir)
+    print('Index Merged!')
+    sys.stdout.flush()
+    # mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
+    # workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2020-11-09-23-55-23-857656'
+    # currentTime = '2020-11-09-23-55-23-857656'
     rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir)
     print('Ranked docs!')
     sys.stdout.flush()
