@@ -54,7 +54,7 @@ def createTrecTextForCurrentDocuments(baseDir):
     if not os.path.exists(pathToFolder):
         os.makedirs(pathToFolder)
     currentTime = str(datetime.datetime.now()).replace(":", "-").replace(" ", "-").replace(".", "-")
-    pathToTrecText = pathToFolder+"/TrecText/"
+    pathToTrecText = pathToFolder+"TrecText/"
     if not os.path.exists(pathToTrecText):
         os.makedirs(pathToTrecText)
     filename = pathToTrecText + currentTime
@@ -78,7 +78,7 @@ def createTrecTextForCurrentDocuments(baseDir):
             f.write('\n</TEXT>\n')
             f.write('</DOC>\n')
     f.close()
-    pathToWorkingSet = pathToFolder+ '/WorkingSets/'
+    pathToWorkingSet = pathToFolder+ 'WorkingSets/'
     if not os.path.exists(pathToWorkingSet):
         os.makedirs(pathToWorkingSet)
     workingSetFilename = pathToWorkingSet + currentTime
@@ -185,7 +185,7 @@ def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
     MODEL_DIR = baseDir+"content_modification_code/rank_models/"
     MODEL_FILE = MODEL_DIR+"model_lambdatamart"
     QUERIES_FILE = baseDir+'Data/QueriesFile.xml'
-    FEATURES_DIR = pathToFolder + '/Features/' +  currentTime
+    FEATURES_DIR = pathToFolder + 'Features/' +  currentTime
     if not os.path.exists(FEATURES_DIR):
         os.makedirs(FEATURES_DIR)
     ORIGINAL_FEATURES_FILE = 'features'
@@ -202,7 +202,7 @@ def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
     # normalized_scores = create_normalized_scores(waterloo)
     # FEATURES_FILE=rewrite_features(normalized_scores,ORIGINAL_FEATURES_FILE)
     FEATURES_FILE = ORIGINAL_FEATURES_FILE
-    command = '~/jdk1.8.0_181/bin/java -jar '+scriptDir+'RankLib.jar -load ' + MODEL_FILE + ' -rank '+FEATURES_FILE+' -score predictions.tmp'
+    command = 'java -jar '+scriptDir+'RankLib.jar -load ' + MODEL_FILE + ' -rank '+FEATURES_FILE+' -score predictions.tmp'
     print(command)
     out=run_bash_command(command)
     print(out)
@@ -215,11 +215,11 @@ def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
     if not os.path.exists(RANKED_LIST_DIR):
         os.makedirs(RANKED_LIST_DIR)
     PREDICTIONS_FILE = 'predictions'
-    command='perl '+scriptDir+'order.pl ' + RANKED_LIST_DIR+ '/LambdaMART' + currentTime + ' ' +FEATURES_FILE + ' ' + PREDICTIONS_FILE
+    command='perl '+scriptDir+'order.pl ' + RANKED_LIST_DIR+ 'LambdaMART' + currentTime + ' ' +FEATURES_FILE + ' ' + PREDICTIONS_FILE
     print(command)
     out=run_bash_command(command)
     print(out)
-    return RANKED_LIST_DIR+ '/LambdaMART' + currentTime
+    return RANKED_LIST_DIR+ 'LambdaMART' + currentTime
 
 
 
@@ -325,15 +325,18 @@ if __name__=="__main__":
     # changeStatus()
     # print('Status Changed!')
     # sys.stdout.flush()
-    trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
-    print('Files created!')
-    sys.stdout.flush()
-    asrIndex = buildIndex(trecFileName, currentTime, baseDir)
-    print('Index Built!')
-    sys.stdout.flush()
-    mergedIndex = mergeIndices(asrIndex, baseDir)
-    print('Index Merged!')
-    sys.stdout.flush()
+    # trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
+    # print('Files created!')
+    # sys.stdout.flush()
+    # asrIndex = buildIndex(trecFileName, currentTime, baseDir)
+    # print('Index Built!')
+    # sys.stdout.flush()
+    # mergedIndex = mergeIndices(asrIndex, baseDir)
+    # print('Index Merged!')
+    # sys.stdout.flush()
+    mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
+    workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2020-11-09-23-55-23-857656'
+    currentTime = '2020-11-09-23-55-23-857656'
     rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir)
     print('Ranked docs!')
     sys.stdout.flush()
