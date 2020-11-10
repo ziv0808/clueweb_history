@@ -26,10 +26,14 @@ def run_cv_for_config(
     feature_list = []
     broken_feature_groupname = feature_groupname.split('_')
     len_handled = 0
-    base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio', 'Ent', 'FracStops',
-                         'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
-                         'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
-                         'TFNormMean','TFNormStd', 'VSM', 'SimClueWeb','BM25Score']
+    # base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio', 'Ent', 'FracStops',
+    #                      'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
+    #                      'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
+    #                      'TFNormMean','TFNormStd', 'VSM', 'SimClueWeb','BM25Score']
+    base_feature_list = ['CoverQueryNum', 'CoverQueryRatio', 'Ent', 'FracStops',
+                         'IDF', 'Len', 'LMIR.DIR', 'LMIR.JM', 'StopCover', 'TFSum', 'TFMin', 'TFMax',
+                         'TFMean', 'TFStd','TFIDFSum', 'TFIDFMin', 'TFIDFMax', 'TFIDFMean', 'TFIDFStd', 'TFNormSum', 'TFNormMin',
+                         'TFNormMax','TFNormMean', 'TFNormStd', 'SimClueWeb', 'BM25Score']
 
     if 'Static' in broken_feature_groupname:
         feature_list.extend(base_feature_list)
