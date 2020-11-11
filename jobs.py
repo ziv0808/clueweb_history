@@ -1902,7 +1902,7 @@ def create_base_features_for_asrc_with_ltr_features(
             fin_df_dict[round_num]['NextIdx'] += 1
 
             curr_doc_df_for_append['NumSnapshots'] = len(curr_doc_df_for_append)
-            curr_doc_df_for_append['SnapNum'] = list(range((len(curr_doc_df_for_append) - 1) * (-1), 0))
+            curr_doc_df_for_append['SnapNum'] = list(range((len(curr_doc_df_for_append) - 1) * (-1), 1))
             fin_df_dict[round_num]['SnapDF'] = fin_df_dict[round_num]['SnapDF'].append(curr_doc_df_for_append, ignore_index=True)
 
     print("Finished features!")
