@@ -1878,6 +1878,7 @@ def create_base_features_for_asrc_with_ltr_features(
 
             if len(curr_doc_df) == 1:
                 insert_row.extend([pd.np.nan] * (len(base_feature_list) * 3))
+                curr_doc_df_for_append = curr_doc_df.copy()
             else:
                 for feature in base_feature_list:
                     curr_doc_df[feature + '_Shift'] = curr_doc_df[feature].shift(-1)
@@ -1885,7 +1886,7 @@ def create_base_features_for_asrc_with_ltr_features(
                         lambda row_: calc_releational_measure(row_[feature + '_Shift'], row_[feature]), axis=1)
                     curr_doc_df[feature + '_RGrad'] = curr_doc_df.apply(
                         lambda row_: calc_releational_measure(row_[feature], list(bench_df[feature])[0]), axis=1)
-
+                curr_doc_df_for_append = curr_doc_df.copy()
                 curr_doc_df = curr_doc_df[curr_doc_df['Interval'] != 'ClueWeb09']
                 for feature in base_feature_list:
                     insert_row.append(list(curr_doc_df[feature + '_Grad'])[-1])
@@ -1900,9 +1901,9 @@ def create_base_features_for_asrc_with_ltr_features(
             fin_df_dict[round_num]['FinDF'].loc[fin_df_dict[round_num]['NextIdx']] = insert_row
             fin_df_dict[round_num]['NextIdx'] += 1
 
-            curr_doc_df['NumSnapshots'] = len(curr_doc_df)
-            curr_doc_df['SnapNum'] = list(range((len(curr_doc_df) - 1) * (-1), 1))
-            fin_df_dict[round_num]['SnapDF'] = fin_df_dict[round_num]['SnapDF'].append(curr_doc_df, ignore_index=True)
+            curr_doc_df_for_append['NumSnapshots'] = len(curr_doc_df_for_append)
+            curr_doc_df_for_append['SnapNum'] = list(range((len(curr_doc_df_for_append) - 1) * (-1), 0))
+            fin_df_dict[round_num]['SnapDF'] = fin_df_dict[round_num]['SnapDF'].append(curr_doc_df_for_append, ignore_index=True)
 
     print("Finished features!")
     sys.stdout.flush()
