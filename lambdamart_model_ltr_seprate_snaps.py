@@ -45,7 +45,7 @@ def prepare_svmr_model_data_per_snap(
     historical_snaps = list(per_snap_df['SnapNum'].drop_duplicates())
     historical_snaps.remove(0)
     for snap_location in historical_snaps:
-        curr_snap_df = historical_snaps[historical_snaps['SnapNum'] == snap_location].copy()
+        curr_snap_df = per_snap_df[per_snap_df['SnapNum'] == snap_location].copy()
         del curr_snap_df['SnapNum']
         curr_rename_dict = {}
         for feature in feature_list:
@@ -56,6 +56,7 @@ def prepare_svmr_model_data_per_snap(
             curr_snap_df.rename(columns = curr_rename_dict),
             on = ['QueryNum', 'Docno'],
             how = 'left')
+    print(fin_feature_list)
 
     if lambdamart == True:
         work_df['Relevance'] = work_df['Relevance'].apply(lambda x: 0 if int(x) <= 0 else x)
