@@ -252,6 +252,7 @@ def run_cv_for_config(
                          'TFMean', 'TFStd','TFIDFSum', 'TFIDFMin', 'TFIDFMax', 'TFIDFMean', 'TFIDFStd', 'TFNormSum', 'TFNormMin',
                          'TFNormMax','TFNormMean', 'TFNormStd', 'SimClueWeb', 'BM25Score']
 
+    test_score_df = pd.DataFrame({})
     for i in range(k_fold):
         init_q = fold_list[i][0]
         end_q = fold_list[i][1]
