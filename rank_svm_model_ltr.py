@@ -251,7 +251,8 @@ def run_grid_search_over_params_for_config(
 
 def create_all_x_snap_aggregations(
         base_feature_filename,
-        possible_num_snaps_options_list =None):
+        possible_num_snaps_options_list =None,
+        history_only_in_msmm_calc = True):
 
     base_file_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
     base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio', 'Ent', 'FracStops',
@@ -295,6 +296,8 @@ def create_all_x_snap_aggregations(
                 tmp_df = work_df[work_df['Interval'] >= curr_interval].copy()
         else:
             tmp_df = work_df[work_df['SnapNum'] >= (-1)*num_snaps].copy()
+        if history_only_in_msmm_calc == True:
+            tmp_df = tmp_df[tmp_df['Interval'] != 'ClueWeb09']
         suffix = str(num_snaps) + 'Snaps'
         suffix_col = 'XXSnaps'
         print(suffix)
@@ -387,4 +390,5 @@ if __name__ == '__main__':
     elif operation == 'LimitedSnapFeatures':
         base_feature_filename = sys.argv[2]
         possible_num_snaps_options_list = ast.literal_eval(sys.argv[3])
-        create_all_x_snap_aggregations(base_feature_filename, possible_num_snaps_options_list)
+        history_only_in_msmm_calc = ast.literal_eval(sys.argv[4])
+        create_all_x_snap_aggregations(base_feature_filename, possible_num_snaps_options_list, history_only_in_msmm_calc)
