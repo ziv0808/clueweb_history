@@ -2041,10 +2041,10 @@ def unite_asrc_data_results(
             print (tmp_res_dict.keys())
             # if dataset_name == 'herd_control':
             #     del tmp_res_dict[59]
-            # if round_ in [6,7]:
-            #     del tmp_res_dict[193]
-            #     if round_ == 7:
-            #         del tmp_res_dict[195]
+            if round_ in [6,7]:
+                del tmp_res_dict[193]
+                if round_ == 7:
+                    del tmp_res_dict[195]
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
             if feat_group.replace('_', '+') in big_res_dict:
