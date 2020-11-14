@@ -1961,6 +1961,8 @@ def unite_asrc_data_results(
                       'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Results.txt'},
             'RHS LM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rhs_model_asrc/final_res/',
                       'FileTemplate': '<DatasetName>_0<RoundNum>_LM_Results.txt'},
+            'SNAPS': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/per_snap_lambdamart_res/ret_res/<InnerFold>/',
+                       'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_MinMax_Historical.txt'},
 
         }):
     from rank_svm_model import create_sinificance_df
@@ -1992,10 +1994,10 @@ def unite_asrc_data_results(
     num_rounds = 0
     for round_ in range(2,round_limit + 1):
         if dataset_name == 'herd_control':
-            inner_fold = dataset_name.upper() + '_LTR_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
+            inner_fold_sep = dataset_name.upper() + '_LTR_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
         else:
-            inner_fold = dataset_name.upper() + '_LTR_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
-        inner_fold = os.path.join(base_2_folder, inner_fold)
+            inner_fold_sep = dataset_name.upper() + '_LTR_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
+        inner_fold = os.path.join(base_2_folder, inner_fold_sep)
         round_res_dict[round_] = {}
         num_rounds += 1
         for filename in os.listdir(inner_fold):
@@ -2025,8 +2027,10 @@ def unite_asrc_data_results(
                 big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
 
         for model in additional_models_to_include:
-            filename = additional_models_to_include[model]['FileTemplate'].replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset_name)
-            path = additional_models_to_include[model]['Folder']
+            filename = additional_models_to_include[model]['FileTemplate'].replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset_name).replace('<DatasetNameUpper>', dataset_name.upper())
+            if dataset_name == 'herd_control' and model == 'SNAPS':
+                filename = filename.replace('_All_features', '')
+            path = additional_models_to_include[model]['Folder'].replace('<InnerFold>', inner_fold_sep)
             print(filename)
             feat_group = model
             tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
@@ -2037,10 +2041,10 @@ def unite_asrc_data_results(
             print (tmp_res_dict.keys())
             # if dataset_name == 'herd_control':
             #     del tmp_res_dict[59]
-            if round_ in [6,7]:
-                del tmp_res_dict[193]
-                if round_ == 7:
-                    del tmp_res_dict[195]
+            # if round_ in [6,7]:
+            #     del tmp_res_dict[193]
+            #     if round_ == 7:
+            #         del tmp_res_dict[195]
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
             if feat_group.replace('_', '+') in big_res_dict:
