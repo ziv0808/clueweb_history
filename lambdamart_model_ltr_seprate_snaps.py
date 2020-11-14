@@ -40,12 +40,13 @@ def prepare_svmr_model_data_per_snap(
     # cat relevant features
     work_df = work_df[['QueryNum', 'Docno', 'Relevance'] + feature_list]
     per_snap_df = pd.read_csv(os.path.join(data_folder, base_feature_filename.replace('_with_meta', '_all_snaps')), sep='\t', index_col=False)
-    per_snap_df = per_snap_df[['QueryNum', 'Docno'] + feature_list]
+    per_snap_df = per_snap_df[['QueryNum', 'Docno', 'SnapNum'] + feature_list]
     fin_feature_list = feature_list[:]
     historical_snaps = list(per_snap_df['SnapNum'].drop_duplicates())
     historical_snaps.remove(0)
     for snap_location in historical_snaps:
-        curr_snap_df = historical_snaps[historical_snaps['SnapNum'] == snap_location]
+        curr_snap_df = historical_snaps[historical_snaps['SnapNum'] == snap_location].copy()
+        del curr_snap_df['SnapNum']
         curr_rename_dict = {}
         for feature in feature_list:
             curr_rename_dict[feature] = feature +'_Snap' + str(snap_location)
