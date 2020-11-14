@@ -2041,7 +2041,7 @@ def unite_asrc_data_results(
             print (tmp_res_dict.keys())
             # if dataset_name == 'herd_control':
             #     del tmp_res_dict[59]
-            if round_ in [6,7]:
+            if round_ in [6,7] and model != 'SNAPS':
                 del tmp_res_dict[193]
                 if round_ == 7:
                     del tmp_res_dict[195]
