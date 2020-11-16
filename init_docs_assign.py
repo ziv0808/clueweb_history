@@ -199,6 +199,41 @@ def upload_data_to_mongo(data,user_query_map):
             object["description"]=data[query]["description"]
             db.documents.insert(object)
 
+def read_current_doc_file(doc_filepath):
+    stats = {}
+    with open(doc_filepath, 'r') as f:
+        soup = BeautifulSoup(f.read())
+    all_docs = soup.find_all('doc')
+
+    for doc_ in list(all_docs):
+        docno = doc_.find('docno').text
+        fulltext = doc_.find('text').text
+        query = docno.split('-')[0]
+        user =docno.split('-')[1]
+        stats[query] = {}
+        stats[query][user] = fulltext
+
+    return stats
+
+def compare_doc_files(curr_stats, old_stats):
+    unchanged_docs = 0
+    unchanged_users_dict = {}
+    for query in curr_stats:
+        for user in query:
+            if old_stats[query]['document'] == curr_stats[query][user]:
+                unchanged_docs += 1
+                if user in unchanged_users_dict:
+                    unchanged_users_dict[user] = 1
+                else:
+                    unchanged_users_dict[user] += 1
+    print('Unchnged Docs: ' + str(unchanged_docs))
+    unchanged_users = 0
+    for user in unchanged_users_dict:
+        if unchanged_users_dict[user] >= 3:
+            unchanged_users += 1
+
+    print('Unchnged Users: ' + str(unchanged_users))
+
 def test_number_of_queries(mapping,number_of_queries):
     for user in mapping:
         if len(mapping[user])!=number_of_queries:
@@ -217,6 +252,9 @@ seed(9001)
 users = retrieve_users()
 data = read_initial_data("documents.trectext", "topics.full.xml")
 queries = list(data.keys())
+
+data_round = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
+compare_doc_files(data_round, data)
 # while True:
 #     mapping, query_user_map = user_query_mapping_z(
 #         users=users,
@@ -240,9 +278,9 @@ queries = list(data.keys())
 # with open('QueryUserMapping.txt', 'w') as f:
 #     f.write(str(query_user_map))
 # mapping = {'4EE20G' : ['048', '010', '002']}
-mapping = {'4BJPNQ' : ['048', '098', '004']}
-
-upload_data_to_mongo(data,mapping)
+# mapping = {'4BJPNQ' : ['048', '098', '004']}
+#
+# upload_data_to_mongo(data,mapping)
 
 
 # changeStatus()
