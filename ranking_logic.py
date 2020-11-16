@@ -2,6 +2,7 @@ from pymongo import MongoClient
 import os
 import sys
 import datetime
+import unicodedata
 import xml.etree.ElementTree as ET
 import csv
 import subprocess
@@ -74,7 +75,7 @@ def createTrecTextForCurrentDocuments(baseDir):
             docnos.append(docno)
             queryToDocnos[str(document['query_id']).zfill(3)] = docnos
             f.write('<TEXT>\n')
-            f.write(document['current_document'].encode('cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
+            f.write(unicodedata.normalize('NFKD', document['current_document']).encode('cp1252', "ignore").decode('utf-8', 'ignore').rstrip())
             f.write('\n</TEXT>\n')
             f.write('</DOC>\n')
     f.close()
