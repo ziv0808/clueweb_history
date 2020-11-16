@@ -254,6 +254,7 @@ data = read_initial_data("documents.trectext", "topics.full.xml")
 queries = list(data.keys())
 
 data_round = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
+print(data_round)
 compare_doc_files(data_round, data)
 # while True:
 #     mapping, query_user_map = user_query_mapping_z(
