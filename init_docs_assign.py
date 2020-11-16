@@ -219,7 +219,7 @@ def compare_doc_files(curr_stats, old_stats):
     unchanged_docs = 0
     unchanged_users_dict = {}
     for query in curr_stats:
-        for user in query:
+        for user in curr_stats[query]:
             if old_stats[query]['document'] == curr_stats[query][user]:
                 unchanged_docs += 1
                 if user in unchanged_users_dict:
