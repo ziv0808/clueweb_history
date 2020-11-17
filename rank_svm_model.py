@@ -498,8 +498,8 @@ def run_backward_elimination(
                 potential_c=potential_c,
                 qrel_filepath=qrel_filepath)
 
-            if float(res_dict['Map']) > curr_map_score:
-                curr_map_score = float(res_dict['Map'])
+            if float(res_dict['NDCG@X']) > curr_map_score:
+                curr_map_score = float(res_dict['NDCG@X'])
                 rmv_feature = feature
         if rmv_feature is not None:
             new_feat_list.remove(rmv_feature)
@@ -549,7 +549,7 @@ def get_result_for_feature_set(
     with open(os.path.join(base_res_folder, curr_file_name), 'w') as f:
         f.write(convert_df_to_trec(curr_res_df))
 
-    res_dict = get_ranking_effectiveness_for_res_file(
+    res_dict = calc_ndcg_at_x_for_file(
         file_path=base_res_folder,
         filename=curr_file_name,
         qrel_filepath=qrel_filepath)
@@ -618,7 +618,7 @@ def train_and_test_model_on_config(
 
     best_c = None
     best_map = 0.0
-    for potential_c in [0.01, 0.1, 0.2, 0.5, 1]:
+    for potential_c in [0.01, 0.01, 0.1, 0.2, 0.5, 1]:
         print("Running valid on C : " +str(potential_c))
         model_filename = learn_svm_rank_model(
             train_file=os.path.join(base_res_folder, 'train.dat'),
@@ -646,13 +646,13 @@ def train_and_test_model_on_config(
         with open(os.path.join(base_res_folder, curr_file_name), 'w') as f:
             f.write(convert_df_to_trec(curr_res_df))
 
-        res_dict = get_ranking_effectiveness_for_res_file(
+        res_dict = calc_ndcg_at_x_for_file(
             file_path=base_res_folder,
             filename=curr_file_name,
             qrel_filepath=qrel_filepath)
 
-        if float(res_dict['Map']) > best_map:
-            best_map = float(res_dict['Map'])
+        if float(res_dict['NDCG@X']) > best_map:
+            best_map = float(res_dict['NDCG@X'])
             best_c = potential_c
 
     if backward_elimination == True:

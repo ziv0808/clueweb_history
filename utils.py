@@ -771,6 +771,33 @@ def calc_ndcg_mrr_for_file(
     res_dict['all']['MRR'] = res_dict['all']['MRR'] / float(mrr_denom)
     return res_dict
 
+
+def calc_ndcg_at_x_for_file(
+        file_path,
+        filename,
+        qrel_filepath,
+        x = 5):
+    qrel_df = get_relevant_docs_df_utils(qrel_filepath)
+    qrel_df['Relevance'] = qrel_df['Relevance'].apply(lambda x: int(x))
+    res_df = convert_trec_results_file_to_pandas_df(os.path.join(file_path, filename))
+    res_df.rename(columns={'Query_ID': 'Query'}, inplace=True)
+    res_df = pd.merge(
+        res_df,
+        qrel_df,
+        on=['Query', 'Docno'],
+        how='left')
+    res_df.fillna(0, inplace=True)
+    all_q = list(res_df['Query'].drop_duplicates())
+
+    res_dict = {'all': {'NDCG@X': 0.0}}
+    for q in all_q:
+        q_df = res_df[res_df['Query'] == q]
+        true_val_list = q_df['Relevance'].values
+        ndcgx = calc_ndcg(true_val_list, x)
+        res_dict['all']['NDCG@X'] += ndcgx
+    res_dict['all']['NDCG@X'] = res_dict['all']['NDCG@X'] / float(len(all_q))
+    return res_dict
+
 def calc_ndcg(
         y_true,
         k):
@@ -793,7 +820,8 @@ def calc_mrr_nmrr(
         return np.nan, 1.0/(ret_idx + 1)
 
 
-def get_asrc_q_list_and_fold_list(inner_fold):
+def get_asrc_q_list_and_fold_list(
+        inner_fold):
     if 'asrc' in inner_fold:
         fold_list = [(2, 9), (10, 17), (18, 32), (33, 36), (45, 51), (59, 78),
                      (98, 144), (161, 166), (167, 180), (182, 195)]
