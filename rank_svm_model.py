@@ -475,6 +475,87 @@ def learn_best_num_of_snaps(
 
     return best_snap_lim
 
+def run_backward_elimination(
+            base_res_folder,
+            train_df,
+            valid_df,
+            feature_list,
+            potential_c,
+            qrel_filepath,
+            curr_map_score):
+
+    new_feat_list = feature_list[:]
+    for i in range(len(feature_list)):
+        rmv_feature = None
+        for feature in new_feat_list:
+            curr_feat_list = new_feat_list[:]
+            curr_feat_list.remove(feature)
+            res_dict = get_result_for_feature_set(
+                base_res_folder=base_res_folder,
+                train_df=train_df,
+                valid_df=valid_df,
+                curr_feature_list=curr_feat_list,
+                potential_c=potential_c,
+                qrel_filepath=qrel_filepath)
+
+            if float(res_dict['Map']) > curr_map_score:
+                curr_map_score = float(res_dict['Map'])
+                rmv_feature = feature
+        if rmv_feature is not None:
+            new_feat_list.remove(rmv_feature)
+        else:
+            break
+    print('Removed these features: ' + str(set(feature_list) - set(new_feat_list)))
+    sys.stdout.flush()
+    return new_feat_list
+
+def get_result_for_feature_set(
+        base_res_folder,
+        train_df,
+        valid_df,
+        curr_feature_list,
+        potential_c,
+        qrel_filepath):
+
+    with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
+        f.write(turn_df_to_feature_str_for_model(train_df, feature_list=curr_feature_list))
+
+    with open(os.path.join(base_res_folder, 'valid.dat'), 'w') as f:
+        f.write(turn_df_to_feature_str_for_model(valid_df, feature_list=curr_feature_list))
+
+    model_filename = learn_svm_rank_model(
+        train_file=os.path.join(base_res_folder, 'train.dat'),
+        models_folder=base_res_folder,
+        C=potential_c)
+
+    predictions_filename = run_svm_rank_model(
+        test_file=os.path.join(base_res_folder, 'valid.dat'),
+        model_file=model_filename,
+        predictions_folder=base_res_folder)
+
+    with open(predictions_filename, 'r') as f:
+        predications = f.read()
+
+    predications = predications.split('\n')
+    if '' in predications:
+        predications = predications[:-1]
+
+    valid_df['ModelScore'] = predications
+    valid_df['ModelScore'] = valid_df['ModelScore'].apply(lambda x: float(x))
+    curr_res_df = get_trec_prepared_df_form_res_df(
+        scored_docs_df=valid_df,
+        score_colname='ModelScore')
+    curr_file_name = 'Curr_valid_res.txt'
+    with open(os.path.join(base_res_folder, curr_file_name), 'w') as f:
+        f.write(convert_df_to_trec(curr_res_df))
+
+    res_dict = get_ranking_effectiveness_for_res_file(
+        file_path=base_res_folder,
+        filename=curr_file_name,
+        qrel_filepath=qrel_filepath)
+
+    return res_dict
+
 def train_and_test_model_on_config(
         base_feature_filename,
         snapshot_limit,
@@ -485,7 +566,8 @@ def train_and_test_model_on_config(
         normalize_method,
         qrel_filepath,
         snap_chosing_method = None,
-        snap_calc_limit = None):
+        snap_calc_limit = None,
+        backward_elimination=False):
 
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit)
@@ -573,6 +655,18 @@ def train_and_test_model_on_config(
             best_map = float(res_dict['Map'])
             best_c = potential_c
 
+    if backward_elimination == True:
+        new_feature_list = run_backward_elimination(
+            base_res_folder=base_res_folder,
+            train_df=train_df,
+            valid_df=valid_df,
+            feature_list=feature_list,
+            potential_c=best_c,
+            qrel_filepath=qrel_filepath,
+            curr_map_score=best_map)
+    else:
+        new_feature_list = feature_list[:]
+
     best_params_str = "C: " +str(best_c) +' \nSnapLim: ' + str(best_snap_num)
     with open(os.path.join(base_res_folder, 'hyper_params.txt'), 'w') as f:
         f.write(best_params_str)
@@ -580,10 +674,10 @@ def train_and_test_model_on_config(
     train_df = train_df.append(valid_cp_df, ignore_index = True)
     train_df.sort_values('QueryNum', inplace = True)
     with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
-        f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
+        f.write(turn_df_to_feature_str_for_model(train_df, feature_list=new_feature_list))
 
     with open(os.path.join(base_res_folder, 'test.dat'), 'w') as f:
-        f.write(turn_df_to_feature_str_for_model(test_df, feature_list=feature_list))
+        f.write(turn_df_to_feature_str_for_model(test_df, feature_list=new_feature_list))
 
     print("Strating Train : " + model_inner_folder + ' ' + feature_folder + ' ' + fold_folder)
     sys.stdout.flush()

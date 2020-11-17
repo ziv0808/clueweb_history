@@ -37,6 +37,88 @@ def get_predictions_list(
 
     return predications_list
 
+def run_backward_elimination(
+        base_res_folder,
+        train_df,
+        valid_df,
+        feature_list,
+        tree_num,
+        leaf_num,
+        qrel_filepath,
+        curr_map_score):
+
+    new_feat_list = feature_list[:]
+    for i in range(len(feature_list)):
+        rmv_feature = None
+        for feature in new_feat_list:
+            curr_feat_list = new_feat_list[:]
+            curr_feat_list.remove(feature)
+            res_dict = get_result_for_feature_set(
+                base_res_folder=base_res_folder,
+                train_df=train_df,
+                valid_df=valid_df,
+                curr_feature_list=curr_feat_list,
+                tree_num=tree_num,
+                leaf_num=leaf_num,
+                qrel_filepath=qrel_filepath)
+
+            if float(res_dict['Map']) > curr_map_score:
+                curr_map_score = float(res_dict['Map'])
+                rmv_feature = feature
+        if rmv_feature is not None:
+            new_feat_list.remove(rmv_feature)
+        else:
+            break
+    print('Removed these features: ' + str(set(feature_list) - set(new_feat_list)))
+    sys.stdout.flush()
+    return new_feat_list
+
+
+def get_result_for_feature_set(
+        base_res_folder,
+        train_df,
+        valid_df,
+        curr_feature_list,
+        tree_num,
+        leaf_num,
+        qrel_filepath):
+
+    with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
+        f.write(turn_df_to_feature_str_for_model(train_df, feature_list=curr_feature_list))
+
+    with open(os.path.join(base_res_folder, 'valid.dat'), 'w') as f:
+        f.write(turn_df_to_feature_str_for_model(valid_df, feature_list=curr_feature_list))
+
+    model_filename = learn_lambdamart_model(
+        train_file=os.path.join(base_res_folder, 'train.dat'),
+        models_folder=base_res_folder,
+        tree_num=tree_num,
+        leaf_num=leaf_num)
+
+    predictions_filename = run_lambdamart_model(
+        test_file=os.path.join(base_res_folder, 'valid.dat'),
+        model_file=model_filename,
+        predictions_folder=base_res_folder)
+
+    predications = get_predictions_list(predictions_filename)
+
+    valid_df['ModelScore'] = predications
+    valid_df['ModelScore'] = valid_df['ModelScore'].apply(lambda x: float(x))
+    curr_res_df = get_trec_prepared_df_form_res_df(
+        scored_docs_df=valid_df,
+        score_colname='ModelScore')
+    curr_file_name = 'Curr_valid_res.txt'
+    with open(os.path.join(base_res_folder, curr_file_name), 'w') as f:
+        f.write(convert_df_to_trec(curr_res_df))
+
+    res_dict = get_ranking_effectiveness_for_res_file(
+        file_path=base_res_folder,
+        filename=curr_file_name,
+        qrel_filepath=qrel_filepath)
+
+    return res_dict
+
+
 def train_and_test_model_on_config(
         base_feature_filename,
         snapshot_limit,
@@ -47,7 +129,8 @@ def train_and_test_model_on_config(
         normalize_method,
         qrel_filepath,
         snap_chosing_method=None,
-        snap_calc_limit=None):
+        snap_calc_limit=None,
+        backward_elimination=False):
 
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/'
     model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit)
@@ -126,18 +209,31 @@ def train_and_test_model_on_config(
                 best_tree_num = tree_num
                 beat_leaf_num = leaf_num
 
+    if backward_elimination == True:
+        new_feature_list = run_backward_elimination(
+            base_res_folder=base_res_folder,
+            train_df=train_df,
+            valid_df=valid_df,
+            feature_list=feature_list,
+            tree_num=best_tree_num,
+            leaf_num=beat_leaf_num,
+            qrel_filepath=qrel_filepath,
+            curr_map_score=best_map)
+    else:
+        new_feature_list = feature_list[:]
+
     train_df = train_df.append(valid_df_cp, ignore_index=True)
     train_df.sort_values('QueryNum', inplace=True)
 
     with open(os.path.join(base_res_folder, 'train.dat'), 'w') as f:
-        f.write(turn_df_to_feature_str_for_model(train_df, feature_list=feature_list))
+        f.write(turn_df_to_feature_str_for_model(train_df, feature_list=new_feature_list))
 
     best_params_str = 'SnapLim: ' + str(best_snap_num) + '\n' + "TreeNum: " +str(best_tree_num) +'\n' +"LeafNum: " +str(beat_leaf_num)
     with open(os.path.join(base_res_folder, 'hyper_params.txt'), 'w') as f:
         f.write(best_params_str)
 
     with open(os.path.join(base_res_folder, 'test.dat'), 'w') as f:
-        f.write(turn_df_to_feature_str_for_model(test_df, feature_list=feature_list))
+        f.write(turn_df_to_feature_str_for_model(test_df, feature_list=new_feature_list))
 
     print("Strating Train : " + model_inner_folder + ' ' + feature_folder + ' ' + fold_folder)
     sys.stdout.flush()
@@ -179,7 +275,8 @@ def run_cv_for_config(
         qrel_filepath,
         snap_chosing_method,
         train_leave_one_out,
-        snap_calc_limit):
+        snap_calc_limit,
+        backward_elimination):
 
     k_fold, fold_list = create_fold_list_for_cv(
         base_feature_filename=base_feature_filename,
@@ -272,7 +369,8 @@ def run_cv_for_config(
             normalize_method=normalize_method,
             qrel_filepath=qrel_filepath,
             snap_chosing_method=snap_chosing_method,
-            snap_calc_limit=snap_calc_limit)
+            snap_calc_limit=snap_calc_limit,
+            backward_elimination=backward_elimination)
         if i == 0:
             params_df = fold_params_df
         else:
@@ -289,7 +387,8 @@ def run_grid_search_over_params_for_config(
         snap_chosing_method,
         tarin_leave_one_out,
         feat_group_list,
-        calc_ndcg_mrr):
+        calc_ndcg_mrr,
+        backward_elimination):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
     ## num 1
@@ -336,14 +435,19 @@ def run_grid_search_over_params_for_config(
     model_base_filename = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(
         snapshot_limit) + "_" + retrieval_model + "_By" + snap_chosing_method
 
+    retrieval_model_addition = ""
+    if tarin_leave_one_out == True:
+        model_base_filename += '_LoO'
+        retrieval_model_addition += '_LoO'
+    if backward_elimination == True:
+        model_base_filename += '_BElim'
+        retrieval_model_addition += '_BElim'
+
     if not os.path.exists(os.path.join(save_folder, model_base_filename)):
         os.mkdir(os.path.join(save_folder, model_base_filename))
     save_folder = os.path.join(save_folder, model_base_filename)
 
-
     model_base_filename += '_' + normalize_method
-    if tarin_leave_one_out == True:
-        model_base_filename += '_LoO'
     additional_measures = []
     if calc_ndcg_mrr == True:
         additional_measures =  ['NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
@@ -363,16 +467,18 @@ def run_grid_search_over_params_for_config(
                 feat_group = curr_feat_group
             else:
                 feat_group = curr_feat_group + "_" + str(snap_limit)
+
             test_res_df, tmp_params_df = run_cv_for_config(
                 base_feature_filename=base_feature_filename,
                 snapshot_limit=snapshot_limit,
                 feature_groupname=feat_group,
-                retrieval_model=retrieval_model,
+                retrieval_model=retrieval_model + retrieval_model_addition,
                 normalize_method=normalize_method,
                 qrel_filepath=qrel_filepath,
                 snap_chosing_method=snap_chosing_method,
                 train_leave_one_out=tarin_leave_one_out,
-                snap_calc_limit=snap_limit)
+                snap_calc_limit=snap_limit,
+                backward_elimination=backward_elimination)
 
             tmp_params_df['FeatGroup'] = feat_group
             if 'XXSnap' in feat_group:
@@ -443,6 +549,7 @@ if __name__ == '__main__':
         tarin_leave_one_out = ast.literal_eval(sys.argv[7])
         feat_group_list = ast.literal_eval(sys.argv[8])
         calc_ndcg_mrr = ast.literal_eval(sys.argv[9])
+        backward_elimination = ast.literal_eval(sys.argv[10])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
@@ -452,4 +559,5 @@ if __name__ == '__main__':
             snap_chosing_method=snap_chosing_method,
             tarin_leave_one_out=tarin_leave_one_out,
             feat_group_list=feat_group_list,
-            calc_ndcg_mrr=calc_ndcg_mrr)
+            calc_ndcg_mrr=calc_ndcg_mrr,
+            backward_elimination=backward_elimination)
