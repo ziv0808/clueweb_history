@@ -62,8 +62,8 @@ def run_backward_elimination(
                 leaf_num=leaf_num,
                 qrel_filepath=qrel_filepath)
 
-            if float(res_dict['Map']) > curr_map_score:
-                curr_map_score = float(res_dict['Map'])
+            if float(res_dict['NDCG@X']) > curr_map_score:
+                curr_map_score = float(res_dict['NDCG@X'])
                 rmv_feature = feature
         if rmv_feature is not None:
             new_feat_list.remove(rmv_feature)
@@ -111,7 +111,7 @@ def get_result_for_feature_set(
     with open(os.path.join(base_res_folder, curr_file_name), 'w') as f:
         f.write(convert_df_to_trec(curr_res_df))
 
-    res_dict = get_ranking_effectiveness_for_res_file(
+    res_dict = calc_ndcg_at_x_for_file(
         file_path=base_res_folder,
         filename=curr_file_name,
         qrel_filepath=qrel_filepath)
@@ -199,13 +199,13 @@ def train_and_test_model_on_config(
             with open(os.path.join(base_res_folder, curr_file_name), 'w') as f:
                 f.write(convert_df_to_trec(curr_res_df))
 
-            res_dict = get_ranking_effectiveness_for_res_file(
+            res_dict = calc_ndcg_at_x_for_file(
                 file_path=base_res_folder,
                 filename=curr_file_name,
                 qrel_filepath=qrel_filepath)
 
-            if float(res_dict['Map']) > best_map:
-                best_map = float(res_dict['Map'])
+            if float(res_dict['NDCG@X']) > best_map:
+                best_map = float(res_dict['NDCG@X'])
                 best_tree_num = tree_num
                 beat_leaf_num = leaf_num
 
