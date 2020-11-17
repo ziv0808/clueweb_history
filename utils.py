@@ -789,13 +789,13 @@ def calc_ndcg_at_x_for_file(
     res_df.fillna(0, inplace=True)
     all_q = list(res_df['Query'].drop_duplicates())
 
-    res_dict = {'all': {'NDCG@X': 0.0}}
+    res_dict = {'NDCG@X': 0.0}
     for q in all_q:
         q_df = res_df[res_df['Query'] == q]
         true_val_list = q_df['Relevance'].values
         ndcgx = calc_ndcg(true_val_list, x)
-        res_dict['all']['NDCG@X'] += ndcgx
-    res_dict['all']['NDCG@X'] = res_dict['all']['NDCG@X'] / float(len(all_q))
+        res_dict['NDCG@X'] += ndcgx
+    res_dict['NDCG@X'] = res_dict['NDCG@X'] / float(len(all_q))
     return res_dict
 
 def calc_ndcg(
