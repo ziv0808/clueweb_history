@@ -1934,6 +1934,8 @@ def unite_asrc_data_results(
         dataset_name,
         round_limit,
         significance_type,
+        leave_one_out_train,
+        backward_elimination,
         additional_models_to_include = {
             'F1 UW' : {'Folder' : '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
                     'FileTemplate' : '<DatasetName>_0<RoundNum>_BM25_Uniform_Results.txt'},
@@ -1992,11 +1994,17 @@ def unite_asrc_data_results(
     round_res_dict = {}
     num_files = 0
     num_rounds = 0
+    addition_to_inner_fold = ""
+    if leave_one_out_train == True:
+        addition_to_inner_fold += "_LoO"
+    if backward_elimination == True:
+        addition_to_inner_fold += "_BElim"
+
     for round_ in range(2,round_limit + 1):
         if dataset_name == 'herd_control':
-            inner_fold_sep = dataset_name.upper() + '_LTR_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
+            inner_fold_sep = dataset_name.upper() + '_LTR_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths' + addition_to_inner_fold
         else:
-            inner_fold_sep = dataset_name.upper() + '_LTR_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'
+            inner_fold_sep = dataset_name.upper() + '_LTR_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths' + addition_to_inner_fold
         inner_fold = os.path.join(base_2_folder, inner_fold_sep)
         round_res_dict[round_] = {}
         num_rounds += 1
@@ -2082,9 +2090,9 @@ def unite_asrc_data_results(
             how='inner')
         round_res_dict[str(round_) + '_Sum'] = round_summary_df
         if big_model == 'LambdaMART':
-            round_summary_df.to_csv(dataset_name.upper()+ '_round_' + str(round_) + '_'+significance_type+'_LambdaMART_Summary.tsv', sep = '\t', index = False)
+            round_summary_df.to_csv(dataset_name.upper()+ '_round_' + str(round_) + '_'+significance_type+ addition_to_inner_fold+'_LambdaMART_Summary.tsv', sep = '\t', index = False)
         else:
-            round_summary_df.to_csv(dataset_name.upper() + '_round_' + str(round_) + '_'+significance_type+'_Summary.tsv', sep='\t', index=False)
+            round_summary_df.to_csv(dataset_name.upper() + '_round_' + str(round_) + '_'+significance_type+ addition_to_inner_fold+'_Summary.tsv', sep='\t', index=False)
 
     measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
     big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
@@ -2108,7 +2116,7 @@ def unite_asrc_data_results(
         how='inner')
     if big_model == 'LambdaMART':
         ret_model += '_'+ big_model
-    big_summary_df.to_csv(os.path.join(base_folder, dataset_name.upper()+ '_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+significance_type+'.tsv'), sep = '\t' ,index = False)
+    big_summary_df.to_csv(os.path.join(base_folder, dataset_name.upper()+ '_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+significance_type+ addition_to_inner_fold+'.tsv'), sep = '\t' ,index = False)
 
     for measure in ['NDCG@1', 'NDCG@3', 'MRR']:
         measure_df = pd.DataFrame({})
@@ -2136,7 +2144,7 @@ def unite_asrc_data_results(
         plt.title(measure + ' Over Rounds')
         plt.xlabel('round')
         plt.ylabel(measure)
-        plt.savefig(dataset_name.upper()+'_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+big_model+ '_' +measure + '.png', dpi =300)
+        plt.savefig(dataset_name.upper()+'_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+big_model+ '_' +measure + addition_to_inner_fold+ '.png', dpi =300)
 
 
 def handle_rank_svm_params_asrc(
@@ -2436,6 +2444,8 @@ if __name__ == '__main__':
         dataset_name = sys.argv[5]
         round_limit = int(sys.argv[6])
         significance_type = sys.argv[7]
+        leave_one_out_train = ast.literal_eval(sys.argv[8])
+        backward_elimination = ast.literal_eval(sys.argv[9])
 
         unite_asrc_data_results(
             big_model=big_model,
@@ -2443,7 +2453,9 @@ if __name__ == '__main__':
             ret_model=ret_model,
             dataset_name=dataset_name,
             round_limit=round_limit,
-            significance_type=significance_type)
+            significance_type=significance_type,
+            leave_one_out_train=leave_one_out_train,
+            backward_elimination=backward_elimination)
     elif operation == 'ASRCSVMWeights':
         snap_limit = int(sys.argv[2])
         ret_model = sys.argv[3]
