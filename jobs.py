@@ -1963,8 +1963,8 @@ def unite_asrc_data_results(
                       'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Results.txt'},
             'RHS LM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rhs_model_asrc/final_res/',
                       'FileTemplate': '<DatasetName>_0<RoundNum>_LM_Results.txt'},
-            'SNAPS': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/per_snap_lambdamart_res/ret_res/<InnerFold>/',
-                       'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_MinMax_Historical.txt'},
+            # 'SNAPS': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/per_snap_lambdamart_res/ret_res/<InnerFold>/',
+            #            'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_MinMax_Historical.txt'},
 
         }):
     from rank_svm_model import create_sinificance_df
