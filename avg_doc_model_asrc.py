@@ -61,6 +61,8 @@ def get_score_retrieval_score_for_df(
 if __name__=='__main__':
     inner_fold = sys.argv[1]
     retrival_model = sys.argv[2]
+    train_leave_one_out = ast.literal_eval(sys.argv[3])
+
     sw_rmv = True
     filter_params = {}
     asrc_round = int(inner_fold.split('_')[-1])
@@ -89,7 +91,7 @@ if __name__=='__main__':
     for weight_list_type in ['Uniform', 'Decaying', 'RDecaying']:
         all_folds_df_dict[weight_list_type] = pd.DataFrame({})
         all_fold_params_summary[weight_list_type] = "Fold" + '\t' + "Weights" + '\n'
-    q_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold)
+    q_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold, train_leave_one_out=train_leave_one_out)
     for fold in fold_list:
         start_test_q = int(fold[0])
         end_test_q = int(fold[1])
@@ -219,8 +221,11 @@ if __name__=='__main__':
             all_folds_df_dict[weight_list_type] = all_folds_df_dict[weight_list_type].append(big_df , ignore_index=True)
             all_fold_params_summary[weight_list_type] += str(start_test_q) + '_' + str(end_test_q) + '\t' + str(best_config_dict[weight_list_type]['BestWieghts']) + '\n'
 
+    filenam_addition = ""
+    if train_leave_one_out == True:
+        filenam_addition += "_LoO"
     for weight_list_type in ['Uniform', 'Decaying', 'RDecaying']:
-        curr_file_name = inner_fold + '_' + retrival_model + '_' + weight_list_type + "_Results.txt"
+        curr_file_name = inner_fold + '_' + retrival_model + '_' + weight_list_type + filenam_addition + "_Results.txt"
         with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
             f.write(convert_df_to_trec(all_folds_df_dict[weight_list_type]))
         with open(os.path.join(save_folder + 'final_res/', curr_file_name.replace('_Results', '_Params')), 'w') as f:

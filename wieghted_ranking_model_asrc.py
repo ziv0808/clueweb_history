@@ -261,6 +261,8 @@ if __name__=="__main__":
     inner_fold = sys.argv[1]
     retrieval_model = sys.argv[2]
     rank_or_score = sys.argv[3]
+    train_leave_one_out = ast.literal_eval(sys.argv[4])
+
     print('Retrivel Model: ' + retrieval_model)
     if 'asrc' in inner_fold:
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel'
@@ -283,7 +285,7 @@ if __name__=="__main__":
     print("Object Created...")
     sys.stdout.flush()
 
-    query_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold)
+    query_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold,train_leave_one_out=train_leave_one_out)
     all_folds_df_dict = {}
     all_fold_params_summary = {}
     for weight_list_type in ['Uniform','Decaying','RDecaying']:
@@ -302,9 +304,11 @@ if __name__=="__main__":
             all_folds_df_dict[weight_list_type] = all_folds_df_dict[weight_list_type].append(fold_df_dict[weight_list_type], ignore_index=True)
             all_fold_params_summary[weight_list_type] += str(start_test_q) + '_' + str(end_test_q) + '\t' + str(best_params_dict[weight_list_type]['BestK']) +\
                                                         '\t' + str(best_params_dict[weight_list_type]['BestWieghts']) + '\n'
-
+    filenam_addition = ""
+    if train_leave_one_out == True:
+        filenam_addition += "_LoO"
     for weight_list_type in ['Uniform','Decaying','RDecaying']:
-        curr_file_name = inner_fold + '_' + retrieval_model + '_' + rank_or_score + '_' + weight_list_type + "_Results.txt"
+        curr_file_name = inner_fold + '_' + retrieval_model + '_' + rank_or_score + '_' + weight_list_type + filenam_addition + "_Results.txt"
         with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
             f.write(convert_df_to_trec(all_folds_df_dict[weight_list_type]))
         with open(os.path.join(save_folder + 'final_res/', curr_file_name.replace('_Results', '_Params')), 'w') as f:

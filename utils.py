@@ -821,39 +821,43 @@ def calc_mrr_nmrr(
 
 
 def get_asrc_q_list_and_fold_list(
-        inner_fold):
+        inner_fold,
+        train_leave_one_out):
     if 'asrc' in inner_fold:
         fold_list = [(2, 9), (10, 17), (18, 32), (33, 36), (45, 51), (59, 78),
                      (98, 144), (161, 166), (167, 180), (182, 195)]
 
         q_list = [2, 4, 9, 10, 11, 17, 18, 29, 32, 33, 34, 36, 45, 48, 51, 59, 69, 78, 98, 124, 144, 161, 164, 166, 167, 177,
                   180, 182, 188, 193, 195]
-        return q_list, fold_list
+
     elif 'bot' in inner_fold:
         fold_list = [(10, 13), (18, 32), (33, 34), (48, 51), (69, 167), (177, 177),
                      (180, 180), (182, 182), (193, 193), (195, 195)]
 
         q_list = [10, 13, 18, 32, 33, 34, 48, 51, 69, 167, 177, 180, 182, 193, 195]
-        return q_list, fold_list
+
     elif 'herd_control' in inner_fold:
         fold_list = [(4, 10), (11, 17), (18, 32), (33, 45), (48, 59), (69, 98),
                      (124, 161), (164, 167), (177, 182), (188, 195)]
 
         q_list = [4, 9, 10, 11, 13, 17, 18, 29, 32, 33, 34, 45, 48, 51, 59, 69, 78, 98, 124, 144, 161, 164, 166, 167, 177,
                   180, 182, 188, 193, 195]
-        return q_list, fold_list
+
     elif 'united' in inner_fold:
         fold_list = [(2, 9), (10, 17), (18, 32), (33, 36), (45, 51), (59, 78),
                      (98, 144), (161, 166), (167, 180), (182, 195)]
 
         q_list = [2, 4, 9, 10, 11, 13, 17, 18, 29, 32, 33, 34, 36, 45, 48, 51, 59, 69, 78, 98, 124, 144, 161, 164, 166, 167, 177,
                   180, 182, 188, 193, 195]
-        return q_list, fold_list
     else:
         raise Exception('get_asrc_q_list_and_fold_list: Unknown inner fold')
 
+    if train_leave_one_out == True:
+        fold_list = []
+        for q in q_list:
+            fold_list.append((q, q))
 
-
+    return q_list, fold_list
 
 def powerset(iterable):
     s = list(iterable)

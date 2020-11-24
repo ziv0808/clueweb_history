@@ -260,6 +260,7 @@ def get_score_retrieval_score_for_df(
 if __name__=="__main__":
     inner_fold = sys.argv[1]
     retrieval_model = sys.argv[2]
+    train_leave_one_out = ast.literal_eval(sys.argv[3])
 
     print('Retrivel Model: ' + retrieval_model)
 
@@ -283,7 +284,7 @@ if __name__=="__main__":
     print("Obj Created!")
     print('Time: ' + str(datetime.datetime.now()))
     sys.stdout.flush()
-    query_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold)
+    query_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold,train_leave_one_out=train_leave_one_out)
     all_folds_df = pd.DataFrame({})
     for fold in fold_list:
         start_test_q = int(fold[0])
@@ -349,7 +350,9 @@ if __name__=="__main__":
                                              hyper_param_dict=best_config)
 
         all_folds_df = all_folds_df.append(big_df, ignore_index=True)
-
-    curr_file_name = inner_fold + '_' + retrieval_model + "_Results.txt"
+    filenam_addition = ""
+    if train_leave_one_out == True:
+        filenam_addition += "_LoO"
+    curr_file_name = inner_fold + '_' + retrieval_model + filenam_addition + "_Results.txt"
     with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
         f.write(convert_df_to_trec(all_folds_df))

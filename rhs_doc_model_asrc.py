@@ -261,6 +261,8 @@ def get_score_retrieval_score_for_df(
 if __name__=='__main__':
     inner_fold = sys.argv[1]
     retrival_model = sys.argv[2]
+    train_leave_one_out = ast.literal_eval(sys.argv[3])
+
     sw_rmv = True
     filter_params = {}
     asrc_round = int(inner_fold.split('_')[-1])
@@ -287,7 +289,7 @@ if __name__=='__main__':
 
     all_folds_df = pd.DataFrame({})
     all_fold_params_summary = "Fold" + '\t' + "Params" + '\n'
-    q_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold)
+    q_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold,train_leave_one_out=train_leave_one_out)
 
     for fold in fold_list:
         start_test_q = int(fold[0])
@@ -447,7 +449,10 @@ if __name__=='__main__':
         all_folds_df = all_folds_df.append(test_fold_df , ignore_index=True)
         all_fold_params_summary += str(start_test_q) + '_' + str(end_test_q) + '\t' + str(best_config_dict) + '\n'
 
-    curr_file_name = inner_fold + '_' + retrival_model + "_Results.txt"
+    filenam_addition = ""
+    if train_leave_one_out == True:
+        filenam_addition += "_LoO"
+    curr_file_name = inner_fold + '_' + retrival_model + filenam_addition + "_Results.txt"
     with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
         f.write(convert_df_to_trec(all_folds_df))
     with open(os.path.join(save_folder + 'final_res/', curr_file_name.replace('_Results', '_Params')), 'w') as f:
