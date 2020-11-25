@@ -271,10 +271,11 @@ def parse_res_file(filepath):
     file_content = file_content.split('\n')
     res_dict = {}
     for line_ in file_content:
-        q = line_.split(' ')[0]
-        docno = line_.split(' ')[2]
-        rank = line_.split(' ')[3]
-        res_dict[docno] = rank
+        if len(line_.split(' ')) > 1:
+            q = line_.split(' ')[0]
+            docno = line_.split(' ')[2]
+            rank = line_.split(' ')[3]
+            res_dict[docno] = rank
     return res_dict
 
 
