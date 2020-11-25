@@ -218,9 +218,13 @@ def read_current_doc_file(doc_filepath):
 
     return stats
 
-def compare_doc_files(curr_stats, old_stats, is_first):
+def compare_doc_files(curr_stats, old_stats, is_first, rank_dict = None):
     unchanged_docs = 0
     unchanged_users_dict = {}
+    if rank_dict is not None:
+        winner_unchanged = 0
+        loser_unchanged = 0
+        under_4_unchanged = 0
     for query in curr_stats:
         for user in curr_stats[query]:
             if is_first == True:
@@ -241,13 +245,38 @@ def compare_doc_files(curr_stats, old_stats, is_first):
                         unchanged_users_dict[user] = 1
                     else:
                         unchanged_users_dict[user] += 1
+                    if rank_dict is not None:
+                        if rank_dict[query + '-' + user] == 1:
+                            winner_unchanged +=1
+                        else:
+                            loser_unchanged += 1
+                        if rank_dict[query + '-' + user] > 4:
+                            under_4_unchanged += 1
     print('Unchnged Docs: ' + str(unchanged_docs))
+    if rank_dict is not None:
+        print('Unchnged Docs Winner: ' + str(winner_unchanged))
+        print('Unchnged Docs Loser: ' + str(loser_unchanged))
+        print('Unchnged Docs Under 4: ' + str(under_4_unchanged))
+
     unchanged_users = 0
     for user in unchanged_users_dict:
         if unchanged_users_dict[user] >= 3:
             unchanged_users += 1
 
     print('Unchnged Users: ' + str(unchanged_users))
+
+def parse_res_file(filepath):
+    with open(filepath , 'r') as f:
+        file_content = f.read()
+    file_content = file_content.split('\n')
+    res_dict = {}
+    for line_ in file_content:
+        q = line_.split(' ')[0]
+        docno = line_.split(' ')[2]
+        rank = line_.split(' ')[3]
+        res_dict[docno] = rank
+    return res_dict
+
 
 def test_number_of_queries(mapping,number_of_queries):
     for user in mapping:
@@ -282,14 +311,16 @@ data_round_3 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_ru
 print("Third Round VS Zero:")
 compare_doc_files(data_round_3, data, is_first=True)
 
+rank_round_1 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/2020-11-09-23-55-23-857656')
+rank_round_2 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/2020-11-17-10-30-21-396460')
 
 # print(data)
 # print(data_round_1)
 
 print("First Round VS Second:")
-compare_doc_files(data_round_1, data_round_2, is_first=False)
+compare_doc_files(data_round_1, data_round_2, is_first=False, rank_dict=rank_round_1)
 print("Second Round VS Third:")
-compare_doc_files(data_round_2, data_round_3, is_first=False)
+compare_doc_files(data_round_2, data_round_3, is_first=False, rank_dict=rank_round_2)
 
 
 
