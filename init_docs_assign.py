@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from copy import copy,deepcopy
 from random import shuffle,seed
 import csv
+import unicodedata
 
 def read_initial_data(docs_path, query_meta_path):
     stats = {}
@@ -215,17 +216,29 @@ def read_current_doc_file(doc_filepath):
 
     return stats
 
-def compare_doc_files(curr_stats, old_stats):
+def compare_doc_files(curr_stats, old_stats, is_first):
     unchanged_docs = 0
     unchanged_users_dict = {}
     for query in curr_stats:
         for user in curr_stats[query]:
-            if old_stats[query]['document'] == curr_stats[query][user]:
-                unchanged_docs += 1
-                if user in unchanged_users_dict:
-                    unchanged_users_dict[user] = 1
-                else:
-                    unchanged_users_dict[user] += 1
+            if is_first == True:
+                if unicodedata.normalize('NFKD', old_stats[query]['document']).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').rstrip() == unicodedata.normalize('NFKD',curr_stats[query][user]).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').rstrip():
+                    unchanged_docs += 1
+                    if user in unchanged_users_dict:
+                        unchanged_users_dict[user] = 1
+                    else:
+                        unchanged_users_dict[user] += 1
+            else:
+                if unicodedata.normalize('NFKD', old_stats[query][user]).encode('cp1252', "ignore").decode('utf-8',
+                                                                                                                 'replace').replace(
+                        u'\uFFFD', ' ').rstrip() == unicodedata.normalize('NFKD', curr_stats[query][user]).encode('cp1252',
+                                                                                                                  "ignore").decode(
+                        'utf-8', 'replace').replace(u'\uFFFD', ' ').rstrip():
+                    unchanged_docs += 1
+                    if user in unchanged_users_dict:
+                        unchanged_users_dict[user] = 1
+                    else:
+                        unchanged_users_dict[user] += 1
     print('Unchnged Docs: ' + str(unchanged_docs))
     unchanged_users = 0
     for user in unchanged_users_dict:
@@ -253,8 +266,24 @@ users = retrieve_users()
 data = read_initial_data("documents.trectext", "topics.full.xml")
 queries = list(data.keys())
 
-data_round = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
-compare_doc_files(data_round, data)
+data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
+print("First Round VS Zero:")
+compare_doc_files(data_round_1, data, is_first=True)
+
+data_round_2 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-17-10-30-21-396460')
+print("Second Round VS Zero:")
+compare_doc_files(data_round_2, data, is_first=True)
+
+data_round_3 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-23-23-12-59-474081')
+print("Third Round VS Zero:")
+compare_doc_files(data_round_3, data, is_first=True)
+
+
+print("First Round VS Second:")
+compare_doc_files(data_round_1, data_round_2, is_first=False)
+print("Second Round VS Third:")
+compare_doc_files(data_round_2, data_round_3, is_first=False)
+
 # while True:
 #     mapping, query_user_map = user_query_mapping_z(
 #         users=users,
