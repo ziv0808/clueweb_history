@@ -311,8 +311,8 @@ data_round_3 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_ru
 print("Third Round VS Zero:")
 compare_doc_files(data_round_3, data, is_first=True)
 
-rank_round_1 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/2020-11-09-23-55-23-857656')
-rank_round_2 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/2020-11-17-10-30-21-396460')
+rank_round_1 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-11-09-23-55-23-857656')
+rank_round_2 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-11-17-10-30-21-396460')
 
 # print(data)
 # print(data_round_1)
