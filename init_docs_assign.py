@@ -224,7 +224,7 @@ def compare_doc_files(curr_stats, old_stats, is_first):
     for query in curr_stats:
         for user in curr_stats[query]:
             if is_first == True:
-                if unicodedata.normalize('NFKD', old_stats[query]['document']).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').rstrip() == unicodedata.normalize('NFKD',curr_stats[query][user]).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').rstrip():
+                if unicodedata.normalize('NFKD', old_stats[query]['document']).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').strip() == unicodedata.normalize('NFKD',curr_stats[query][user]).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').strip():
                     unchanged_docs += 1
                     if user not in unchanged_users_dict:
                         unchanged_users_dict[user] = 1
@@ -233,9 +233,9 @@ def compare_doc_files(curr_stats, old_stats, is_first):
             else:
                 if unicodedata.normalize('NFKD', old_stats[query][user]).encode('cp1252', "ignore").decode('utf-8',
                                                                                                                  'replace').replace(
-                        u'\uFFFD', ' ').rstrip() == unicodedata.normalize('NFKD', curr_stats[query][user]).encode('cp1252',
+                        u'\uFFFD', ' ').strip() == unicodedata.normalize('NFKD', curr_stats[query][user]).encode('cp1252',
                                                                                                                   "ignore").decode(
-                        'utf-8', 'replace').replace(u'\uFFFD', ' ').rstrip():
+                        'utf-8', 'replace').replace(u'\uFFFD', ' ').strip():
                     unchanged_docs += 1
                     if user not in unchanged_users_dict:
                         unchanged_users_dict[user] = 1
