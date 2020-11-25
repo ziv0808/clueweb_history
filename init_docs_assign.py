@@ -274,7 +274,7 @@ def parse_res_file(filepath):
         if len(line_.split(' ')) > 1:
             q = line_.split(' ')[0]
             docno = line_.split(' ')[2]
-            rank = line_.split(' ')[3]
+            rank = int(line_.split(' ')[3])
             res_dict[docno] = rank
     return res_dict
 
