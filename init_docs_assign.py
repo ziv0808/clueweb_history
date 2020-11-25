@@ -211,7 +211,9 @@ def read_current_doc_file(doc_filepath):
         fulltext = doc_.find('text').text
         query = docno.split('-')[0]
         user =docno.split('-')[1]
-        stats[query] = {}
+        if query not in stats:
+            stats[query] = {}
+        
         stats[query][user] = fulltext
 
     return stats
