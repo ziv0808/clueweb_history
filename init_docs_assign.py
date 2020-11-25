@@ -281,8 +281,8 @@ print("Third Round VS Zero:")
 compare_doc_files(data_round_3, data, is_first=True)
 
 
-print(data)
-print(data_round_1)
+# print(data)
+# print(data_round_1)
 
 print("First Round VS Second:")
 compare_doc_files(data_round_1, data_round_2, is_first=False)
