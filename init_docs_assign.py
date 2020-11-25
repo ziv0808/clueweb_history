@@ -224,7 +224,7 @@ def compare_doc_files(curr_stats, old_stats, is_first):
             if is_first == True:
                 if unicodedata.normalize('NFKD', old_stats[query]['document']).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').rstrip() == unicodedata.normalize('NFKD',curr_stats[query][user]).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').rstrip():
                     unchanged_docs += 1
-                    if user in unchanged_users_dict:
+                    if user not in unchanged_users_dict:
                         unchanged_users_dict[user] = 1
                     else:
                         unchanged_users_dict[user] += 1
@@ -235,7 +235,7 @@ def compare_doc_files(curr_stats, old_stats, is_first):
                                                                                                                   "ignore").decode(
                         'utf-8', 'replace').replace(u'\uFFFD', ' ').rstrip():
                     unchanged_docs += 1
-                    if user in unchanged_users_dict:
+                    if user not in unchanged_users_dict:
                         unchanged_users_dict[user] = 1
                     else:
                         unchanged_users_dict[user] += 1
