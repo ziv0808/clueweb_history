@@ -266,6 +266,8 @@ users = retrieve_users()
 data = read_initial_data("documents.trectext", "topics.full.xml")
 queries = list(data.keys())
 
+
+
 data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
 print("First Round VS Zero:")
 compare_doc_files(data_round_1, data, is_first=True)
@@ -283,6 +285,12 @@ print("First Round VS Second:")
 compare_doc_files(data_round_1, data_round_2, is_first=False)
 print("Second Round VS Third:")
 compare_doc_files(data_round_2, data_round_3, is_first=False)
+
+
+
+
+print(data)
+print(data_round_1)
 
 # while True:
 #     mapping, query_user_map = user_query_mapping_z(
