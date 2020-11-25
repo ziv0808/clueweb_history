@@ -2036,6 +2036,8 @@ def unite_asrc_data_results(
 
         for model in additional_models_to_include:
             filename = additional_models_to_include[model]['FileTemplate'].replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset_name).replace('<DatasetNameUpper>', dataset_name.upper())
+            if leave_one_out_train == True:
+                filename = filename.replace('_Results.txt', '_LoO_Results.txt')
             if dataset_name == 'herd_control' and model == 'SNAPS':
                 filename = filename.replace('_All_features', '')
             path = additional_models_to_include[model]['Folder'].replace('<InnerFold>', inner_fold_sep)
