@@ -213,7 +213,7 @@ def read_current_doc_file(doc_filepath):
         user =docno.split('-')[1]
         if query not in stats:
             stats[query] = {}
-        
+
         stats[query][user] = fulltext
 
     return stats
@@ -286,10 +286,10 @@ compare_doc_files(data_round_3, data, is_first=True)
 # print(data)
 # print(data_round_1)
 
-# print("First Round VS Second:")
-# compare_doc_files(data_round_1, data_round_2, is_first=False)
-# print("Second Round VS Third:")
-# compare_doc_files(data_round_2, data_round_3, is_first=False)
+print("First Round VS Second:")
+compare_doc_files(data_round_1, data_round_2, is_first=False)
+print("Second Round VS Third:")
+compare_doc_files(data_round_2, data_round_3, is_first=False)
 
 
 
