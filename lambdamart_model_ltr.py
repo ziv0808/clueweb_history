@@ -130,7 +130,8 @@ def train_and_test_model_on_config(
         qrel_filepath,
         snap_chosing_method=None,
         snap_calc_limit=None,
-        backward_elimination=False):
+        backward_elimination=False,
+        snap_num_as_hyper_param=False):
 
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/'
     model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit)
@@ -144,7 +145,49 @@ def train_and_test_model_on_config(
         if not os.path.exists(base_res_folder):
             os.mkdir(base_res_folder)
 
-    best_snap_num = snap_calc_limit
+    if snap_num_as_hyper_param == True:
+        round_num = int(base_feature_filename.split('Round')[1].split('_')[0])
+        optional_snap_limit = list(range(2, round_num))
+        if len(optional_snap_limit) <= 1:
+            best_snap_num = snap_calc_limit
+        else:
+            optional_snap_limit[-1] = 'All'
+            curr_map_score = 0.0
+            tree_num = 250
+            leaf_num = 3
+            seed = None
+            for snap_lim in optional_snap_limit:
+                print("Optimizing snap limit: " + str(snap_lim))
+                sys.stdout.flush()
+                feat_df = prepare_svmr_model_data(
+                    base_feature_filename=base_feature_filename,
+                    snapshot_limit=int(snapshot_limit),
+                    feature_list=feature_list,
+                    normalize_method=normalize_method,
+                    limited_snaps_num=snap_lim,
+                    lambdamart=True)
+
+                train_df, test_df, valid_df, seed = split_to_train_test(
+                    start_test_q=start_test_q,
+                    end_test_q=end_test_q,
+                    feat_df=feat_df,
+                    base_feature_filename=base_feature_filename,
+                    seed=seed)
+
+                res_dict = get_result_for_feature_set(
+                    base_res_folder=base_res_folder,
+                    train_df=train_df,
+                    valid_df=valid_df,
+                    curr_feature_list=feature_list,
+                    tree_num=tree_num,
+                    leaf_num=leaf_num,
+                    qrel_filepath=qrel_filepath)
+
+                if float(res_dict['NDCG@X']) > curr_map_score:
+                    curr_map_score = float(res_dict['NDCG@X'])
+                    best_snap_num = snap_lim
+    else:
+        best_snap_num = snap_calc_limit
 
     feat_df = prepare_svmr_model_data(
         base_feature_filename=base_feature_filename,
@@ -276,7 +319,8 @@ def run_cv_for_config(
         snap_chosing_method,
         train_leave_one_out,
         snap_calc_limit,
-        backward_elimination):
+        backward_elimination,
+        snap_num_as_hyper_param):
 
     k_fold, fold_list = create_fold_list_for_cv(
         base_feature_filename=base_feature_filename,
@@ -370,7 +414,8 @@ def run_cv_for_config(
             qrel_filepath=qrel_filepath,
             snap_chosing_method=snap_chosing_method,
             snap_calc_limit=snap_calc_limit,
-            backward_elimination=backward_elimination)
+            backward_elimination=backward_elimination,
+            snap_num_as_hyper_param=snap_num_as_hyper_param)
         if i == 0:
             params_df = fold_params_df
         else:
@@ -388,7 +433,8 @@ def run_grid_search_over_params_for_config(
         tarin_leave_one_out,
         feat_group_list,
         calc_ndcg_mrr,
-        backward_elimination):
+        backward_elimination,
+        snap_num_as_hyper_param):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
     ## num 1
@@ -442,6 +488,9 @@ def run_grid_search_over_params_for_config(
     if backward_elimination == True:
         model_base_filename += '_BElim'
         retrieval_model_addition += '_BElim'
+    if snap_num_as_hyper_param == True:
+        model_base_filename += '_SnapLim'
+        retrieval_model_addition += '_SnapLim'
 
     if not os.path.exists(os.path.join(save_folder, model_base_filename)):
         os.mkdir(os.path.join(save_folder, model_base_filename))
@@ -478,7 +527,8 @@ def run_grid_search_over_params_for_config(
                 snap_chosing_method=snap_chosing_method,
                 train_leave_one_out=tarin_leave_one_out,
                 snap_calc_limit=snap_limit,
-                backward_elimination=backward_elimination)
+                backward_elimination=backward_elimination,
+                snap_num_as_hyper_param=snap_num_as_hyper_param)
 
             tmp_params_df['FeatGroup'] = feat_group
             if 'XXSnap' in feat_group:
@@ -550,6 +600,7 @@ if __name__ == '__main__':
         feat_group_list = ast.literal_eval(sys.argv[8])
         calc_ndcg_mrr = ast.literal_eval(sys.argv[9])
         backward_elimination = ast.literal_eval(sys.argv[10])
+        snap_num_as_hyper_param = ast.literal_eval(sys.argv[11])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
@@ -560,4 +611,5 @@ if __name__ == '__main__':
             tarin_leave_one_out=tarin_leave_one_out,
             feat_group_list=feat_group_list,
             calc_ndcg_mrr=calc_ndcg_mrr,
-            backward_elimination=backward_elimination)
+            backward_elimination=backward_elimination,
+            snap_num_as_hyper_param=snap_num_as_hyper_param)

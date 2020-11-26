@@ -18,7 +18,8 @@ def run_cv_for_config(
         snap_chosing_method,
         train_leave_one_out,
         snap_calc_limit,
-        backward_elimination):
+        backward_elimination,
+        snap_num_as_hyper_param):
 
     k_fold, fold_list = create_fold_list_for_cv(
         base_feature_filename=base_feature_filename,
@@ -109,7 +110,8 @@ def run_cv_for_config(
             qrel_filepath=qrel_filepath,
             snap_chosing_method=snap_chosing_method,
             snap_calc_limit=snap_calc_limit,
-            backward_elimination=backward_elimination)
+            backward_elimination=backward_elimination,
+            snap_num_as_hyper_param=snap_num_as_hyper_param)
         if i == 0:
             params_df = fold_params_df
         else:
@@ -126,7 +128,8 @@ def run_grid_search_over_params_for_config(
         tarin_leave_one_out,
         feat_group_list,
         calc_ndcg_mrr,
-        backward_elimination):
+        backward_elimination,
+        snap_num_as_hyper_param):
 
     if feat_group_list is None:
         optional_feat_groups_list = ['Static','Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap_RMGXXSnap',
@@ -164,6 +167,9 @@ def run_grid_search_over_params_for_config(
     if backward_elimination == True:
         model_base_filename += '_BElim'
         retrieval_model_addition += '_BElim'
+    if snap_num_as_hyper_param == True:
+        model_base_filename += '_SnapLim'
+        retrieval_model_addition += '_SnapLim'
 
     if not os.path.exists(os.path.join(save_folder, model_base_filename)):
         os.mkdir(os.path.join(save_folder, model_base_filename))
@@ -201,7 +207,8 @@ def run_grid_search_over_params_for_config(
                 snap_chosing_method=snap_chosing_method,
                 train_leave_one_out=tarin_leave_one_out,
                 snap_calc_limit=snap_limit,
-                backward_elimination=backward_elimination)
+                backward_elimination=backward_elimination,
+                snap_num_as_hyper_param=snap_num_as_hyper_param)
 
             tmp_params_df['FeatGroup'] = feat_group
             if 'XXSnap' in feat_group:
@@ -389,6 +396,7 @@ if __name__ == '__main__':
         feat_group_list = ast.literal_eval(sys.argv[8])
         calc_ndcg_mrr = ast.literal_eval(sys.argv[9])
         backward_elimination = ast.literal_eval(sys.argv[10])
+        snap_num_as_hyper_param = ast.literal_eval(sys.argv[11])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
@@ -399,7 +407,8 @@ if __name__ == '__main__':
             tarin_leave_one_out=tarin_leave_one_out,
             feat_group_list=feat_group_list,
             calc_ndcg_mrr =calc_ndcg_mrr,
-            backward_elimination=backward_elimination)
+            backward_elimination=backward_elimination,
+            snap_num_as_hyper_param=snap_num_as_hyper_param)
 
     elif operation == 'LimitedSnapFeatures':
         base_feature_filename = sys.argv[2]

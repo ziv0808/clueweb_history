@@ -567,7 +567,8 @@ def train_and_test_model_on_config(
         qrel_filepath,
         snap_chosing_method = None,
         snap_calc_limit = None,
-        backward_elimination=False):
+        backward_elimination=False,
+        snap_num_as_hyper_param=False):
 
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit)
@@ -579,19 +580,46 @@ def train_and_test_model_on_config(
         base_res_folder = os.path.join(base_res_folder, hirarcy_folder)
         if not os.path.exists(base_res_folder):
             os.mkdir(base_res_folder)
+    if snap_num_as_hyper_param == True:
+        round_num = int(base_feature_filename.split('Round')[1].split('_')[0])
+        optional_snap_limit = list(range(2, round_num))
+        if len(optional_snap_limit) <= 1:
+            best_snap_num = snap_calc_limit
+        else:
+            optional_snap_limit[-1] = 'All'
+            curr_map_score = 0.0
+            potential_c = 0.01
+            seed = None
+            for snap_lim in optional_snap_limit:
+                print("Optimizing snap limit: " + str(snap_lim))
+                sys.stdout.flush()
+                feat_df = prepare_svmr_model_data(
+                    base_feature_filename=base_feature_filename,
+                    snapshot_limit=int(snapshot_limit),
+                    feature_list=feature_list,
+                    normalize_method=normalize_method,
+                    limited_snaps_num=snap_lim)
 
-    best_snap_num = snap_calc_limit
-    # if 'XXSnap' in feature_groupname:
-    #     best_snap_num = learn_best_num_of_snaps(
-    #         base_feature_filename=base_feature_filename,
-    #         snapshot_limit=snapshot_limit,
-    #         feature_list=feature_list,
-    #         start_test_q=start_test_q,
-    #         end_test_q=end_test_q,
-    #         base_res_folder=base_res_folder,
-    #         qrel_filepath=qrel_filepath,
-    #         normalize_relevance=normalize_relevance,
-    #         snap_chosing_method=snap_chosing_method)
+                train_df, test_df, valid_df, seed = split_to_train_test(
+                    start_test_q=start_test_q,
+                    end_test_q=end_test_q,
+                    feat_df=feat_df,
+                    base_feature_filename=base_feature_filename,
+                    seed=seed)
+
+                res_dict = get_result_for_feature_set(
+                    base_res_folder=base_res_folder,
+                    train_df=train_df,
+                    valid_df=valid_df,
+                    curr_feature_list=feature_list,
+                    potential_c=potential_c,
+                    qrel_filepath=qrel_filepath)
+
+                if float(res_dict['NDCG@X']) > curr_map_score:
+                    curr_map_score = float(res_dict['NDCG@X'])
+                    best_snap_num = snap_lim
+    else:
+        best_snap_num = snap_calc_limit
 
     feat_df = prepare_svmr_model_data(
         base_feature_filename=base_feature_filename,
