@@ -1936,6 +1936,7 @@ def unite_asrc_data_results(
         significance_type,
         leave_one_out_train,
         backward_elimination,
+        snap_num_as_hyper_param,
         additional_models_to_include = {
             'F1 UW' : {'Folder' : '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
                     'FileTemplate' : '<DatasetName>_0<RoundNum>_BM25_Uniform_Results.txt'},
@@ -1999,6 +2000,8 @@ def unite_asrc_data_results(
         addition_to_inner_fold += "_LoO"
     if backward_elimination == True:
         addition_to_inner_fold += "_BElim"
+    if snap_num_as_hyper_param == True:
+        addition_to_inner_fold += "_SnapLim"
 
     for round_ in range(2,round_limit + 1):
         if dataset_name == 'herd_control':
