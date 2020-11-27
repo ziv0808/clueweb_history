@@ -2451,6 +2451,7 @@ if __name__ == '__main__':
         significance_type = sys.argv[7]
         leave_one_out_train = ast.literal_eval(sys.argv[8])
         backward_elimination = ast.literal_eval(sys.argv[9])
+        snap_num_as_hyper_param = ast.literal_eval(sys.argv[10])
 
         unite_asrc_data_results(
             big_model=big_model,
