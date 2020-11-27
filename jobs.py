@@ -2461,7 +2461,8 @@ if __name__ == '__main__':
             round_limit=round_limit,
             significance_type=significance_type,
             leave_one_out_train=leave_one_out_train,
-            backward_elimination=backward_elimination)
+            backward_elimination=backward_elimination,
+            snap_num_as_hyper_param=snap_num_as_hyper_param)
     elif operation == 'ASRCSVMWeights':
         snap_limit = int(sys.argv[2])
         ret_model = sys.argv[3]
