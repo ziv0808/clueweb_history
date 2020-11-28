@@ -145,49 +145,8 @@ def train_and_test_model_on_config(
         if not os.path.exists(base_res_folder):
             os.mkdir(base_res_folder)
 
-    if snap_num_as_hyper_param == True:
-        round_num = int(base_feature_filename.split('Round')[1].split('_')[0])
-        optional_snap_limit = list(range(2, round_num))
-        if len(optional_snap_limit) <= 1:
-            best_snap_num = snap_calc_limit
-        else:
-            optional_snap_limit[-1] = 'All'
-            curr_map_score = 0.0
-            tree_num = 250
-            leaf_num = 3
-            seed = None
-            for snap_lim in optional_snap_limit:
-                print("Optimizing snap limit: " + str(snap_lim))
-                sys.stdout.flush()
-                feat_df = prepare_svmr_model_data(
-                    base_feature_filename=base_feature_filename,
-                    snapshot_limit=int(snapshot_limit),
-                    feature_list=feature_list,
-                    normalize_method=normalize_method,
-                    limited_snaps_num=snap_lim,
-                    lambdamart=True)
 
-                train_df, test_df, valid_df, seed = split_to_train_test(
-                    start_test_q=start_test_q,
-                    end_test_q=end_test_q,
-                    feat_df=feat_df,
-                    base_feature_filename=base_feature_filename,
-                    seed=seed)
-
-                res_dict = get_result_for_feature_set(
-                    base_res_folder=base_res_folder,
-                    train_df=train_df,
-                    valid_df=valid_df,
-                    curr_feature_list=feature_list,
-                    tree_num=tree_num,
-                    leaf_num=leaf_num,
-                    qrel_filepath=qrel_filepath)
-
-                if float(res_dict['NDCG@X']) > curr_map_score:
-                    curr_map_score = float(res_dict['NDCG@X'])
-                    best_snap_num = snap_lim
-    else:
-        best_snap_num = snap_calc_limit
+    best_snap_num = snap_calc_limit
 
     feat_df = prepare_svmr_model_data(
         base_feature_filename=base_feature_filename,
@@ -264,6 +223,48 @@ def train_and_test_model_on_config(
             curr_map_score=best_map)
     else:
         new_feature_list = feature_list[:]
+
+    if (snap_num_as_hyper_param == True) and ('XXSnap' in feature_groupname):
+        round_num = int(base_feature_filename.split('Round')[1].split('_')[0])
+        optional_snap_limit = list(range(2, round_num))
+        if len(optional_snap_limit) <= 1:
+            best_snap_num = snap_calc_limit
+        else:
+            optional_snap_limit[-1] = 'All'
+            optional_snap_limit = list(reversed(optional_snap_limit))
+            curr_map_score = best_map
+            tree_num = best_tree_num
+            leaf_num = beat_leaf_num
+            for snap_lim in optional_snap_limit:
+                print("Optimizing snap limit: " + str(snap_lim))
+                sys.stdout.flush()
+                feat_df = prepare_svmr_model_data(
+                    base_feature_filename=base_feature_filename,
+                    snapshot_limit=int(snapshot_limit),
+                    feature_list=new_feature_list,
+                    normalize_method=normalize_method,
+                    limited_snaps_num=snap_lim,
+                    lambdamart=True)
+
+                train_df, test_df, valid_df, seed = split_to_train_test(
+                    start_test_q=start_test_q,
+                    end_test_q=end_test_q,
+                    feat_df=feat_df,
+                    base_feature_filename=base_feature_filename,
+                    seed=seed)
+
+                res_dict = get_result_for_feature_set(
+                    base_res_folder=base_res_folder,
+                    train_df=train_df,
+                    valid_df=valid_df,
+                    curr_feature_list=new_feature_list,
+                    tree_num=tree_num,
+                    leaf_num=leaf_num,
+                    qrel_filepath=qrel_filepath)
+
+                if float(res_dict['NDCG@X']) > curr_map_score:
+                    curr_map_score = float(res_dict['NDCG@X'])
+                    best_snap_num = snap_lim
 
     train_df = train_df.append(valid_df_cp, ignore_index=True)
     train_df.sort_values('QueryNum', inplace=True)
