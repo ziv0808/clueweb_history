@@ -265,6 +265,59 @@ def compare_doc_files(curr_stats, old_stats, is_first, rank_dict = None):
 
     print('Unchnged Users: ' + str(unchanged_users))
 
+def compare_doc_files_vs_db(curr_stats, is_first, rank_dict = None):
+    unchanged_docs = 0
+    unchanged_users_dict = {}
+    if rank_dict is not None:
+        winner_unchanged = 0
+        loser_unchanged = 0
+        under_4_unchanged = 0
+
+    client = MongoClient('asr2.iem.technion.ac.il', 27017)
+    db = client.asr16
+    documents = db.documents.find({}).sort('query_id', 1)
+    for document in documents:
+        query = str(document['query_id']).zfill(3)
+        user =  str(document['username'])
+        if is_first == True:
+            if unicodedata.normalize('NFKD', curr_stats[query]['document']).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').strip() == unicodedata.normalize('NFKD',document['current_document']).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').strip():
+                unchanged_docs += 1
+                if user not in unchanged_users_dict:
+                    unchanged_users_dict[user] = 1
+                else:
+                    unchanged_users_dict[user] += 1
+        else:
+            if unicodedata.normalize('NFKD', document['current_document']).encode('cp1252', "ignore").decode('utf-8',
+                                                                                                             'replace').replace(
+                    u'\uFFFD', ' ').strip() == unicodedata.normalize('NFKD', curr_stats[query][user]).encode('cp1252',
+                                                                                                              "ignore").decode(
+                    'utf-8', 'replace').replace(u'\uFFFD', ' ').strip():
+                unchanged_docs += 1
+                if user not in unchanged_users_dict:
+                    unchanged_users_dict[user] = 1
+                else:
+                    unchanged_users_dict[user] += 1
+                if rank_dict is not None:
+                    if rank_dict[query + '-' + user] == 1:
+                        winner_unchanged +=1
+                    else:
+                        loser_unchanged += 1
+                    if rank_dict[query + '-' + user] > 4:
+                        under_4_unchanged += 1
+    print('Unchnged Docs: ' + str(unchanged_docs))
+    if rank_dict is not None:
+        print('Unchnged Docs Winner: ' + str(winner_unchanged))
+        print('Unchnged Docs Loser: ' + str(loser_unchanged))
+        print('Unchnged Docs Under 4: ' + str(under_4_unchanged))
+
+    unchanged_users = 0
+    for user in unchanged_users_dict:
+        if unchanged_users_dict[user] >= 3:
+            unchanged_users += 1
+
+    print('Unchnged Users: ' + str(unchanged_users))
+
+
 def parse_res_file(filepath):
     with open(filepath , 'r') as f:
         file_content = f.read()
@@ -300,33 +353,36 @@ queries = list(data.keys())
 
 
 
-data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
-print("First Round VS Zero:")
-compare_doc_files(data_round_1, data, is_first=True)
+# data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
+# print("First Round VS Zero:")
+# compare_doc_files(data_round_1, data, is_first=True)
+#
+# data_round_2 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-17-10-30-21-396460')
+# print("Second Round VS Zero:")
+# compare_doc_files(data_round_2, data, is_first=True)
 
-data_round_2 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-17-10-30-21-396460')
-print("Second Round VS Zero:")
-compare_doc_files(data_round_2, data, is_first=True)
-
-data_round_3 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-23-23-12-59-474081')
-print("Third Round VS Zero:")
-compare_doc_files(data_round_3, data, is_first=True)
-
-rank_round_1 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-11-09-23-55-23-857656')
-rank_round_2 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-11-17-10-30-21-396460')
+# data_round_3 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-23-23-12-59-474081')
+# print("Third Round VS Zero:")
+# compare_doc_files(data_round_3, data, is_first=True)
+#
+# rank_round_1 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-11-09-23-55-23-857656')
+# rank_round_2 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-11-17-10-30-21-396460')
 
 # print(data)
 # print(data_round_1)
 
-print("First Round VS Second:")
-compare_doc_files(data_round_1, data_round_2, is_first=False, rank_dict=rank_round_1)
-print("Second Round VS Third:")
-compare_doc_files(data_round_2, data_round_3, is_first=False, rank_dict=rank_round_2)
+# print("First Round VS Second:")
+# compare_doc_files(data_round_1, data_round_2, is_first=False, rank_dict=rank_round_1)
+# print("Second Round VS Third:")
+# compare_doc_files(data_round_2, data_round_3, is_first=False, rank_dict=rank_round_2)
 
+data_round_3 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-23-23-12-59-474081')
+rank_round_3 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-11-23-23-12-59-474081')
 
-
-
-
+print("Curr Round VS Third:")
+compare_doc_files_vs_db(data_round_3,is_first=False,rank_dict=rank_round_3)
+print("Curr Round VS Zero:")
+compare_doc_files_vs_db(data_round_3,is_first=True)
 
 # while True:
 #     mapping, query_user_map = user_query_mapping_z(
