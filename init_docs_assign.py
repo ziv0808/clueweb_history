@@ -382,7 +382,7 @@ rank_round_3 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Resul
 print("Curr Round VS Third:")
 compare_doc_files_vs_db(data_round_3,is_first=False,rank_dict=rank_round_3)
 print("Curr Round VS Zero:")
-compare_doc_files_vs_db(data_round_3,is_first=True)
+compare_doc_files_vs_db(data,is_first=True)
 
 # while True:
 #     mapping, query_user_map = user_query_mapping_z(
