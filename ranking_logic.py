@@ -323,7 +323,7 @@ if __name__=="__main__":
     baseDir = '/lv_local/home/zivvasilisky/ASR20/epoch_run/'
     if not os.path.exists(baseDir):
         os.makedirs(baseDir)
-    changeStatus()
+    # changeStatus()
     print('Status Changed!')
     sys.stdout.flush()
     trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
@@ -345,4 +345,4 @@ if __name__=="__main__":
     print('Updated docs!')
     sys.stdout.flush()
     backupDocuments(currentTime,baseDir)
-    changeStatus()
+    # changeStatus()
