@@ -435,7 +435,8 @@ def run_grid_search_over_params_for_config(
         feat_group_list,
         calc_ndcg_mrr,
         backward_elimination,
-        snap_num_as_hyper_param):
+        snap_num_as_hyper_param,
+        snap_choosing_config):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
     ## num 1
@@ -471,16 +472,16 @@ def run_grid_search_over_params_for_config(
     if snap_chosing_method == 'Months':
         snap_limit_options = [
             # '3M', '6M', '9M', '1Y', '1.5Y',
-            'All']
+            snap_choosing_config]
     elif snap_chosing_method == 'SnapNum':
         snap_limit_options = [
             # 3, 5, 7, 10, 15,
-            'All']
+            snap_choosing_config]
     else:
         raise Exception("Unknown snap_chosing_method!")
 
     model_base_filename = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(
-        snapshot_limit) + "_" + retrieval_model + "_By" + snap_chosing_method
+        snapshot_limit) + "_" + retrieval_model + "_By" + snap_chosing_method + '_' + str(snap_choosing_config)
 
     retrieval_model_addition = ""
     if tarin_leave_one_out == True:
@@ -602,6 +603,7 @@ if __name__ == '__main__':
         calc_ndcg_mrr = ast.literal_eval(sys.argv[9])
         backward_elimination = ast.literal_eval(sys.argv[10])
         snap_num_as_hyper_param = ast.literal_eval(sys.argv[11])
+        snap_choosing_config = sys.argv[12]
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
@@ -613,4 +615,5 @@ if __name__ == '__main__':
             feat_group_list=feat_group_list,
             calc_ndcg_mrr=calc_ndcg_mrr,
             backward_elimination=backward_elimination,
-            snap_num_as_hyper_param=snap_num_as_hyper_param)
+            snap_num_as_hyper_param=snap_num_as_hyper_param,
+            snap_choosing_config=snap_choosing_config)
