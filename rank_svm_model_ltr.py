@@ -191,7 +191,7 @@ def run_grid_search_over_params_for_config(
         if 'XXSnap' in curr_feat_group:
             snap_limit_list = snap_limit_options
         else:
-            snap_limit_list = [None]
+            snap_limit_list = [snap_choosing_config]
         for snap_limit in snap_limit_list:
             if snap_limit is None:
                 feat_group = curr_feat_group
