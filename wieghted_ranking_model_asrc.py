@@ -62,9 +62,11 @@ class WeightedListRanker():
                 filename = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/',
                                         inner_fold.replace('_0'+str(len(self.interval_list)),'').upper()+ '_LTR_All_features_Round0' + str(len(self.interval_list)) + '_all_snaps.tsv')
                 curr_df = pd.read_csv(filename, sep='\t', index_col=False)
-                curr_df = curr_df[curr_df['Interval'] == int(interval)]
-                if curr_df.empty == True:
+                if curr_df[curr_df['Interval'] == int(interval)].empty == True:
                     curr_df = curr_df[curr_df['Interval'] == str(interval)]
+                else:
+                    curr_df = curr_df[curr_df['Interval'] == int(interval)]
+
             print("filename : " + filename)
             sys.stdout.flush()
             if curr_df.empty == True:
