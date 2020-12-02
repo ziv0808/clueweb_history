@@ -19,7 +19,8 @@ def run_cv_for_config(
         train_leave_one_out,
         snap_calc_limit,
         backward_elimination,
-        snap_num_as_hyper_param):
+        snap_num_as_hyper_param,
+        is_new_server):
 
     k_fold, fold_list = create_fold_list_for_cv(
         base_feature_filename=base_feature_filename,
@@ -111,7 +112,8 @@ def run_cv_for_config(
             snap_chosing_method=snap_chosing_method,
             snap_calc_limit=snap_calc_limit,
             backward_elimination=backward_elimination,
-            snap_num_as_hyper_param=snap_num_as_hyper_param)
+            snap_num_as_hyper_param=snap_num_as_hyper_param,
+            is_new_server=is_new_server)
         if i == 0:
             params_df = fold_params_df
         else:
@@ -130,7 +132,8 @@ def run_grid_search_over_params_for_config(
         calc_ndcg_mrr,
         backward_elimination,
         snap_num_as_hyper_param,
-        snap_choosing_config):
+        snap_choosing_config,
+        is_new_server):
 
     if feat_group_list is None:
         optional_feat_groups_list = ['Static','Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap_RMGXXSnap',
@@ -141,6 +144,9 @@ def run_grid_search_over_params_for_config(
         optional_feat_groups_list = feat_group_list
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
+    if is_new_server == True:
+        save_folder = '/mnt/bi-strg3/v/zivvasilisky/bi-srv2/ziv/results/rank_svm_res/ret_res/'
+        save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/bi-srv2/ziv/results/rank_svm_res/'
 
     if '2008' in base_feature_filename:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"
@@ -209,7 +215,8 @@ def run_grid_search_over_params_for_config(
                 train_leave_one_out=tarin_leave_one_out,
                 snap_calc_limit=snap_limit,
                 backward_elimination=backward_elimination,
-                snap_num_as_hyper_param=snap_num_as_hyper_param)
+                snap_num_as_hyper_param=snap_num_as_hyper_param,
+                is_new_server=is_new_server)
 
             tmp_params_df['FeatGroup'] = feat_group
             if 'XXSnap' in feat_group:
@@ -399,6 +406,7 @@ if __name__ == '__main__':
         backward_elimination = ast.literal_eval(sys.argv[10])
         snap_num_as_hyper_param = ast.literal_eval(sys.argv[11])
         snap_choosing_config = sys.argv[12]
+        is_new_server = ast.literal_eval(sys.argv[13])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
@@ -411,7 +419,8 @@ if __name__ == '__main__':
             calc_ndcg_mrr =calc_ndcg_mrr,
             backward_elimination=backward_elimination,
             snap_num_as_hyper_param=snap_num_as_hyper_param,
-            snap_choosing_config=snap_choosing_config)
+            snap_choosing_config=snap_choosing_config,
+            is_new_server=is_new_server)
 
     elif operation == 'LimitedSnapFeatures':
         base_feature_filename = sys.argv[2]
