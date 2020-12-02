@@ -32,7 +32,7 @@ if __name__=="__main__":
     model = AutoModelForSequenceClassification.from_pretrained("amberoad/bert-multilingual-passage-reranking-msmarco")
 
     for query_user in big_doc_index:
-        query = big_doc_index.split('-')[0]
+        query = query_user.split('-')[0]
         print(query_user)
         sys.stdout.flush()
         for round_ in big_doc_index[query_user]:
