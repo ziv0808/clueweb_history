@@ -1802,7 +1802,7 @@ def create_base_features_for_asrc_with_ltr_features(
         round_limit=None):
 
 
-    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/RawData.json', 'r') as f:
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + inner_fold + '/RawDataWithBERT.json', 'r') as f:
         big_doc_index = ast.literal_eval(f.read())
 
     meta_data_base_fold = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/'
@@ -1816,7 +1816,7 @@ def create_base_features_for_asrc_with_ltr_features(
     base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio','Ent','FracStops',
                          'IDF', 'Len','LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
-                         'TFNormMean','TFNormStd','VSM', 'SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BM25Score']
+                         'TFNormMean','TFNormStd','VSM', 'SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore','BM25Score']
 
     col_list = ['NumSnapshots']
     for suffix in ["", "_M", "_STD", "_LG", "_MG", "_RMG"]:
@@ -1858,6 +1858,7 @@ def create_base_features_for_asrc_with_ltr_features(
                 feature_ref_dict[query_num][curr_docno]['StopwordsRatio'] = doc_dict['json']['NumStopWords'] / float(doc_dict['json']['NumWords'] - doc_dict['json']['NumStopWords'])
                 feature_ref_dict[query_num][curr_docno]['Stopwords'] = doc_dict['json']['NumStopWords']
                 feature_ref_dict[query_num][curr_docno]['-Query-SW'] = doc_dict['json']['NumWords'] - (doc_dict['json']['NumQueryWords'] + doc_dict['json']['NumStopWords'])
+                feature_ref_dict[query_num][curr_docno]['BERTScore'] = doc_dict['json']['BERTScore']
                 insert_row =[]
                 for feature_name in base_feature_list:
                     insert_row.append(feature_ref_dict[query_num][curr_docno][feature_name])

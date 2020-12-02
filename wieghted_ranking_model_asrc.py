@@ -56,11 +56,11 @@ class WeightedListRanker():
             print("Interval : " + interval)
             sys.stdout.flush()
             if interval == 'ClueWeb09':
-                filename = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/',inner_fold.replace('_0'+str(len(self.interval_list)),'').upper()+'_All_features_Round0' +str(len(self.interval_list)) + '_with_meta.tsv')
+                filename = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/',inner_fold.replace('_0'+str(len(self.interval_list)),'').upper()+'_LTR_All_features_Round0' +str(len(self.interval_list)) + '_with_meta.tsv')
                 curr_df = pd.read_csv(filename, sep = '\t', index_col = False)
             else:
                 filename = os.path.join('/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/',
-                                        inner_fold.replace('_0'+str(len(self.interval_list)),'').upper()+ '_All_features_Round0' + str(len(self.interval_list)) + '_all_snaps.tsv')
+                                        inner_fold.replace('_0'+str(len(self.interval_list)),'').upper()+ '_LTR_All_features_Round0' + str(len(self.interval_list)) + '_all_snaps.tsv')
                 curr_df = pd.read_csv(filename, sep='\t', index_col=False)
                 curr_df = curr_df[curr_df['Interval'] == int(interval)]
             print("filename : " + filename)

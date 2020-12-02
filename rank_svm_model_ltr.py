@@ -285,7 +285,7 @@ def create_all_x_snap_aggregations(
     base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio', 'Ent', 'FracStops',
                          'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
-                         'TFNormMean','TFNormStd', 'VSM','SimClueWeb','StopwordsRatio','Stopwords','-Query-SW', 'BM25Score']
+                         'TFNormMean','TFNormStd', 'VSM','SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore', 'BM25Score']
 
     work_df = pd.read_csv(os.path.join(base_file_folder, base_feature_filename), sep = '\t', index_col = False)
     if '2008' in base_feature_filename:
