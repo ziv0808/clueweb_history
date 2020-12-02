@@ -67,6 +67,8 @@ class WeightedListRanker():
                     curr_df = curr_df[curr_df['Interval'] == str(interval)]
             print("filename : " + filename)
             sys.stdout.flush()
+            if curr_df.empty == True:
+                raise Exception("Fuck!")
             curr_df = curr_df[['QueryNum','Docno',  retrieval_model + 'Score']].rename(
                                                         columns = {'QueryNum'                 : 'Query_ID',
                                                                     retrieval_model + 'Score' : 'Score'})
