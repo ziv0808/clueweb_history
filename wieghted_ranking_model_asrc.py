@@ -63,6 +63,8 @@ class WeightedListRanker():
                                         inner_fold.replace('_0'+str(len(self.interval_list)),'').upper()+ '_LTR_All_features_Round0' + str(len(self.interval_list)) + '_all_snaps.tsv')
                 curr_df = pd.read_csv(filename, sep='\t', index_col=False)
                 curr_df = curr_df[curr_df['Interval'] == int(interval)]
+                if curr_df.empty == True:
+                    curr_df = curr_df[curr_df['Interval'] == str(interval)]
             print("filename : " + filename)
             sys.stdout.flush()
             curr_df = curr_df[['QueryNum','Docno',  retrieval_model + 'Score']].rename(
