@@ -145,8 +145,8 @@ def run_grid_search_over_params_for_config(
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
     save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     if is_new_server == True:
-        save_folder = '/mnt/bi-strg3/v/zivvasilisky/bi-srv2/ziv/results/rank_svm_res/ret_res/'
-        save_summary_folder = '/mnt/bi-strg3/v/zivvasilisky/bi-srv2/ziv/results/rank_svm_res/'
+        save_folder = '~/ziv/results/rank_svm_res/ret_res/'
+        save_summary_folder = '~/ziv/results/rank_svm_res/'
 
     if '2008' in base_feature_filename:
         qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/qrels.adhoc"

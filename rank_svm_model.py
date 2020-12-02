@@ -573,7 +573,7 @@ def train_and_test_model_on_config(
 
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     if is_new_server == True:
-        base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/bi-srv2/ziv/results/rank_svm_res/'
+        base_res_folder = '~/ziv/results/rank_svm_res/'
     model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit)
     feature_folder = feature_groupname.replace('XXSnap','XS')
     feature_folder += '_' + normalize_method
