@@ -2041,7 +2041,7 @@ def unite_asrc_data_results(
             print(tmp_res_dict.keys())
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
             if limited_snap_num is not None:
-                feat_group = feat_group.replace('_' + str(limited_snap_num) + 'ByMonths','')
+                feat_group = feat_group.replace('+' + str(limited_snap_num) + 'ByMonths','')
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
             # if (dataset_name == 'herd_control') and (59 in tmp_res_dict):
