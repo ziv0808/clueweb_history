@@ -1938,6 +1938,7 @@ def unite_asrc_data_results(
         leave_one_out_train,
         backward_elimination,
         snap_num_as_hyper_param,
+        limited_snap_num,
         additional_models_to_include = {
             'F1 UW' : {'Folder' : '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
                     'FileTemplate' : '<DatasetName>_0<RoundNum>_BM25_Uniform_Results.txt'},
@@ -2011,6 +2012,8 @@ def unite_asrc_data_results(
     num_files = 0
     num_rounds = 0
     addition_to_inner_fold = ""
+    if limited_snap_num is not None or limited_snap_num != 'All':
+        addition_to_inner_fold += '_' + str(limited_snap_num)
     if leave_one_out_train == True:
         addition_to_inner_fold += "_LoO"
     if backward_elimination == True:
@@ -2037,6 +2040,8 @@ def unite_asrc_data_results(
                 calc_ndcg_mrr=True)
             print(tmp_res_dict.keys())
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
+            if limited_snap_num is not None:
+                feat_group = feat_group.replace('_' + str(limited_snap_num) + 'ByMonths','')
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
             print(feat_group)
             # if (dataset_name == 'herd_control') and (59 in tmp_res_dict):
@@ -2467,6 +2472,7 @@ if __name__ == '__main__':
         leave_one_out_train = ast.literal_eval(sys.argv[8])
         backward_elimination = ast.literal_eval(sys.argv[9])
         snap_num_as_hyper_param = ast.literal_eval(sys.argv[10])
+        limited_snap_num = sys.argv[11]
 
         unite_asrc_data_results(
             big_model=big_model,
@@ -2477,7 +2483,8 @@ if __name__ == '__main__':
             significance_type=significance_type,
             leave_one_out_train=leave_one_out_train,
             backward_elimination=backward_elimination,
-            snap_num_as_hyper_param=snap_num_as_hyper_param)
+            snap_num_as_hyper_param=snap_num_as_hyper_param,
+            limited_snap_num=limited_snap_num)
     elif operation == 'ASRCSVMWeights':
         snap_limit = int(sys.argv[2])
         ret_model = sys.argv[3]
