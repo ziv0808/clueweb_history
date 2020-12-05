@@ -20,7 +20,8 @@ def run_cv_for_config(
         snap_calc_limit,
         backward_elimination,
         snap_num_as_hyper_param,
-        is_new_server):
+        is_new_server,
+        with_bert_as_feature):
 
     k_fold, fold_list = create_fold_list_for_cv(
         base_feature_filename=base_feature_filename,
