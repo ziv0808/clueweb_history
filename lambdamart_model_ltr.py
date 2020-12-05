@@ -326,7 +326,8 @@ def run_cv_for_config(
         snap_calc_limit,
         backward_elimination,
         snap_num_as_hyper_param,
-        is_new_server):
+        is_new_server,
+        with_bert_as_feature):
 
     k_fold, fold_list = create_fold_list_for_cv(
         base_feature_filename=base_feature_filename,
@@ -346,6 +347,8 @@ def run_cv_for_config(
                          'IDF', 'Len', 'LMIR.DIR', 'LMIR.JM', 'StopCover', 'TFSum', 'TFMin', 'TFMax',
                          'TFMean', 'TFStd','TFIDFSum', 'TFIDFMin', 'TFIDFMax', 'TFIDFMean', 'TFIDFStd', 'TFNormSum', 'TFNormMin',
                          'TFNormMax','TFNormMean', 'TFNormStd', 'SimClueWeb', 'BM25Score']
+    if with_bert_as_feature == True:
+        base_feature_list.append('BERTScore')
 
     if 'Static' in broken_feature_groupname:
         feature_list.extend(base_feature_list)
@@ -443,7 +446,8 @@ def run_grid_search_over_params_for_config(
         backward_elimination,
         snap_num_as_hyper_param,
         snap_choosing_config,
-        is_new_server):
+        is_new_server,
+        with_bert_as_feature):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
     ## num 1
@@ -503,6 +507,9 @@ def run_grid_search_over_params_for_config(
     if snap_num_as_hyper_param == True:
         model_base_filename += '_SnapLim'
         retrieval_model_addition += '_SnapLim'
+    if with_bert_as_feature == True:
+        model_base_filename += '_Bert'
+        retrieval_model_addition += '_Bert'
 
     if not os.path.exists(os.path.join(save_folder, model_base_filename)):
         os.mkdir(os.path.join(save_folder, model_base_filename))
@@ -541,7 +548,8 @@ def run_grid_search_over_params_for_config(
                 snap_calc_limit=snap_limit,
                 backward_elimination=backward_elimination,
                 snap_num_as_hyper_param=snap_num_as_hyper_param,
-                is_new_server=is_new_server)
+                is_new_server=is_new_server,
+                with_bert_as_feature=with_bert_as_feature)
 
             tmp_params_df['FeatGroup'] = feat_group
             if 'XXSnap' in feat_group:
@@ -616,6 +624,7 @@ if __name__ == '__main__':
         snap_num_as_hyper_param = ast.literal_eval(sys.argv[11])
         snap_choosing_config = sys.argv[12]
         is_new_server = ast.literal_eval(sys.argv[13])
+        with_bert_as_feature = ast.literal_eval(sys.argv[14])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
@@ -629,4 +638,5 @@ if __name__ == '__main__':
             backward_elimination=backward_elimination,
             snap_num_as_hyper_param=snap_num_as_hyper_param,
             snap_choosing_config=snap_choosing_config,
-            is_new_server=is_new_server)
+            is_new_server=is_new_server,
+            with_bert_as_feature=with_bert_as_feature)
