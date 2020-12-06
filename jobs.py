@@ -1939,6 +1939,7 @@ def unite_asrc_data_results(
         backward_elimination,
         snap_num_as_hyper_param,
         limited_snap_num,
+        with_bert_as_feature,
         additional_models_to_include = {
             'F1 UW' : {'Folder' : '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
                     'FileTemplate' : '<DatasetName>_0<RoundNum>_BM25_Uniform_Results.txt'},
@@ -2020,6 +2021,8 @@ def unite_asrc_data_results(
         addition_to_inner_fold += "_BElim"
     if snap_num_as_hyper_param == True:
         addition_to_inner_fold += "_SnapLim"
+    if with_bert_as_feature == True:
+        addition_to_inner_fold += '_Bert'
 
     for round_ in range(2,round_limit + 1):
         if dataset_name == 'herd_control':
@@ -2474,6 +2477,7 @@ if __name__ == '__main__':
         backward_elimination = ast.literal_eval(sys.argv[9])
         snap_num_as_hyper_param = ast.literal_eval(sys.argv[10])
         limited_snap_num = sys.argv[11]
+        with_bert_as_feature = ast.literal_eval(sys.argv[12])
 
         unite_asrc_data_results(
             big_model=big_model,
@@ -2485,7 +2489,9 @@ if __name__ == '__main__':
             leave_one_out_train=leave_one_out_train,
             backward_elimination=backward_elimination,
             snap_num_as_hyper_param=snap_num_as_hyper_param,
-            limited_snap_num=limited_snap_num)
+            limited_snap_num=limited_snap_num,
+            with_bert_as_feature=with_bert_as_feature)
+        
     elif operation == 'ASRCSVMWeights':
         snap_limit = int(sys.argv[2])
         ret_model = sys.argv[3]
