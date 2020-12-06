@@ -2013,7 +2013,7 @@ def unite_asrc_data_results(
     num_files = 0
     num_rounds = 0
     addition_to_inner_fold = ""
-    if limited_snap_num is not None or limited_snap_num != 'All':
+    if limited_snap_num is not None:
         addition_to_inner_fold += '_' + str(limited_snap_num)
     if leave_one_out_train == True:
         addition_to_inner_fold += "_LoO"
@@ -2491,7 +2491,7 @@ if __name__ == '__main__':
             snap_num_as_hyper_param=snap_num_as_hyper_param,
             limited_snap_num=limited_snap_num,
             with_bert_as_feature=with_bert_as_feature)
-        
+
     elif operation == 'ASRCSVMWeights':
         snap_limit = int(sys.argv[2])
         ret_model = sys.argv[3]
