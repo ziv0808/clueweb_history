@@ -115,11 +115,16 @@ if __name__=="__main__":
                         fulltext_dec = big_doc_index[query_user][round_]['json']['Fulltext'] + '\n' + \
                                        big_doc_index[query_user][str(int(round_) - 1).zfill(2)]['json']['Fulltext'] + '\n' + \
                                        big_doc_index[query_user][str(int(round_) - 2).zfill(2)]['json']['Fulltext']
-                    score_inc = get_query_doc_rel_proba(
-                        tokenizer=tokenizer,
-                        model=model,
-                        query=query_num_to_text[query],
-                        document=fulltext_inc)
+                    try:
+                        score_inc = get_query_doc_rel_proba(
+                            tokenizer=tokenizer,
+                            model=model,
+                            query=query_num_to_text[query],
+                            document=fulltext_inc)
+                    except Exception as e:
+                        print(e)
+                        print(fulltext_inc)
+                        raise e
                     score_dec = get_query_doc_rel_proba(
                         tokenizer=tokenizer,
                         model=model,
