@@ -69,52 +69,36 @@ def create_boto_client(param_patt):
     return client
 
 def create_hits_in_mturk(
-        boto_client,
         curr_round_data,
         query_and_init_doc_data,
-        questions_html,
         curr_round_file):
 
-    summary_df = pd.DataFrame(columns = ['Query', 'User', 'HitID','HitURL'])
+    summary_df = pd.DataFrame(columns = ['query', 'description', 'current_document', 'user'])
+    hit_df = pd.DataFrame(columns=['query', 'description', 'current_document'])
     next_idx = 0
     for query_num in query_and_init_doc_data:
         query = query_and_init_doc_data[query_num]['query_text']
         description = query_and_init_doc_data[query_num]['description']
         for user in curr_round_data[query_num]:
             current_document = curr_round_data[query_num][user]
-            curr_questions_html = questions_html.replace('${query}', query).replace('${description}', description).replace('${current_document}', current_document)
-            new_hit = boto_client.create_hit(
-                Title="Would this document be relevant to someone who searched for a given query",
-                Description="Does the given document contains information that the user is looking for, according to the description of the information need",
-                Keywords='search, relevance',
-                Reward='0.05',
-                MaxAssignments=5,
-                LifetimeInSeconds=259200,
-                AssignmentDurationInSeconds=600,
-                AutoApprovalDelayInSeconds=14400,
-                Question=curr_questions_html)
-            insert_row = [query_num, user, new_hit['HIT']['HITId'], "https://workersandbox.mturk.com/mturk/preview?groupId=" +new_hit['HIT']['HITGroupId']]
-            print("https://workersandbox.mturk.com/mturk/preview?groupId=" +new_hit['HIT']['HITGroupId'])
+            insert_row = [query, description, current_document, user]
             summary_df.loc[next_idx] = insert_row
+            insert_row = [query, description, current_document]
+            hit_df.loc[next_idx] = insert_row
             next_idx += 1
-    summary_df.to_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/' + curr_round_file.split('/')[-1] + '.tsv', sep ='\t', index = False)
+    summary_df.to_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/Summary_' + curr_round_file.split('/')[-1] + '.tsv', sep ='\t', index = False)
+    hit_df.to_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/HITs_' + curr_round_file.split('/')[-1] + '.csv', index = False)
 
 if __name__ == '__main__':
-    param_path = sys.argv[1]
-    curr_round_file = sys.argv[2]
-    curr_round_file = "/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/" + curr_round_file
+    round_list = ['2020-11-09-23-55-23-857656', '2020-11-17-10-30-21-396460', '2020-11-23-23-12-59-474081', '2020-12-02-22-02-13-998936']
     query_and_init_doc_data = read_initial_data("documents.trectext", "topics.full.xml")
-    curr_round_data = read_current_doc_file(curr_round_file)
-    client = create_boto_client(param_path)
+    for curr_round_file in round_list:
+        print(curr_round_file)
+        curr_round_file = "/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/" + curr_round_file
+        curr_round_data = read_current_doc_file(curr_round_file)
+        create_hits_in_mturk(curr_round_file=curr_round_file,
+                             curr_round_data=curr_round_data,
+                             query_and_init_doc_data=query_and_init_doc_data)
 
-    with open('questions.xml','r') as f:
-        questions_html = f.read()
-
-    create_hits_in_mturk(
-        boto_client=client,
-        curr_round_data=curr_round_data,
-        query_and_init_doc_data=query_and_init_doc_data,
-        questions_html=questions_html,
-        curr_round_file=curr_round_file)
 
 
