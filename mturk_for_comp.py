@@ -77,27 +77,27 @@ def create_hits_in_mturk(
 
     summary_df = pd.DataFrame(columns = ['Query', 'User', 'HitID','HitURL'])
     next_idx = 0
-    for query in query_and_init_doc_data:
-        q_text = query_and_init_doc_data[query]['query_text']
-        q_descrip = query_and_init_doc_data[query]['description']
-        for user in curr_round_data[query]:
-            fulltext = curr_round_data[query][user]
+    for query_num in query_and_init_doc_data:
+        query = query_and_init_doc_data[query_num]['query_text']
+        description = query_and_init_doc_data[query_num]['description']
+        for user in curr_round_data[query_num]:
+            current_document = curr_round_data[query_num][user]
+            curr_questions_html = questions_html.format(query=query,description=description,current_document=current_document)
             new_hit = boto_client.create_hit(
-                query=q_text,
-                description=q_descrip,
-                current_document=fulltext,
+                Title="Would this document be relevant to someone who searched for a given query",
+                Description="Does the given document contains information that the user is looking for, according to the description of the information need",
                 Keywords='search, relevance',
                 Reward='0.05',
                 MaxAssignments=5,
                 LifetimeInSeconds=259200,
                 AssignmentDurationInSeconds=600,
                 AutoApprovalDelayInSeconds=14400,
-                Question=questions_html)
-            insert_row = [query, user, new_hit['HIT']['HITId'], "https://workersandbox.mturk.com/mturk/preview?groupId=" +new_hit['HIT']['HITGroupId']]
+                Question=curr_questions_html)
+            insert_row = [query_num, user, new_hit['HIT']['HITId'], "https://workersandbox.mturk.com/mturk/preview?groupId=" +new_hit['HIT']['HITGroupId']]
             print("https://workersandbox.mturk.com/mturk/preview?groupId=" +new_hit['HIT']['HITGroupId'])
             summary_df.loc[next_idx] = insert_row
             next_idx += 1
-    summary_df.to_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/' + curr_round_file.split('/')[-1])
+    summary_df.to_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/' + curr_round_file.split('/')[-1] + '.tsv', sep ='\t', index = False)
 
 if __name__ == '__main__':
     param_path = sys.argv[1]
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         boto_client=client,
         curr_round_data=curr_round_data,
         query_and_init_doc_data=query_and_init_doc_data,
-        questions_html=query_and_init_doc_data,
+        questions_html=questions_html,
         curr_round_file=curr_round_file)
 
 
