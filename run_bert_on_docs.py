@@ -122,9 +122,12 @@ if __name__=="__main__":
                             query=query_num_to_text[query],
                             document=fulltext_inc)
                     except Exception as e:
-                        print(e)
-                        print(fulltext_inc)
-                        raise e
+                        score_inc = get_query_doc_rel_proba(
+                            tokenizer=tokenizer,
+                            model=model,
+                            query=query_num_to_text[query],
+                            document=fulltext_inc.rsplit(' ', 5)[0])
+                        print('Worked!')
                     score_dec = get_query_doc_rel_proba(
                         tokenizer=tokenizer,
                         model=model,
