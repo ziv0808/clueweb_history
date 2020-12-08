@@ -2,6 +2,7 @@ import sys
 import boto3
 import xmltodict
 import pandas as pd
+from string import Template
 from bs4 import BeautifulSoup
 
 def read_current_doc_file(doc_filepath):
@@ -77,12 +78,13 @@ def create_hits_in_mturk(
 
     summary_df = pd.DataFrame(columns = ['Query', 'User', 'HitID','HitURL'])
     next_idx = 0
+    questions_html = Template(questions_html)
     for query_num in query_and_init_doc_data:
         query = query_and_init_doc_data[query_num]['query_text']
         description = query_and_init_doc_data[query_num]['description']
         for user in curr_round_data[query_num]:
             current_document = curr_round_data[query_num][user]
-            curr_questions_html = questions_html.format(query=query,description=description,current_document=current_document)
+            curr_questions_html = questions_html.substitute(query=query,description=description,current_document=current_document)
             new_hit = boto_client.create_hit(
                 Title="Would this document be relevant to someone who searched for a given query",
                 Description="Does the given document contains information that the user is looking for, according to the description of the information need",
