@@ -126,8 +126,8 @@ if __name__=="__main__":
                             tokenizer=tokenizer,
                             model=model,
                             query=query_num_to_text[query],
-                            document=fulltext_inc.rsplit(' ', 3)[0])
-                        fulltext_dec = fulltext_dec.rsplit(' ', 3)[0]
+                            document=fulltext_inc.rsplit(' ', 5)[0])
+                        fulltext_dec = fulltext_dec.rsplit(' ', 5)[0]
                         print('Worked!')
                     score_dec = get_query_doc_rel_proba(
                         tokenizer=tokenizer,
