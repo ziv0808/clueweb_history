@@ -376,13 +376,22 @@ queries = list(data.keys())
 # print("Second Round VS Third:")
 # compare_doc_files(data_round_2, data_round_3, is_first=False, rank_dict=rank_round_2)
 
-data_round_3 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-23-23-12-59-474081')
-rank_round_3 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-11-23-23-12-59-474081')
+# data_round_3 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-23-23-12-59-474081')
+# rank_round_3 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-11-23-23-12-59-474081')
+#
+# print("Curr Round VS Third:")
+# compare_doc_files_vs_db(data_round_3,is_first=False,rank_dict=rank_round_3)
+# print("Curr Round VS Zero:")
+# compare_doc_files_vs_db(data,is_first=True)
 
-print("Curr Round VS Third:")
-compare_doc_files_vs_db(data_round_3,is_first=False,rank_dict=rank_round_3)
+data_round_4 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-12-02-22-02-13-998936')
+rank_round_4 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-12-02-22-02-13-998936')
+
+print("Curr Round VS 4TH:")
+compare_doc_files_vs_db(data_round_4,is_first=False,rank_dict=rank_round_4)
 print("Curr Round VS Zero:")
 compare_doc_files_vs_db(data,is_first=True)
+
 
 # while True:
 #     mapping, query_user_map = user_query_mapping_z(
