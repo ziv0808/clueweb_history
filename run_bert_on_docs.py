@@ -11,9 +11,24 @@ def get_query_doc_rel_proba(
         tokenizer,
         model,
         query,
-        document):
-    inputs = tokenizer.encode_plus(query, document, return_tensors="pt")
-    return torch.softmax(model(**inputs)[0], dim=1).tolist()[0][1]
+        document,
+        fulltext_num_of_last_words_remove = 0):
+
+    try:
+        if fulltext_num_of_last_words_remove == 0:
+            inputs = tokenizer.encode_plus(query, document, return_tensors="pt")
+        else:
+            print("Trying with " + str(fulltext_num_of_last_words_remove) + ' Words remove')
+            inputs = tokenizer.encode_plus(query, document.rsplit(' ', fulltext_num_of_last_words_remove)[0], return_tensors="pt")
+        res = torch.softmax(model(**inputs)[0], dim=1).tolist()[0][1]
+    except Exception as e:
+        res = get_query_doc_rel_proba(tokenizer = tokenizer,
+                                      model = model,
+                                      query = query,
+                                      document = document,
+                                      fulltext_num_of_last_words_remove = fulltext_num_of_last_words_remove + 1)
+
+    return res
 
 
 def get_trec_prepared_df_form_res_df(
@@ -115,34 +130,19 @@ if __name__=="__main__":
                         fulltext_dec = big_doc_index[query_user][round_]['json']['Fulltext'] + '\n' + \
                                        big_doc_index[query_user][str(int(round_) - 1).zfill(2)]['json']['Fulltext'] + '\n' + \
                                        big_doc_index[query_user][str(int(round_) - 2).zfill(2)]['json']['Fulltext']
-                    try:
-                        score_inc = get_query_doc_rel_proba(
+
+                    score_inc = get_query_doc_rel_proba(
                             tokenizer=tokenizer,
                             model=model,
                             query=query_num_to_text[query],
                             document=fulltext_inc)
-                    except Exception as e:
-                        try:
-                            score_inc = get_query_doc_rel_proba(
-                                tokenizer=tokenizer,
-                                model=model,
-                                query=query_num_to_text[query],
-                                document=fulltext_inc.rsplit(' ', 5)[0])
-                            fulltext_dec = fulltext_dec.rsplit(' ', 5)[0]
-                            print('Worked First!')
-                        except Exception as e:
-                            score_inc = get_query_doc_rel_proba(
-                                tokenizer=tokenizer,
-                                model=model,
-                                query=query_num_to_text[query],
-                                document=fulltext_inc.rsplit(' ', 8)[0])
-                            fulltext_dec = fulltext_dec.rsplit(' ', 8)[0]
-                            print('Worked second!')
+
                     score_dec = get_query_doc_rel_proba(
                         tokenizer=tokenizer,
                         model=model,
                         query=query_num_to_text[query],
                         document=fulltext_dec)
+                    
                     docno = "EPOCH-" + str(round_).zfill(2) + '-' + query_user
                     print(docno)
                     sys.stdout.flush()
