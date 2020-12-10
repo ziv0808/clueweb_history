@@ -90,7 +90,7 @@ def create_hits_in_mturk(
     hit_df.to_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/HITs_' + curr_round_file.split('/')[-1] + '.csv', index = False)
 
 if __name__ == '__main__':
-    round_list = ['2020-11-09-23-55-23-857656', '2020-11-17-10-30-21-396460', '2020-11-23-23-12-59-474081', '2020-12-02-22-02-13-998936']
+    round_list = ['2020-12-09-22-44-03-416874']
     query_and_init_doc_data = read_initial_data("documents.trectext", "topics.full.xml")
     for curr_round_file in round_list:
         print(curr_round_file)
