@@ -156,7 +156,7 @@ def clac_rel_for_doc(
 
 def create_qrel_file(file_mapping_dict, query_and_init_doc_data):
     qrel_string = ""
-    for round_ in create_qrel_file:
+    for round_ in file_mapping_dict:
         qrel_string += create_qrel_string_for_round(
                             round_num=round_,
                             query_and_init_doc_data=query_and_init_doc_data,
