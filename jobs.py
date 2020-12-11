@@ -2017,7 +2017,7 @@ def unite_asrc_data_results(
     num_files = 0
     num_rounds = 0
     addition_to_inner_fold = ""
-    if limited_snap_num is not None:
+    if limited_snap_num != "None":
         addition_to_inner_fold += '_' + str(limited_snap_num)
     if leave_one_out_train == True:
         addition_to_inner_fold += "_LoO"
@@ -2047,7 +2047,7 @@ def unite_asrc_data_results(
                 calc_ndcg_mrr=True)
             print(tmp_res_dict.keys())
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
-            if limited_snap_num is not None:
+            if limited_snap_num != "None":
                 feat_group = feat_group.replace('+' + str(limited_snap_num) + 'ByMonths','')
                 feat_group = feat_group.replace('+' + str(limited_snap_num),'')
             round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
