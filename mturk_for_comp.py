@@ -99,6 +99,7 @@ def create_qrel_string_for_round(
     hit_score_df = pd.read_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/' + batch_file, index_col = False)
     hit_summary_df = pd.read_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/Summary_' + round_ts +'.tsv', sep = '\t',index_col = False)
     score_df_len = len(hit_score_df)
+    hit_df_len = len(hit_summary_df)
     hit_score_df.rename(columns = {'Input.current_document' : 'current_document',
                                    'Input.description'      : 'description',
                                    'Input.query'            : 'query'}, inplace = True)
@@ -113,21 +114,22 @@ def create_qrel_string_for_round(
         raise Exception("create_qrel_string_for_round: Merge Prob! hit df len = " +str(score_df_len) +' merged len = ' + str(len(merged_df)))
 
     users = list(merged_df['user'].drop_duplicates())
+    hit_count = 0
     for user in users:
-        curr_df = merged_df[merged_df['user'] == user].copy()
-        q = list(curr_df['query'].drop_duplicates())
-        if len(q) == 1:
-            q = q[0]
-        else:
-            raise Exception("create_qrel_string_for_round: Query Prob! " + str(q))
-        for q_num in query_and_init_doc_data:
-            if query_and_init_doc_data[q_num] == q:
-                curr_q_num = q_num
-                break
-        docno = 'EPOCH-' + round_num + '-' + curr_q_num + '-' + user
-        rel_score = clac_rel_for_doc(curr_df)
-        qrel_str += curr_q_num + ' 0 ' + docno + ' ' + str(rel_score) + '\n'
-
+        curr_user_df = merged_df[merged_df['user'] == user].copy()
+        q_list = list(curr_user_df['query'].drop_duplicates())
+        for q in q_list:
+            curr_user_query_df = curr_user_df[curr_user_df['query'] == q].copy()
+            for q_num in query_and_init_doc_data:
+                if query_and_init_doc_data[q_num] == q:
+                    curr_q_num = q_num
+                    break
+            docno = 'EPOCH-' + round_num + '-' + curr_q_num + '-' + user
+            rel_score = clac_rel_for_doc(curr_user_query_df)
+            qrel_str += curr_q_num + ' 0 ' + docno + ' ' + str(rel_score) + '\n'
+            hit_count += 1
+    if hit_count != len(hit_df_len):
+        print("Somthings wrong...")
     return qrel_str
 
 def clac_rel_for_doc(
