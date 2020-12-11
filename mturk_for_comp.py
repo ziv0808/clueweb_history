@@ -109,7 +109,7 @@ def create_qrel_string_for_round(
         on = ['current_document', 'description', 'query'],
         how = 'inner')
 
-    if len(merged_df) != score_df_len:
+    if len(merged_df) < score_df_len:
         raise Exception("create_qrel_string_for_round: Merge Prob! hit df len = " +str(score_df_len) +' merged len = ' + str(len(merged_df)))
 
     users = list(merged_df['user'].drop_duplicates())
