@@ -128,7 +128,7 @@ def create_qrel_string_for_round(
             rel_score = clac_rel_for_doc(curr_user_query_df)
             qrel_str += curr_q_num + ' 0 ' + docno + ' ' + str(rel_score) + '\n'
             hit_count += 1
-    if hit_count != len(hit_df_len):
+    if hit_count != hit_df_len:
         print("Somthings wrong...")
     return qrel_str
 
