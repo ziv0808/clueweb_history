@@ -89,16 +89,122 @@ def create_hits_in_mturk(
     summary_df.to_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/Summary_' + curr_round_file.split('/')[-1] + '.tsv', sep ='\t', index = False)
     hit_df.to_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/HITs_' + curr_round_file.split('/')[-1] + '.csv', index = False)
 
-if __name__ == '__main__':
-    round_list = ['2020-12-09-22-44-03-416874']
-    query_and_init_doc_data = read_initial_data("documents.trectext", "topics.full.xml")
-    for curr_round_file in round_list:
-        print(curr_round_file)
-        curr_round_file = "/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/" + curr_round_file
-        curr_round_data = read_current_doc_file(curr_round_file)
-        create_hits_in_mturk(curr_round_file=curr_round_file,
-                             curr_round_data=curr_round_data,
-                             query_and_init_doc_data=query_and_init_doc_data)
+def create_qrel_string_for_round(
+        round_num,
+        query_and_init_doc_data,
+        round_ts,
+        batch_file):
 
+    qrel_str = ""
+    hit_score_df = pd.read_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/' + batch_file, index_col = False)
+    hit_summary_df = pd.read_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/Summary_' + round_ts +'.tsv', sep = '\t',index_col = False)
+    score_df_len = len(hit_score_df)
+    hit_score_df.rename(columns = {'Input.current_document' : 'current_document',
+                                   'Input.description'      : 'description',
+                                   'Input.query'            : 'query'}, inplace = True)
+
+    merged_df = pd.merge(
+        hit_score_df[['current_document', 'description', 'query', 'WorkTimeInSeconds', 'Answer.this_document_is']],
+        hit_summary_df,
+        on = ['current_document', 'description', 'query'],
+        how = 'inner')
+
+    if len(merged_df) != score_df_len:
+        raise Exception("create_qrel_string_for_round: Merge Prob!")
+
+    users = list(merged_df['user'].drop_duplicates())
+    for user in users:
+        curr_df = merged_df[merged_df['user'] == user].copy()
+        q = list(curr_df['query'].drop_duplicates())
+        if len(q) == 1:
+            q = q[0]
+        else:
+            raise Exception("create_qrel_string_for_round: Query Prob!")
+        for q_num in query_and_init_doc_data:
+            if query_and_init_doc_data[q_num] == q:
+                curr_q_num = q_num
+                break
+        docno = 'EPOCH-' + round_num + '-' + curr_q_num + '-' + user
+        rel_score = clac_rel_for_doc(curr_df)
+        qrel_str += curr_q_num + ' 0 ' + docno + ' ' + str(rel_score) + '\n'
+
+    return qrel_str
+
+def clac_rel_for_doc(
+        doc_df):
+
+    if len(doc_df) < 5:
+        raise Exception("Not enough rel judgments")
+    if len(doc_df) > 5:
+        work_time_list = sorted(list(doc_df['WorkTimeInSeconds']))
+        bench = work_time_list[-5]
+        doc_df = doc_df[doc_df['WorkTimeInSeconds'] >= bench]
+        if bench == work_time_list[-6]:
+            doc_df = doc_df.sort_values('WorkTimeInSeconds')
+            doc_df = doc_df.head(5)
+    if len(doc_df) != 5:
+        raise Exception("clac_rel_for_doc: Prob")
+    score = 0
+    for index, row in doc_df.iterrows():
+        if row['Answer.this_document_is'] == 'relevant':
+            score += 1
+    if score >= 3:
+        score = score - 2
+    else:
+        score = 0
+    return score
+
+def create_qrel_file(file_mapping_dict, query_and_init_doc_data):
+    qrel_string = ""
+    for round_ in create_qrel_file:
+        qrel_string += create_qrel_string_for_round(
+                            round_num=round_,
+                            query_and_init_doc_data=query_and_init_doc_data,
+                            round_ts=file_mapping_dict[round_]['TS'],
+                            batch_file=file_mapping_dict[round_]['Hit'])
+
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/curr_comp.rel', 'w') as f:
+        f.write(qrel_string)
+
+def creat_trectext_for_all_rounds(file_mapping_dict):
+    trectext_str = ""
+    for round_ in file_mapping_dict:
+        round_ts = file_mapping_dict[round_]['TS']
+        with open('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/' + round_ts, 'r') as f:
+            curr_file = f.read()
+        curr_file = curr_file.replace('<DOCNO>', '<DOCNO>EPOCH-' + round_ + '-')
+        trectext_str += curr_file + '\n'
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/comp2020/comp2020.terctext', 'w') as f:
+        f.write(trectext_str)
+
+
+if __name__ == '__main__':
+    operation = sys.argv[1]
+    query_and_init_doc_data = read_initial_data("documents.trectext", "topics.full.xml")
+    if operation == 'HIT':
+        round_list = ['2020-12-09-22-44-03-416874']
+        for curr_round_file in round_list:
+            print(curr_round_file)
+            curr_round_file = "/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/" + curr_round_file
+            curr_round_data = read_current_doc_file(curr_round_file)
+            create_hits_in_mturk(curr_round_file=curr_round_file,
+                                 curr_round_data=curr_round_data,
+                                 query_and_init_doc_data=query_and_init_doc_data)
+    elif operation == 'CreateFiles':
+        file_mapping_dict = {
+            '01' : {'TS' : '2020-11-09-23-55-23-857656',
+                    'Hit': 'Batch_4273950_batch_results.csv'},
+            '02': {'TS': '2020-11-17-10-30-21-396460',
+                   'Hit': 'Batch_4274137_batch_results.csv'},
+            '03': {'TS': '2020-11-23-23-12-59-474081',
+                   'Hit': 'Batch_4274144_batch_results.csv'},
+            '04': {'TS': '2020-12-02-22-02-13-998936',
+                   'Hit': 'Batch_4274149_batch_results.csv'},
+            '05': {'TS': '2020-12-09-22-44-03-416874',
+                   'Hit': 'Batch_4275854_batch_results.csv'}
+            }
+
+        create_qrel_file(file_mapping_dict, query_and_init_doc_data)
+        creat_trectext_for_all_rounds(file_mapping_dict)
 
 
