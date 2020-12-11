@@ -121,7 +121,7 @@ def create_qrel_string_for_round(
         for q in q_list:
             curr_user_query_df = curr_user_df[curr_user_df['query'] == q].copy()
             for q_num in query_and_init_doc_data:
-                if query_and_init_doc_data[q_num] == q:
+                if query_and_init_doc_data[q_num]['query_text'] == q:
                     curr_q_num = q_num
                     break
             docno = 'EPOCH-' + round_num + '-' + curr_q_num + '-' + user
