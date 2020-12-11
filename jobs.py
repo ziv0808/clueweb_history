@@ -2241,7 +2241,7 @@ def create_all_files_for_competition_features(
         only_feats):
 
     if only_feats == False:
-        q_list ,fold_list  = get_asrc_q_list_and_fold_list(inner_fold=inner_fold)
+        q_list ,fold_list  = get_asrc_q_list_and_fold_list(inner_fold=inner_fold, train_leave_one_out=False)
         with open("/mnt/bi-strg3/v/zivvasilisky/ziv/env/indri/query/query_num_to_text.txt", 'r') as f:
             query_texts = f.read()
         query_xml_str = "<parameters>" + '\n'
