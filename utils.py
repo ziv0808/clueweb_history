@@ -823,7 +823,7 @@ def calc_mrr_nmrr(
 def get_asrc_q_list_and_fold_list(
         inner_fold,
         train_leave_one_out):
-    if 'asrc' in inner_fold:
+    if ('asrc' in inner_fold) or ('comp2020' in inner_fold):
         fold_list = [(2, 9), (10, 17), (18, 32), (33, 36), (45, 51), (59, 78),
                      (98, 144), (161, 166), (167, 180), (182, 195)]
 
