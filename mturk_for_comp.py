@@ -119,7 +119,7 @@ def create_qrel_string_for_round(
         if len(q) == 1:
             q = q[0]
         else:
-            raise Exception("create_qrel_string_for_round: Query Prob!")
+            raise Exception("create_qrel_string_for_round: Query Prob! " + str(q))
         for q_num in query_and_init_doc_data:
             if query_and_init_doc_data[q_num] == q:
                 curr_q_num = q_num
