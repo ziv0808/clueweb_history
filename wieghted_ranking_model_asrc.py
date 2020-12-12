@@ -278,6 +278,8 @@ if __name__=="__main__":
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel'
     elif 'united' in inner_fold:
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel'
+    elif 'comp2020' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/curr_comp.rel'
 
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/'
 

@@ -75,6 +75,8 @@ if __name__=='__main__':
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel'
     elif 'united' in inner_fold:
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel'
+    elif 'comp2020' in inner_fold:
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/curr_comp.rel'
 
     processed_docs_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/'+inner_fold+'/2008/SIM/'
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/'

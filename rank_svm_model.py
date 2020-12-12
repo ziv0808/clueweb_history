@@ -761,7 +761,7 @@ def create_fold_list_for_cv(
         q_list.remove(95)
         q_list.remove(100)
         query_bulk = 20
-    elif 'ASRC' in base_feature_filename:
+    elif ('ASRC' in base_feature_filename) or ('COMP2020' in base_feature_filename):
         fold_list = [(2, 9), (10, 17), (18, 32), (33, 36), (45, 51), (59, 78),
                      (98, 144), (161, 166), (167, 180), (182, 195)]
         q_list = [2, 4, 9, 10, 11, 17, 18, 29, 32, 33, 34, 36, 45, 48, 51, 59, 69, 78, 98, 124, 144, 161, 164, 166, 167, 177, 180, 182, 188, 193, 195]
