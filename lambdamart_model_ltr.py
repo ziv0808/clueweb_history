@@ -327,7 +327,8 @@ def run_cv_for_config(
         backward_elimination,
         snap_num_as_hyper_param,
         is_new_server,
-        with_bert_as_feature):
+        with_bert_as_feature,
+        feature_for_ablation):
 
     k_fold, fold_list = create_fold_list_for_cv(
         base_feature_filename=base_feature_filename,
@@ -409,6 +410,12 @@ def run_cv_for_config(
     if 'XXSnap' in feature_groupname:
         feature_groupname += 'By' + snap_chosing_method
 
+    if feature_for_ablation is not None:
+        if feature_for_ablation in feature_list:
+            feature_list.remove(feature_for_ablation)
+        else:
+            raise Exception(feature_for_ablation + " for ablation NOT in feature list!")
+
     for i in range(k_fold):
         init_q = fold_list[i][0]
         end_q = fold_list[i][1]
@@ -447,7 +454,8 @@ def run_grid_search_over_params_for_config(
         snap_num_as_hyper_param,
         snap_choosing_config,
         is_new_server,
-        with_bert_as_feature):
+        with_bert_as_feature,
+        feature_for_ablation = None):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
     ## num 1
@@ -512,6 +520,9 @@ def run_grid_search_over_params_for_config(
     if with_bert_as_feature == True:
         model_base_filename += '_Bert'
         retrieval_model_addition += '_Bert'
+    if feature_for_ablation is not None:
+        model_base_filename += '_Ablation'
+        retrieval_model_addition += '_' + feature_for_ablation
 
     if not os.path.exists(os.path.join(save_folder, model_base_filename)):
         os.mkdir(os.path.join(save_folder, model_base_filename))
@@ -525,6 +536,7 @@ def run_grid_search_over_params_for_config(
     next_idx = 0
     per_q_res_dict = {}
     feat_group_list_str = ""
+    params_df = pd.DataFrame({})
     # for optional_c in optional_c_list:
     for curr_feat_group in optional_feat_groups_list:
         feat_group_list_str +=  "__" + curr_feat_group.replace('XXSnap','')
@@ -551,13 +563,14 @@ def run_grid_search_over_params_for_config(
                 backward_elimination=backward_elimination,
                 snap_num_as_hyper_param=snap_num_as_hyper_param,
                 is_new_server=is_new_server,
-                with_bert_as_feature=with_bert_as_feature)
+                with_bert_as_feature=with_bert_as_feature,
+                feature_for_ablation=feature_for_ablation)
 
             tmp_params_df['FeatGroup'] = feat_group
             if 'XXSnap' in feat_group:
                 feat_group = feat_group.replace('XXSnap','') + 'By' + snap_chosing_method
 
-            if next_idx == 0:
+            if next_idx == 0 and feature_for_ablation is None:
                 curr_res_df = get_trec_prepared_df_form_res_df(
                     scored_docs_df=test_res_df,
                     score_colname=retrieval_model + 'Score')
@@ -585,6 +598,8 @@ def run_grid_search_over_params_for_config(
                 score_colname='ModelScore')
             insert_row = [feat_group.replace('_', '+')]
             curr_file_name = model_base_filename + '_' + feat_group + '.txt'
+            if feature_for_ablation is not None:
+                curr_file_name = curr_file_name.replace('_Ablation', '_Abla_' + feature_for_ablation)
             with open(os.path.join(save_folder, curr_file_name), 'w') as f:
                 f.write(convert_df_to_trec(curr_res_df))
 
@@ -599,15 +614,16 @@ def run_grid_search_over_params_for_config(
             model_summary_df.loc[next_idx] = insert_row
             next_idx += 1
 
-    significance_df = create_sinificance_df(per_q_res_dict, calc_ndcg_mrr)
-    model_summary_df = pd.merge(
-        model_summary_df,
-        significance_df,
-        on=['FeatureGroup'],
-        how='inner')
+    if feature_for_ablation is None:
+        significance_df = create_sinificance_df(per_q_res_dict, calc_ndcg_mrr)
+        model_summary_df = pd.merge(
+            model_summary_df,
+            significance_df,
+            on=['FeatureGroup'],
+            how='inner')
 
-    model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '.tsv'), sep='\t', index=False)
-    params_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '_Params.tsv'), sep='\t', index=False)
+        model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '.tsv'), sep='\t', index=False)
+        params_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '_Params.tsv'), sep='\t', index=False)
 
 
 if __name__ == '__main__':
@@ -642,3 +658,36 @@ if __name__ == '__main__':
             snap_choosing_config=snap_choosing_config,
             is_new_server=is_new_server,
             with_bert_as_feature=with_bert_as_feature)
+
+    if operation == 'AblationTest':
+        base_feature_filename = sys.argv[1]
+        snapshot_limit = 1
+        retrieval_model = 'BM25'
+        normalize_method = 'MinMax'
+        snap_chosing_method = 'Months'
+        tarin_leave_one_out = True
+        feat_group_list = ['Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap']
+        calc_ndcg_mrr = True
+        backward_elimination = True
+        snap_num_as_hyper_param = False
+        snap_choosing_config = 'All'
+        is_new_server = ast.literal_eval(sys.argv[2])
+        with_bert_as_feature = False
+        feature_for_ablation_list = ast.literal_eval(sys.argv[3])
+
+        for feature_for_ablation in feature_for_ablation_list:
+            run_grid_search_over_params_for_config(
+                base_feature_filename=base_feature_filename,
+                snapshot_limit=snapshot_limit,
+                retrieval_model=retrieval_model,
+                normalize_method=normalize_method,
+                snap_chosing_method=snap_chosing_method,
+                tarin_leave_one_out=tarin_leave_one_out,
+                feat_group_list=feat_group_list,
+                calc_ndcg_mrr=calc_ndcg_mrr,
+                backward_elimination=backward_elimination,
+                snap_num_as_hyper_param=snap_num_as_hyper_param,
+                snap_choosing_config=snap_choosing_config,
+                is_new_server=is_new_server,
+                with_bert_as_feature=with_bert_as_feature,
+                feature_for_ablation=feature_for_ablation)
