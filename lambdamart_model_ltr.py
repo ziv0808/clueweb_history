@@ -660,7 +660,7 @@ if __name__ == '__main__':
             with_bert_as_feature=with_bert_as_feature)
 
     if operation == 'AblationTest':
-        base_feature_filename = sys.argv[1]
+        base_feature_filename = sys.argv[2]
         snapshot_limit = 1
         retrieval_model = 'BM25'
         normalize_method = 'MinMax'
@@ -671,9 +671,9 @@ if __name__ == '__main__':
         backward_elimination = True
         snap_num_as_hyper_param = False
         snap_choosing_config = 'All'
-        is_new_server = ast.literal_eval(sys.argv[2])
+        is_new_server = ast.literal_eval(sys.argv[3])
         with_bert_as_feature = False
-        feature_for_ablation_list = ast.literal_eval(sys.argv[3])
+        feature_for_ablation_list = ast.literal_eval(sys.argv[4])
 
         for feature_for_ablation in feature_for_ablation_list:
             run_grid_search_over_params_for_config(
