@@ -1078,7 +1078,7 @@ def create_sinificance_df(
 
     additional_measures = []
     if calc_ndcg_mrr == True:
-        additional_measures = ['NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
+        additional_measures = ['NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR', 'nMRR']
 
     measure_list = ['Map', 'P_5', 'P_10'] + additional_measures
     measure_col_list = []

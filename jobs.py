@@ -2007,7 +2007,7 @@ def unite_asrc_data_results(
     else:
         raise Exception("Unknown base model")
     base_2_folder = os.path.join(base_folder, 'ret_res')
-    feature_list = ['NDCG@1', 'NDCG@3', 'MRR']
+    feature_list = ['NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR']
     feat_col_list = feature_list[:]
     for feat in feature_list:
         feat_col_list.append(feat + '_sign')
@@ -2047,6 +2047,8 @@ def unite_asrc_data_results(
                 calc_ndcg_mrr=True)
             print(tmp_res_dict.keys())
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
+            if 'RMG' in feat_group:
+                continue
             if limited_snap_num != "None":
                 feat_group = feat_group.replace('+' + str(limited_snap_num) + 'ByMonths','')
                 feat_group = feat_group.replace('+' + str(limited_snap_num),'')
@@ -2101,7 +2103,7 @@ def unite_asrc_data_results(
                 sys.stdout.flush()
                 big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
 
-        measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
+        measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR', 'nMRR']
         round_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
         next_idx = 0
         for feat_group in round_res_dict[round_]:
@@ -2127,7 +2129,7 @@ def unite_asrc_data_results(
         else:
             round_summary_df.to_csv(dataset_name.upper() + '_round_' + str(round_) + '_'+significance_type+ addition_to_inner_fold+'_Summary.tsv', sep='\t', index=False)
 
-    measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'MRR', 'nMRR']
+    measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR', 'nMRR']
     big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
     next_idx = 0
     for feat_group in big_res_dict:
@@ -2181,32 +2183,43 @@ def unite_asrc_data_results(
 
 
 def handle_rank_svm_params_asrc(
+        dataset_name,
         snap_limit,
-        ret_model):
+        ret_model,
+        leave_one_out_train,
+        round_limit,
+        backward_elimination):
 
     data_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     num_rounds = 0
     weight_dict = {}
-    for filename in os.listdir(data_folder):
-        if (filename.startswith('ASRC_All_features_Round0')) and ('SNL' + str(snap_limit) in filename) and (ret_model in filename) and (filename.endswith('_Params.tsv')):
-            print(filename)
-            sys.stdout.flush()
-            num_rounds += 1
-            work_df = pd.read_csv(os.path.join(data_folder, filename), sep = '\t', index_col = False)
-            # round_num = filename.replace('ASRC_All_features_Round0','')[0]
-            all_cols = list(work_df.columns)
-            all_feat_groups = list(work_df['FeatGroup'].drop_duplicates())
-            for featgroup in all_feat_groups:
-                tmp_df = work_df[work_df['FeatGroup'] == featgroup]
-                featgroup = featgroup.replace('XXSnap', '').replace('_All', '').replace('_', '+')
-                if featgroup not in weight_dict:
-                    weight_dict[featgroup] = {}
-                for col in all_cols:
-                    if col not in ['FeatGroup', 'C', 'SnapLimit', 'Fold']:
-                        if col in weight_dict[featgroup]:
-                            weight_dict[featgroup][col] = (weight_dict[featgroup][col]*(num_rounds - 1) +  tmp_df[col].mean())/float(num_rounds)
-                        else:
-                            weight_dict[featgroup][col] = tmp_df[col].mean()
+    addition_to_filename = ""
+    if leave_one_out_train == True:
+        addition_to_filename += "_LoO"
+    if backward_elimination == True:
+        addition_to_filename += "_BElim"
+
+    for round_ in range(2, round_limit + 1):
+        for filename in os.listdir(data_folder):
+            if filename.startswith(dataset_name.upper()+'_LTR_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'+addition_to_filename+'_MinMax') and (filename.endswith('_Params.tsv')):
+                print(filename)
+                sys.stdout.flush()
+                num_rounds += 1
+                work_df = pd.read_csv(os.path.join(data_folder, filename), sep = '\t', index_col = False)
+                # round_num = filename.replace('ASRC_All_features_Round0','')[0]
+                all_cols = list(work_df.columns)
+                all_feat_groups = list(work_df['FeatGroup'].drop_duplicates())
+                for featgroup in all_feat_groups:
+                    tmp_df = work_df[work_df['FeatGroup'] == featgroup]
+                    featgroup = featgroup.replace('XXSnap', '').replace('_All', '').replace('_', '+')
+                    if featgroup not in weight_dict:
+                        weight_dict[featgroup] = {}
+                    for col in all_cols:
+                        if col not in ['FeatGroup', 'C', 'SnapLimit', 'Fold']:
+                            if col in weight_dict[featgroup]:
+                                weight_dict[featgroup][col] = (weight_dict[featgroup][col]*(num_rounds - 1) +  tmp_df[col].mean())/float(num_rounds)
+                            else:
+                                weight_dict[featgroup][col] = tmp_df[col].mean()
 
     for feat_group in weight_dict:
         print(feat_group)
@@ -2225,7 +2238,7 @@ def handle_rank_svm_params_asrc(
         plt.title(feat_group +' SVM Weights')
         plt.yticks(rotation = 90)
         plt.subplots_adjust(bottom=0.35)
-        plt.savefig(feat_group + '_RankSVM_Weights.png', dpi = 200)
+        plt.savefig(feat_group + dataset_name.upper() + addition_to_filename + '_RankSVM_Weights.png', dpi = 200)
 
 def run_bash_command(command):
     p = subprocess.Popen(command,
@@ -2497,10 +2510,20 @@ if __name__ == '__main__':
             with_bert_as_feature=with_bert_as_feature)
 
     elif operation == 'ASRCSVMWeights':
-        snap_limit = int(sys.argv[2])
-        ret_model = sys.argv[3]
+        dataset_name = sys.argv[2]
+        snap_limit = int(sys.argv[3])
+        ret_model = sys.argv[4]
+        round_limit = int(sys.argv[5])
+        leave_one_out_train = ast.literal_eval(sys.argv[6])
+        backward_elimination = ast.literal_eval(sys.argv[7])
 
-        handle_rank_svm_params_asrc(snap_limit=snap_limit, ret_model=ret_model)
+        handle_rank_svm_params_asrc(
+            dataset_name=dataset_name,
+            snap_limit=snap_limit,
+            ret_model=ret_model,
+            round_limit=round_limit,
+            leave_one_out_train=leave_one_out_train,
+            backward_elimination=backward_elimination)
 
     elif operation == 'ASRCFeatLTRFiles':
         doc_file_path = sys.argv[2]

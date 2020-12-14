@@ -745,7 +745,7 @@ def calc_ndcg_mrr_for_file(
         on = ['Query', 'Docno'],
         how = 'left')
     res_df.fillna(0, inplace = True)
-    res_dict = {'all' : {'NDCG@1'  :0.0 , 'NDCG@3'  :0.0 , 'MRR' : 0.0, 'nMRR' : 0.0}}
+    res_dict = {'all' : {'NDCG@1'  :0.0 , 'NDCG@3'  :0.0 , 'NDCG@5'  :0.0 , 'MRR' : 0.0, 'nMRR' : 0.0}}
     all_q = list(res_df['Query'].drop_duplicates())
     mrr_denom = 0
     for q in all_q:
@@ -755,12 +755,14 @@ def calc_ndcg_mrr_for_file(
         true_val_list = q_df['Relevance'].values
         ndcg1 = calc_ndcg(true_val_list, 1)
         ndcg3 = calc_ndcg(true_val_list, 3)
+        ndcg5 = calc_ndcg(true_val_list, 5)
         mrr, nmrr = calc_mrr_nmrr(true_val_list)
         res_dict[q]['NDCG@1'] = ndcg1
         res_dict[q]['NDCG@3'] = ndcg3
+        res_dict[q]['NDCG@5'] = ndcg5
         res_dict[q]['MRR'] = mrr
         res_dict[q]['nMRR'] = nmrr
-        for measure in ['NDCG@1','NDCG@3','nMRR']:
+        for measure in ['NDCG@1','NDCG@3','NDCG@5','nMRR']:
             res_dict['all'][measure] += res_dict[q][measure]
         if not np.isnan(mrr):
             res_dict['all']['MRR'] += mrr
