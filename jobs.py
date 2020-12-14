@@ -2232,25 +2232,25 @@ def handle_rank_svm_params_asrc(
         feat_df.set_index('Feature', inplace = True)
         feat_df.sort_values('Weight', inplace = True)
         if len(feat_df) > 60:
-            top_df = feat_df.head(50)
-            plt.cla()
-            plt.clf()
-            top_df.plot(legend=False, kind='bar', color='b')
-            plt.ylabel('Weight')
-            plt.title(feat_group + ' Top SVM Weights')
-            plt.yticks(rotation=90)
-            plt.subplots_adjust(bottom=0.35)
-            plt.savefig(feat_group + dataset_name.upper() + addition_to_filename + '_RankSVM_Weights_Top_Weights.png', dpi=200)
-
-            bottom_df = feat_df.tail(50)
+            bottom_df = feat_df.head(50)
             plt.cla()
             plt.clf()
             bottom_df.plot(legend=False, kind='bar', color='b')
             plt.ylabel('Weight')
             plt.title(feat_group + ' Bottom SVM Weights')
-            plt.yticks(rotation=90)
+            plt.yticks(rotation=90, fontsize =5)
             plt.subplots_adjust(bottom=0.35)
-            plt.savefig(feat_group + dataset_name.upper() + addition_to_filename + '_RankSVM_Weights_Bottom_Weights.png',
+            plt.savefig(feat_group + dataset_name.upper() + addition_to_filename + '_RankSVM_Weights_Bottom_Weights.png', dpi=200)
+
+            top_df = feat_df.tail(50)
+            plt.cla()
+            plt.clf()
+            top_df.plot(legend=False, kind='bar', color='b')
+            plt.ylabel('Weight')
+            plt.title(feat_group + ' Top SVM Weights')
+            plt.yticks(rotation=90, fontsize =5)
+            plt.subplots_adjust(bottom=0.35)
+            plt.savefig(feat_group + dataset_name.upper() + addition_to_filename + '_RankSVM_Weights_Top_Weights.png',
                         dpi=200)
             if len(feat_df) > 100:
                 feat_df.drop(list(top_df.index), inplace=True)
@@ -2260,7 +2260,7 @@ def handle_rank_svm_params_asrc(
                 feat_df.plot(legend=False, kind='bar', color='b')
                 plt.ylabel('Weight')
                 plt.title(feat_group + ' Middle SVM Weights')
-                plt.yticks(rotation=90)
+                plt.yticks(rotation=90, fontsize =5)
                 plt.subplots_adjust(bottom=0.35)
                 plt.savefig(feat_group + dataset_name.upper() + addition_to_filename + '_RankSVM_Weights_Mid_Weights.png', dpi=200)
         else:
