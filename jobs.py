@@ -2262,7 +2262,7 @@ def handle_rank_svm_params_asrc(
                 plt.title(feat_group + ' Middle SVM Weights')
                 plt.yticks(rotation=90)
                 plt.subplots_adjust(bottom=0.35)
-                    plt.savefig(feat_group + dataset_name.upper() + addition_to_filename + '_RankSVM_Weights_Mid_Weights.png', dpi=200)
+                plt.savefig(feat_group + dataset_name.upper() + addition_to_filename + '_RankSVM_Weights_Mid_Weights.png', dpi=200)
         else:
             plt.cla()
             plt.clf()
