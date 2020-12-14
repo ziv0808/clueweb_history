@@ -614,7 +614,7 @@ def check_statistical_significance(
         res_dict = {}
         additional_measures = []
         if ndcg_mrr == True:
-            additional_measures = ['NDCG@1', 'NDCG@3', 'MRR','nMRR']
+            additional_measures = ['NDCG@1', 'NDCG@3','NDCG@5', 'MRR','nMRR']
         for measure in ['Map', 'P_5', 'P_10'] + additional_measures:
             l1 = []
             l2 = []
@@ -768,7 +768,7 @@ def calc_ndcg_mrr_for_file(
             res_dict['all']['MRR'] += mrr
             mrr_denom += 1
 
-    for measure in ['NDCG@1', 'NDCG@3', 'nMRR']:
+    for measure in ['NDCG@1', 'NDCG@3','NDCG@5', 'nMRR']:
         res_dict['all'][measure] = res_dict['all'][measure] / float(len(all_q))
     res_dict['all']['MRR'] = res_dict['all']['MRR'] / float(mrr_denom)
     return res_dict
