@@ -1999,6 +1999,8 @@ def unite_asrc_data_results(
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel'
     elif dataset_name == 'united':
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel'
+    elif dataset_name == 'comp2020':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/curr_comp.rel'
 
     if big_model == 'SVMRank':
         base_folder = os.path.join(base_folder, 'rank_svm_res')
