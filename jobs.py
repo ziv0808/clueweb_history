@@ -2370,6 +2370,30 @@ def create_all_files_for_competition_features(
     run_bash_command("mv doc*_* " + features_dir)
     run_bash_command("mv " + features_dir +'doc_snapshot_stats_compare.py .')
 
+def compare_rel_files_to_curr_comp():
+    curr_rel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/curr_comp.rel')
+    curr_rel_df['Round'] = curr_rel_df['Docno'].apply(lambda x: x.split('-')[1])
+    asrc_rel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel')
+    asrc_rel_df['Round'] = asrc_rel_df['Docno'].apply(lambda x: x.split('-')[1])
+    united_rel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel')
+    united_rel_df['Round'] = united_rel_df['Docno'].apply(lambda x: x.split('-')[1])
+
+    df_list = [('ASRC', asrc_rel_df), ('UNITED', united_rel_df), ('COMP2020',curr_rel_df)]
+    for elem in df_list:
+        dataset = elem[0]
+        df = elem[1]
+        print(dataset)
+        df['Relevance'] = df['Relevance'].apply(lambda x: float(x))
+        df['IsRel'] = df['Relevance'].apply(lambda x: 0 if x==0 else 1.0)
+        mdf = df[['Query', 'Round', 'Relevance', 'IsRel']].groupby(['Query', 'Round']).mean()
+        print('Mean Query Round relevance: ' + str(mdf['Relevance'].mean()))
+        print('Mean Query Round relevant doc %: ' + str(mdf['IsRel'].mean()))
+        print('Num Query Round all relevant docs: ' + str(len(mdf[mdf['IsRel'] == 1])))
+        print('Num Query Round all most relevant docs: ' + str(len(mdf[mdf['Relevance'] == 3])))
+
+
+
+
 if __name__ == '__main__':
     operation = sys.argv[1]
     if operation == 'TFDict':
@@ -2570,6 +2594,9 @@ if __name__ == '__main__':
             round_limit=round_limit,
             doc_file_path=doc_file_path,
             only_feats=only_feats)
+
+    elif operation == 'RelCompare':
+        compare_rel_files_to_curr_comp()
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
