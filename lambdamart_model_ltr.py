@@ -138,11 +138,11 @@ def train_and_test_model_on_config(
     if is_new_server == True:
         base_res_folder = '/lv_local/home/zivvasilisky/ziv/results/lambdamart_res/'
 
-    model_inner_folder = base_feature_filename.replace('All_features_with_meta.tsv', '') + 'SNL' + str(snapshot_limit)
-    feature_folder = feature_groupname
+    model_inner_folder = base_feature_filename.replace('All_features_', '').replace('with_meta.tsv', '')+ 'SNL' + str(snapshot_limit)
+    feature_folder = feature_groupname.replace('XXSnap','XS')
     # if normalize_relevance == True:
     feature_folder += '_' + normalize_method
-    fold_folder = str(start_test_q) + '_' + str(end_test_q) + "_" + str(snap_chosing_method)
+    fold_folder = str(start_test_q) + '_' + str(end_test_q) #+ "_" + str(snap_chosing_method)
 
     for hirarcy_folder in [model_inner_folder, feature_folder, fold_folder]:
         base_res_folder = os.path.join(base_res_folder, hirarcy_folder)
@@ -328,7 +328,8 @@ def run_cv_for_config(
         snap_num_as_hyper_param,
         is_new_server,
         with_bert_as_feature,
-        feature_for_ablation):
+        feature_for_ablation,
+        limited_features_list):
 
     k_fold, fold_list = create_fold_list_for_cv(
         base_feature_filename=base_feature_filename,
@@ -348,8 +349,12 @@ def run_cv_for_config(
                          'IDF', 'Len', 'LMIR.DIR', 'LMIR.JM', 'StopCover', 'TFSum', 'TFMin', 'TFMax',
                          'TFMean', 'TFStd','TFIDFSum', 'TFIDFMin', 'TFIDFMax', 'TFIDFMean', 'TFIDFStd', 'TFNormSum', 'TFNormMin',
                          'TFNormMax','TFNormMean', 'TFNormStd', 'SimClueWeb', 'BM25Score']
+
     if with_bert_as_feature == True:
         base_feature_list.append('BERTScore')
+
+    if limited_features_list is not None:
+        base_feature_list = limited_features_list
 
     if 'Static' in broken_feature_groupname:
         feature_list.extend(base_feature_list)
@@ -455,6 +460,7 @@ def run_grid_search_over_params_for_config(
         snap_choosing_config,
         is_new_server,
         with_bert_as_feature,
+        limited_features_list = None,
         feature_for_ablation = None):
 
     # optional_c_list = [0.2, 0.1, 0.01, 0.001]
@@ -523,6 +529,9 @@ def run_grid_search_over_params_for_config(
     if feature_for_ablation is not None:
         model_base_filename += '_Ablation'
         retrieval_model_addition += '_' + feature_for_ablation
+    if limited_features_list is not None:
+        model_base_filename += create_feature_list_shortcut_string(limited_features_list)
+        retrieval_model_addition += create_feature_list_shortcut_string(limited_features_list)
 
     if not os.path.exists(os.path.join(save_folder, model_base_filename)):
         os.mkdir(os.path.join(save_folder, model_base_filename))
@@ -564,7 +573,8 @@ def run_grid_search_over_params_for_config(
                 snap_num_as_hyper_param=snap_num_as_hyper_param,
                 is_new_server=is_new_server,
                 with_bert_as_feature=with_bert_as_feature,
-                feature_for_ablation=feature_for_ablation)
+                feature_for_ablation=feature_for_ablation,
+                limited_features_list=limited_features_list)
 
             tmp_params_df['FeatGroup'] = feat_group
             if 'XXSnap' in feat_group:
@@ -643,6 +653,7 @@ if __name__ == '__main__':
         snap_choosing_config = sys.argv[12]
         is_new_server = ast.literal_eval(sys.argv[13])
         with_bert_as_feature = ast.literal_eval(sys.argv[14])
+        limited_features_list = ast.literal_eval(sys.argv[15])
 
         run_grid_search_over_params_for_config(
             base_feature_filename=base_feature_filename,
@@ -657,7 +668,8 @@ if __name__ == '__main__':
             snap_num_as_hyper_param=snap_num_as_hyper_param,
             snap_choosing_config=snap_choosing_config,
             is_new_server=is_new_server,
-            with_bert_as_feature=with_bert_as_feature)
+            with_bert_as_feature=with_bert_as_feature,
+            limited_features_list=limited_features_list)
 
     if operation == 'AblationTest':
         base_feature_filename = sys.argv[2]

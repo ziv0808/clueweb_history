@@ -915,3 +915,37 @@ def pemutation_test(test_group, control_group, total_number=1000):
 
     return diff,indicator_sum/float(counter)
 
+def create_feature_list_shortcut_string(feat_list):
+    ret_str = ''
+    feat_short_dict = {
+        'CoverQueryNum' : 'CQN',
+        'CoverQueryRatio' : 'CQR',
+        'Ent' : 'E',
+        'FracStops' : 'FS',
+        'IDF' : 'IDF',
+        'Len' : 'L',
+        'LMIR.DIR' : 'LMD',
+        'LMIR.JM' : 'LMJ',
+        'StopCover' : 'SC',
+        'TFSum' : 'TFSm',
+        'TFMin' : 'TFMn',
+        'TFMax': 'TFMx',
+        'TFMean': 'TFAv',
+        'TFStd': 'TFSd',
+        'TFIDFSum': 'TFDFSm',
+        'TFIDFMin': 'TFDFMn',
+        'TFIDFMax': 'TFDFMx',
+        'TFIDFMean': 'TFDFAv',
+        'TFIDFStd': 'TFDFSd',
+        'TFNormSum': 'TFNSm',
+        'TFNormMin': 'TFNMn',
+        'TFNormMax': 'TFNMx',
+        'TFNormMean': 'TFNAv',
+        'TFNormStd': 'TFNSd',
+        'SimClueWeb': 'SCw',
+        'BM25Score': 'BM25',
+        'BERTScore' : 'BRT'
+    }
+    for feat in feat_list:
+        ret_str += '_' + feat_short_dict[feat]
+    return ret_str
