@@ -1940,6 +1940,7 @@ def unite_asrc_data_results(
         snap_num_as_hyper_param,
         limited_snap_num,
         with_bert_as_feature,
+        limited_features_list,
         additional_models_to_include = {
             'F1 UW' : {'Folder' : '/mnt/bi-strg3/v/zivvasilisky/ziv/results/avg_model_res_asrc/final_res/',
                     'FileTemplate' : '<DatasetName>_0<RoundNum>_BM25_Uniform_Results.txt'},
@@ -2029,6 +2030,8 @@ def unite_asrc_data_results(
         addition_to_inner_fold += "_SnapLim"
     if with_bert_as_feature == True:
         addition_to_inner_fold += '_Bert'
+    if limited_features_list is not None:
+        addition_to_inner_fold += create_feature_list_shortcut_string(limited_features_list)
 
     for round_ in range(2,round_limit + 1):
         if dataset_name == 'herd_control':
@@ -2049,8 +2052,8 @@ def unite_asrc_data_results(
                 calc_ndcg_mrr=True)
             print(tmp_res_dict.keys())
             feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
-            if 'RMG' in feat_group:
-                continue
+            # if 'RMG' in feat_group:
+            #     continue
             if limited_snap_num != "None":
                 feat_group = feat_group.replace('+' + str(limited_snap_num) + 'ByMonths','')
                 feat_group = feat_group.replace('+' + str(limited_snap_num),'')
@@ -2554,6 +2557,7 @@ if __name__ == '__main__':
         snap_num_as_hyper_param = ast.literal_eval(sys.argv[10])
         limited_snap_num = sys.argv[11]
         with_bert_as_feature = ast.literal_eval(sys.argv[12])
+        limited_features_list = ast.literal_eval(sys.argv[13])
 
         unite_asrc_data_results(
             big_model=big_model,
@@ -2566,7 +2570,8 @@ if __name__ == '__main__':
             backward_elimination=backward_elimination,
             snap_num_as_hyper_param=snap_num_as_hyper_param,
             limited_snap_num=limited_snap_num,
-            with_bert_as_feature=with_bert_as_feature)
+            with_bert_as_feature=with_bert_as_feature,
+            limited_features_list=limited_features_list)
 
     elif operation == 'ASRCSVMWeights':
         dataset_name = sys.argv[2]
