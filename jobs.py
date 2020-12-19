@@ -2395,6 +2395,21 @@ def compare_rel_files_to_curr_comp():
         print('Num Query Round all most relevant docs: ' + str(len(mdf[mdf['Relevance'] == 3])))
 
 
+def mixture_model_pre_process(
+        dataset_name):
+
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/cc_per_interval_dict.json', 'r') as f:
+        cc_dict = ast.literal_eval(f.read())
+    stem_str = ""
+    for key in cc_dict:
+        if key not in ['ALL_TERMS_COUNT', 'ALL_SW_COUNT']:
+            stem_str += key + '\n'
+    stem_str = stem_str[:-1]
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + dataset_name + '/AllStems.txt', 'w') as f:
+        f.write(stem_str)
+
+
+
 
 
 if __name__ == '__main__':
@@ -2602,6 +2617,10 @@ if __name__ == '__main__':
 
     elif operation == 'RelCompare':
         compare_rel_files_to_curr_comp()
+
+    elif operation == 'MixtureModelPreprocess':
+        dataset_name = sys.argv[2]
+        mixture_model_pre_process(dataset_name)
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
