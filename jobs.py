@@ -2432,9 +2432,10 @@ def mixture_model_pre_process(
         broken_docno = docno.split('-')
         round_ = broken_docno[1]
         query_num = broken_docno[2]
-        round_files_dict[round_]['XML'] +=  "<DOC>" + '\n' + "<DOCNO>" + docno + "</DOCNO>" + '\n' + "<TEXT>" + fulltext + \
-                                            "</TEXT>" + '\n' + "</DOC>" + '\n'
-        round_files_dict[round_]['WorkSet'] += query_num + ' Q0 ' + docno + " 0 0 indri" + '\n'
+        if round_ != '00':
+            round_files_dict[round_]['XML'] +=  "<DOC>" + '\n' + "<DOCNO>" + docno + "</DOCNO>" + '\n' + "<TEXT>" + fulltext + \
+                                                "</TEXT>" + '\n' + "</DOC>" + '\n'
+            round_files_dict[round_]['WorkSet'] += query_num + ' Q0 ' + docno + " 0 0 indri" + '\n'
 
     QUERIES_FILE = dataset_folder + 'QueriesFile.xml'
     INDEX = dataset_folder + 'MergedIndexFile'
