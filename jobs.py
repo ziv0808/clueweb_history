@@ -2394,9 +2394,17 @@ def compare_rel_files_to_curr_comp():
         print('Num Query Round all relevant docs: ' + str(len(mdf[mdf['IsRel'] == 1])))
         print('Num Query Round all most relevant docs: ' + str(len(mdf[mdf['Relevance'] == 3])))
 
+def run_command(command):
+    p = subprocess.Popen(command,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT,
+                         shell=True)
+    return iter(p.stdout.readline, b'')
 
 def mixture_model_pre_process(
-        dataset_name):
+        dataset_name,
+        num_rounds,
+        trectext_file):
 
     with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/cc_per_interval_dict.json', 'r') as f:
         cc_dict = ast.literal_eval(f.read())
@@ -2408,9 +2416,73 @@ def mixture_model_pre_process(
     with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + dataset_name + '/AllStems.txt', 'w') as f:
         f.write(stem_str)
 
+    dataset_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/' + dataset_name + '/'
+    save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/'
 
+    with open(dataset_folder + trectext_file, 'r') as f:
+        soup = BeautifulSoup(f.read())
+    round_files_dict = {}
+    for round_ in range(1, num_rounds + 1):
+        round_files_dict[str(round_).zfill(2)] = {'XML' : "", 'WorkSet' : ""}
 
+    all_docs = soup.find_all('doc')
+    for doc_ in list(all_docs):
+        docno = (doc_.find('docno').text).replace('ROUND', 'EPOCH')
+        fulltext = doc_.find('text').text
+        broken_docno = docno.split('-')
+        round_ = broken_docno[1]
+        query_num = broken_docno[2]
+        round_files_dict[round_]['XML'] +=  "<DOC>" + '\n' + "<DOCNO>" + docno + "</DOCNO>" + '\n' + "<TEXT>" + fulltext + \
+                                            "</TEXT>" + '\n' + "</DOC>" + '\n'
+        round_files_dict[round_]['WorkSet'] += query_num + ' Q0 ' + docno + " 0 0 indri" + '\n'
 
+    QUERIES_FILE = dataset_folder + 'QueriesFile.xml'
+    INDEX = dataset_folder + 'MergedIndexFile'
+    scriptDir = '/lv_local/home/zivvasilisky/ziv/content_modification_code/scripts/'
+    MODEL_FILE = '/lv_local/home/zivvasilisky/ASR20/epoch_run/content_modification_code/rank_models/model_lambdatamart'
+    for round_ in round_files_dict:
+        curr_save_folder = save_folder + dataset_name +'_' + round_ +'/'
+        if not os.path.exists(curr_save_folder):
+            os.makedirs(curr_save_folder)
+        # trectext_file = curr_save_folder + dataset_name +'_' + round_ +'.trectext'
+        # with open(trectext_file, 'w') as f:
+        #     f.write(round_files_dict[round_]['XML'])
+        wset_file = curr_save_folder + dataset_name + '_' + round_ + '.workingset'
+        with open(wset_file, 'w') as f:
+            f.write(round_files_dict[round_]['WorkSet'])
+
+        FEATURES_DIR = curr_save_folder + 'Features/'
+        if not os.path.exists(FEATURES_DIR):
+            os.makedirs(FEATURES_DIR)
+        WORKING_SET_FILE = wset_file
+        ORIGINAL_FEATURES_FILE = 'features'
+        command = scriptDir + 'LTRFeatures ' + QUERIES_FILE + ' -stream=doc -index=' + INDEX + ' -repository=' + INDEX + ' -useWorkingSet=true -workingSetFile=' + WORKING_SET_FILE + ' -workingSetFormat=trec'
+        print(command)
+        out = run_bash_command(command)
+        print(out)
+        run_command('mv doc*_* ' + FEATURES_DIR)
+        command = 'perl ' + scriptDir + 'generate.pl ' + FEATURES_DIR + ' ' + WORKING_SET_FILE
+        print(command)
+        out = run_bash_command(command)
+        print(out)
+        FEATURES_FILE = ORIGINAL_FEATURES_FILE
+        command = 'java -jar ' + scriptDir + 'RankLib.jar -load ' + MODEL_FILE + ' -rank ' + FEATURES_FILE + ' -score predictions.tmp'
+        print(command)
+        out = run_bash_command(command)
+        print(out)
+        command = 'cut -f3 predictions.tmp > predictions'
+        print(command)
+        out = run_bash_command(command)
+        print(out)
+        run_bash_command('rm predictions.tmp')
+        RANKED_LIST_DIR = curr_save_folder + 'RankedLists/'
+        if not os.path.exists(RANKED_LIST_DIR):
+            os.makedirs(RANKED_LIST_DIR)
+        PREDICTIONS_FILE = 'predictions'
+        command = 'perl ' + scriptDir + 'order.pl ' + RANKED_LIST_DIR + 'LambdaMART_' + dataset_name +'_' + round_ + ' ' + FEATURES_FILE + ' ' + PREDICTIONS_FILE
+        print(command)
+        out = run_bash_command(command)
+        print(out)
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -2620,6 +2692,8 @@ if __name__ == '__main__':
 
     elif operation == 'MixtureModelPreprocess':
         dataset_name = sys.argv[2]
+        num_rounds = int(sys.argv[3])
+        trectext_file = sys.argv[4]
         mixture_model_pre_process(dataset_name)
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
