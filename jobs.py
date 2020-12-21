@@ -2694,7 +2694,10 @@ if __name__ == '__main__':
         dataset_name = sys.argv[2]
         num_rounds = int(sys.argv[3])
         trectext_file = sys.argv[4]
-        mixture_model_pre_process(dataset_name)
+        mixture_model_pre_process(
+            dataset_name = dataset_name,
+            num_rounds=num_rounds,
+            trectext_file=trectext_file)
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
