@@ -213,6 +213,7 @@ def make_adverserial_dict_by_method(
         res_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/' + dataset_name + '_' + curr_round + '/RankedLists/LambdaMART_' + dataset_name + '_' + curr_round
         prev_rounds_dict[round_] = convert_trec_results_file_to_pandas_df(res_file)
         prev_rounds_dict[round_]['Query-User'] = prev_rounds_dict[round_]['Docno'].apply(lambda x: x.split('-')[2] + '-' + x.split('-')[3])
+        prev_rounds_dict[round_]['Rank'] = prev_rounds_dict[round_]['Rank'].apply(lambda x: int(x))
 
     adverserial_dict = {}
     if adverserial_method == 'PrevWinner' or int(curr_round) == 2:
