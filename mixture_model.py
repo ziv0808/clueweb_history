@@ -1,6 +1,6 @@
 from utils import *
 
-EM_HOLT_DIFF = 0.001
+EM_HOLT_DIFF = 0.005
 
 def create_united_lm_for_doc_dict_list(
         doc_dict_list):
@@ -281,7 +281,7 @@ def make_adverserial_dict_by_method(
                 docno_list=docno_list,
                 dataset_name=dataset_name,
                 curr_round=curr_round)
-    print(adverserial_dict)
+    # print(adverserial_dict)
     return adverserial_dict
 
 
