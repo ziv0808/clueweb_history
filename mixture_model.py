@@ -280,6 +280,7 @@ def make_adverserial_dict_by_method(
                 docno_list=docno_list,
                 dataset_name=dataset_name,
                 curr_round=curr_round)
+    print(adverserial_dict)
     return adverserial_dict
 
 
@@ -361,7 +362,7 @@ if __name__=='__main__':
         for beta in beta_option_list:
             for lambda1 in lambda1_option_list:
                 for lambda2 in lambda2_option_list:
-                    if (lambda1 + lambda2) > 1:
+                    if (lambda1 + lambda2) >= 1:
                         continue
                     params = {'Beta'    : beta,
                               'Lambda1' : lambda1,
