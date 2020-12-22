@@ -191,12 +191,12 @@ def create_cc_dict(
 
 def create_adveserial_dict_from_docno_list_for_q(
         docno_list,
-        dataset_name,
-        curr_round):
+        dataset_name):
 
     doc_dict_list = []
     for docno in docno_list:
-        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + dataset_name + '_' + curr_round + '/2008/SIM/' + docno +'.json', 'r') as f:
+        docno_round = docno.split('-')[1]
+        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + dataset_name + '_' + docno_round + '/2008/SIM/' + docno +'.json', 'r') as f:
             doc_json = ast.literal_eval(f.read())
         doc_dict_list.append(doc_json['ClueWeb09'])
 
@@ -210,7 +210,8 @@ def make_adverserial_dict_by_method(
 
     prev_rounds_dict = {}
     for round_ in range(1, int(curr_round)):
-        res_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/' + dataset_name + '_' + curr_round + '/RankedLists/LambdaMART_' + dataset_name + '_' + curr_round
+        round_str = str(round_).zfill(2)
+        res_file = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/' + dataset_name + '_' + round_str + '/RankedLists/LambdaMART_' + dataset_name + '_' + round_str
         prev_rounds_dict[round_] = convert_trec_results_file_to_pandas_df(res_file)
         prev_rounds_dict[round_]['Query-User'] = prev_rounds_dict[round_]['Docno'].apply(lambda x: x.split('-')[2] + '-' + x.split('-')[3])
         prev_rounds_dict[round_]['Rank'] = prev_rounds_dict[round_]['Rank'].apply(lambda x: int(x))
@@ -225,8 +226,7 @@ def make_adverserial_dict_by_method(
             docno_list = list(q_df['Docno'])
             adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
                                                     docno_list=docno_list,
-                                                    dataset_name=dataset_name,
-                                                    curr_round=curr_round)
+                                                    dataset_name=dataset_name)
     elif adverserial_method == 'Prev3Winners':
         rel_df = pd.DataFrame({})
         for round_ in range(max(1, int(curr_round) -3), int(curr_round)):
@@ -237,8 +237,7 @@ def make_adverserial_dict_by_method(
             docno_list = list(q_df['Docno'])
             adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
                 docno_list=docno_list,
-                dataset_name=dataset_name,
-                curr_round=curr_round)
+                dataset_name=dataset_name)
 
     elif adverserial_method == 'PrevBestImprove':
         rel_round = int(curr_round) - 1
@@ -257,8 +256,7 @@ def make_adverserial_dict_by_method(
             docno_list = list(q_df['Docno'])
             adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
                 docno_list=docno_list,
-                dataset_name=dataset_name,
-                curr_round=curr_round)
+                dataset_name=dataset_name)
 
     elif adverserial_method == 'Prev3BestImprove':
         rel_round = int(curr_round) - 1
@@ -279,9 +277,8 @@ def make_adverserial_dict_by_method(
                 docno_list.append('EPOCH-' + str(rel_round - 1).zfill(2) + '-' +list(q_df['Query-User'])[0])
             adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
                 docno_list=docno_list,
-                dataset_name=dataset_name,
-                curr_round=curr_round)
-    # print(adverserial_dict)
+                dataset_name=dataset_name)
+
     return adverserial_dict
 
 
