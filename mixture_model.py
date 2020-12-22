@@ -1,6 +1,6 @@
 from utils import *
 
-EM_HOLT_DIFF = 0.001
+EM_HOLT_DIFF = 0.01
 
 def create_united_lm_for_doc_dict_list(
         doc_dict_list):
