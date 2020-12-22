@@ -78,7 +78,7 @@ def run_em_for_doc(
         if diff < EM_HOLT_DIFF:
             em_running = False
         if num_steps > 15:
-            raise Exception("Non-Converging")
+            raise Exception("Non-Converging " + str(diff))
     doc_proba_dict = {}
     for i in range(len(stem_list)):
         doc_proba_dict[stem_list[i]] = curr_proba_vec[i]
