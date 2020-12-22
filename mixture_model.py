@@ -276,7 +276,7 @@ def make_adverserial_dict_by_method(
                 q_df = q_df[q_df['Rank'] == q_df['Rank'].max()]
             docno_list = list(q_df['Docno'])
             if (rel_round - 2) >= 1:
-                docno_list.append('EPOCH-' + str(rel_round - 1).zfill(2) + '-' + q_df['Query-User'][0])
+                docno_list.append('EPOCH-' + str(rel_round - 1).zfill(2) + '-' +list(q_df['Query-User'])[0])
             adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
                 docno_list=docno_list,
                 dataset_name=dataset_name,
