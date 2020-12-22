@@ -147,7 +147,8 @@ def test_queries(
     query_to_doc_mapping_df,
     all_query_adveserial_dict,
     collection_dict,
-    params):
+    params,
+    processed_docs_path):
 
     big_df = pd.DataFrame({})
     for index, row in stemmed_queries_df.iterrows():
@@ -162,7 +163,8 @@ def test_queries(
             query_doc_df=relevant_df,
             collection_dict=collection_dict,
             query_adveserial_dict=all_query_adveserial_dict[str(query_num).zfill(3)],
-            params=params)
+            params=params,
+            processed_docs_path=processed_docs_path)
 
         big_df = big_df.append(res_df, ignore_index=True)
 
@@ -362,7 +364,8 @@ if __name__=='__main__':
                                 query_to_doc_mapping_df=query_to_doc_mapping_df,
                                 all_query_adveserial_dict=adverserial_dict,
                                 collection_dict=cc_dict,
-                                params=params)
+                                params=params,
+                                processed_docs_path=processed_docs_folder)
 
                     res_dict = get_score_retrieval_score_for_df(
                         affix=affix,
@@ -381,7 +384,8 @@ if __name__=='__main__':
                                 query_to_doc_mapping_df=query_to_doc_mapping_df,
                                 all_query_adveserial_dict=adverserial_dict,
                                 collection_dict=cc_dict,
-                                params=best_config_dict)
+                                params=best_config_dict,
+                                processed_docs_path=processed_docs_folder)
 
         all_folds_df = all_folds_df.append(test_fold_df, ignore_index=True)
         all_fold_params_summary += str(start_test_q) + '_' + str(end_test_q) + '\t' + str(best_config_dict) + '\n'
