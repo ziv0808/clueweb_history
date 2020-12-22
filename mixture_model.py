@@ -57,7 +57,7 @@ def run_em_for_doc(
         else:
             adverserail_vec.append(0.0)
         if collection_dict is not None:
-            collection_vec.append(float(collection_dict[stem]) / adveserial_dict['ALL_TERMS_COUNT'])
+            collection_vec.append(float(collection_dict[stem]) / collection_dict['ALL_TERMS_COUNT'])
 
     em_running = True
     num_steps = 1
