@@ -49,7 +49,7 @@ def run_em_for_doc(
     doc_tf_vec      = np.array(doc_dict['TfList'][1:])
     num_stems       = float(len(stem_list))
     # init uniform probabilities
-    curr_proba_vec = np.array([1.0/num_stems]*num_stems)
+    curr_proba_vec = np.array([1.0/num_stems]*int(num_stems))
     # set adverserail_vec and collection_vec to contain values in correct order by stem_list
     for stem in stem_list:
         if stem in adveserial_dict:
