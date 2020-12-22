@@ -364,6 +364,7 @@ if __name__=='__main__':
                     params = {'Beta'    : beta,
                               'Lambda1' : lambda1,
                               'Lambda2' : lambda2}
+                    print(params)
                     big_df = test_queries(
                                 stemmed_queries_df=train_queries_df,
                                 query_to_doc_mapping_df=query_to_doc_mapping_df,
