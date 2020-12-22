@@ -97,7 +97,7 @@ def get_kl_result_for_doc(
         collection_len = collection_dict['ALL_TERMS_COUNT']
         collection_count_for_word = collection_dict[stem]
 
-        if stem in stem_d_proba:
+        if stem in doc_proba_dict:
             stem_d_proba = doc_proba_dict[stem]
         else:
             stem_d_proba = 0.0
