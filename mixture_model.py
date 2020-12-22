@@ -1,6 +1,6 @@
 from utils import *
 
-EM_HOLT_DIFF = 0.01
+EM_HOLT_DIFF = 0.001
 
 def create_united_lm_for_doc_dict_list(
         doc_dict_list):
@@ -96,7 +96,11 @@ def get_kl_result_for_doc(
     for stem in work_stem_list:
         collection_len = collection_dict['ALL_TERMS_COUNT']
         collection_count_for_word = collection_dict[stem]
-        stem_d_proba = doc_proba_dict[stem]
+
+        if stem in stem_d_proba:
+            stem_d_proba = doc_proba_dict[stem]
+        else:
+            stem_d_proba = 0.0
 
         stem_d_proba = beta*stem_d_proba + (1.0-beta)*(float(collection_count_for_word) / collection_len)
         query_tf = query_stem_dict[stem]
