@@ -332,9 +332,9 @@ if __name__=='__main__':
 
     q_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold, train_leave_one_out=train_leave_one_out)
 
-    beta_option_list = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    beta_option_list = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     lambda1_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    lambda2_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+    lambda2_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 
     cc_dict = create_cc_dict(dataset_name=datset_name)
     adverserial_dict = make_adverserial_dict_by_method(
