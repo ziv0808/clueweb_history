@@ -63,8 +63,8 @@ def run_em_for_doc(
     em_running = True
     num_steps = 1
     while em_running == True:
-        print("EM Step: " + str(num_steps))
-        sys.stdout.flush()
+        # print("EM Step: " + str(num_steps))
+        # sys.stdout.flush()
         new_proba_vec = em_step_for_doc(
                                 doc_tf_vec=doc_tf_vec,
                                 curr_proba_vec=curr_proba_vec,
@@ -335,9 +335,9 @@ if __name__=='__main__':
 
     q_list, fold_list = get_asrc_q_list_and_fold_list(inner_fold, train_leave_one_out=train_leave_one_out)
 
-    beta_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    beta_option_list = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     lambda1_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    lambda2_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    lambda2_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
 
     cc_dict = create_cc_dict(dataset_name=datset_name)
     adverserial_dict = make_adverserial_dict_by_method(
