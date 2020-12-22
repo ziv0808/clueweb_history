@@ -58,7 +58,8 @@ def run_em_for_doc(
             adverserail_vec.append(0.0)
         if collection_dict is not None:
             collection_vec.append(float(collection_dict[stem]) / collection_dict['ALL_TERMS_COUNT'])
-
+    adverserail_vec = np.array(adverserail_vec)
+    collection_vec = np.array(collection_vec)
     em_running = True
     num_steps = 1
     while em_running == True:
