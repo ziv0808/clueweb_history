@@ -628,7 +628,7 @@ def check_statistical_significance(
             elif sinificance_type == 'Perm':
                 t_stat, p_val = pemutation_test(l1, l2)
             res_dict[measure] = {}
-            if p_val <= 0.05:
+            if round(p_val,2) <= 0.05:
                 res_dict[measure]['Significant'] = True
             else:
                 res_dict[measure]['Significant'] = False
@@ -944,7 +944,8 @@ def create_feature_list_shortcut_string(feat_list):
         'TFNormStd': 'TFNSd',
         'SimClueWeb': 'SCw',
         'BM25Score': 'BM25',
-        'BERTScore' : 'BRT'
+        'BERTScore' : 'BRT',
+        '-Query-SW' : 'nQSw'
     }
     for feat in feat_list:
         ret_str += '_' + feat_short_dict[feat]
