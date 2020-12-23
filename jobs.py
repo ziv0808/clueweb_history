@@ -2410,7 +2410,7 @@ def compare_rel_files_to_curr_comp():
                 right_index=True,
                 left_index=True,
                 how = 'inner')
-    big_hist_df.plot()
+    big_hist_df.plot(kind='bar')
     plt.legend(loc='best')
     plt.title('Relevace Score Distribution Per Datset')
     plt.ylabel('#Docs')
