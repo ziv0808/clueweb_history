@@ -2553,6 +2553,41 @@ def mixture_model_pre_process(
         out = run_bash_command(command)
         print(out)
 
+def add_lm_score_files(
+        datasets =['ASRC', 'UNITED']):
+    savepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/basic_lm/'
+    for datset in datasets:
+        if datset == 'ASRC':
+            rounds = list(range(1,9))
+        elif datset == 'UNITED':
+            rounds = list(range(1,6))
+        for round_ in rounds:
+            path = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/base_features_for_svm_rank/'
+            filename = datset + '_LTR_All_features_Round0' + str(round_) + '_with_meta.tsv'
+            work_df = pd.read_csv(path +filename, sep = '\t', index_col = False)
+            work_df = work_df[['QueryNum', 'Docno', 'LMIR.DIR', 'LMIR.JM']]
+            q_list = list(work_df['QueryNum'].drop_duplicates())
+            for model in ['LMIR.DIR', 'LMIR.JM']:
+                big_df = pd.DataFrame({})
+                for query in q_list:
+                    res_df = pd.DataFrame(columns=['Query_ID', 'Iteration', 'Docno', 'Rank', 'Score', 'Method'])
+                    next_index = 0
+                    q_df = work_df[work_df['QueryNum'] == query].copy()
+                    for index, row in q_df.iterrows():
+                        docno = row['Docno']
+                        query_num = query
+                        doc_score = float(row[model])
+                        res_df.loc[next_index] = ["0" * (3 - len(str(query_num))) + str(query_num), 'Q0', docno, 0,
+                                                  doc_score, 'indri']
+                        next_index += 1
+                    if res_df.empty == False:
+                        res_df.sort_values('Score', ascending=False, inplace=True)
+                        res_df['Rank'] = list(range(1, next_index + 1))
+                    big_df = big_df.append(res_df, ignore_index = False)
+                with open(savepath + datset.lower() + '_0' + str(round_) + '_' + model + '.txt', 'w') as f:
+                    f.write(convert_df_to_trec(big_df))
+
+
 if __name__ == '__main__':
     operation = sys.argv[1]
     if operation == 'TFDict':
@@ -2767,6 +2802,8 @@ if __name__ == '__main__':
             dataset_name = dataset_name,
             num_rounds=num_rounds,
             trectext_file=trectext_file)
+    elif operation == 'LMScores':
+        add_lm_score_files()
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
