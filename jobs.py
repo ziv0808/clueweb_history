@@ -1994,7 +1994,7 @@ def unite_asrc_data_results(
                                 'FileTemplate': '<DatasetName>_0<RoundNum>_PrevBestImprove_Results.txt'},
             'MM Prev3BestImprove': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                 'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3BestImprove_Results.txt'},
-            'Orig. Ranker': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/ziv/data/<DatasetName>/<DatasetName>_0<RoundNum>/RankedLists/',
+            'Orig. Ranker': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/data/<DatasetName>/<DatasetName>_0<RoundNum>/RankedLists/',
                             'FileTemplate': 'LambdaMART_<DatasetName>_0<RoundNum>'},
             # 'SNAPS': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/per_snap_lambdamart_res/ret_res/<InnerFold>/',
             #            'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_MinMax_Historical.txt'},
