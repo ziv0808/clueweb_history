@@ -1996,6 +1996,10 @@ def unite_asrc_data_results(
                                 'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3BestImprove_Results.txt'},
             'Orig. Ranker': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/data/<DatasetName>/<DatasetName>_0<RoundNum>/RankedLists/',
                             'FileTemplate': 'LambdaMART_<DatasetName>_0<RoundNum>'},
+            'LM JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/basic_lm/',
+                             'FileTemplate': '<DatasetName>_0<RoundNum>_LMIR.JM.txt'},
+            'LM DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/basic_lm/',
+                      'FileTemplate': '<DatasetName>_0<RoundNum>_LMIR.DIR.txt'},
             # 'SNAPS': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/per_snap_lambdamart_res/ret_res/<InnerFold>/',
             #            'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_MinMax_Historical.txt'},
 
