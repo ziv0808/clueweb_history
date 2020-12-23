@@ -1994,8 +1994,8 @@ def unite_asrc_data_results(
                                 'FileTemplate': '<DatasetName>_0<RoundNum>_PrevBestImprove_Results.txt'},
             'MM Prev3BestImprove': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                 'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3BestImprove_Results.txt'},
-            'Orig. Ranker': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/ziv/data/',
-                                'FileTemplate': '/<DatasetName>/<DatasetName>_0<RoundNum>/RankedLists/LambdaMART_<DatasetName>_0<RoundNum>'},
+            'Orig. Ranker': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/ziv/data/<DatasetName>/<DatasetName>_0<RoundNum>/RankedLists/',
+                            'FileTemplate': 'LambdaMART_<DatasetName>_0<RoundNum>'},
             # 'SNAPS': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/per_snap_lambdamart_res/ret_res/<InnerFold>/',
             #            'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_MinMax_Historical.txt'},
 
@@ -2088,7 +2088,7 @@ def unite_asrc_data_results(
                 filename = filename.replace('_Results.txt', '_LoO_Results.txt')
             if dataset_name == 'herd_control' and model == 'SNAPS':
                 filename = filename.replace('_All_features', '')
-            path = additional_models_to_include[model]['Folder'].replace('<InnerFold>', inner_fold_sep)
+            path = additional_models_to_include[model]['Folder'].replace('<InnerFold>', inner_fold_sep).replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset_name)
             print(filename)
             feat_group = model
             tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
