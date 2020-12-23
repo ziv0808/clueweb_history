@@ -2381,7 +2381,10 @@ def compare_rel_files_to_curr_comp():
     united_rel_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel')
     united_rel_df['Round'] = united_rel_df['Docno'].apply(lambda x: x.split('-')[1])
 
+    summary_df = pd.DataFrame(columns=['Dataset', '%Query-Round Withount non-relevant', '%Query-Round All Most Relevant'])
+    next_idx = 0
     df_list = [('ASRC', asrc_rel_df), ('UNITED', united_rel_df), ('COMP2020',curr_rel_df)]
+    big_hist_df = pd.DataFrame({})
     for elem in df_list:
         dataset = elem[0]
         df = elem[1]
@@ -2393,6 +2396,61 @@ def compare_rel_files_to_curr_comp():
         print('Mean Query Round relevant doc %: ' + str(mdf['IsRel'].mean()))
         print('Num Query Round all relevant docs: ' + str(len(mdf[mdf['IsRel'] == 1])))
         print('Num Query Round all most relevant docs: ' + str(len(mdf[mdf['Relevance'] == 3])))
+        mdf = df[['Query', 'Round', 'Relevance', 'IsRel']].groupby(['Query', 'Round']).min()
+        summary_df.loc[next_idx] = [dataset, len(mdf[mdf['Relevance'] >= 1]) / float(len(mdf)), len(mdf[mdf['Relevance'] == 3]) / float(len(mdf))]
+        next_idx += 1
+        hist_df = df[['Relevance', 'Round']].groupby(['Relevance']).count()
+        hist_df.rename(columns = {'Round' : dataset}, inplace= True)
+        if big_hist_df.empty == True:
+            big_hist_df = hist_df
+        else:
+            big_hist_df = pd.merge(
+                big_hist_df,
+                hist_df,
+                right_index=True,
+                left_index=True,
+                how = 'inner')
+    big_hist_df.plot()
+    plt.legend(loc='best')
+    plt.title('Relevace Score Distribution Per Datset')
+    plt.ylabel('#Docs')
+    plt.xlabel('Relevance Score')
+    plt.savefig('Dataset_Relevance_Compare.png', dpi=200)
+
+    info_list = [('ASRC', 'asrc_08'), ('UNITED', 'united_05'), ('COMP2020','comp2020_05')]
+    summary_sim_df = pd.DataFrame(columns=['Dataset', '%Not-Changed', 'Avg Cosine'])
+    next_idx = 0
+    for elem in info_list:
+        dataset = elem[0]
+        path_part = elem[1]
+        stats_dict = {'equal_count' : 0,
+                      'num_docs' : 0,
+                      'sim_list' : []}
+        for filename in os.listdir('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + path_part + '/2008/SIM/'):
+            if filename.endswith('.json'):
+                with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/processed_document_vectors/' + path_part + '/2008/SIM/' + filename, 'r') as f:
+                    curr_dict = ast.literal_eval(f.read())
+                inteval_list = sorted(list(curr_dict.keys()))
+                inteval_list.remove('ClueWeb09')
+                inteval_list = ['ClueWeb09'] + inteval_list
+                stats_dict['num_docs'] += len(inteval_list)
+                for i in range(1, len(inteval_list)):
+                    sim = calc_cosine(curr_dict[inteval_list[i-1]]['TfIdf'],curr_dict[inteval_list[i]]['TfIdf'])
+                    if sim == 1.0:
+                        stats_dict['equal_count'] += 1
+                    stats_dict['sim_list'].append(sim)
+
+        summary_sim_df.loc[next_idx] = [dataset, stats_dict['equal_count'] / float(stats_dict['num_docs']), np.mean(stats_dict['sim_list'])]
+        next_idx += 1
+    summary_sim_df = pd.merge(
+        summary_df,
+        summary_sim_df,
+        on = ['Dataset'],
+        how = 'inner')
+    summary_sim_df.to_csv('DatasetCompare.tsv', sep = '\t', index=False)
+
+
+
 
 def run_command(command):
     p = subprocess.Popen(command,
