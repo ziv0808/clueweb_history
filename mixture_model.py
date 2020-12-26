@@ -459,7 +459,7 @@ if __name__=='__main__':
             all_folds_df = all_folds_df.append(test_fold_df, ignore_index=True)
             all_fold_params_summary += str(start_test_q) + '_' + str(end_test_q) + '\t' + str(best_config_dict) + '\n'
 
-        filenam_addition = ""
+        filenam_addition = "_" + model_to_run
         if train_leave_one_out == True:
             filenam_addition += "_LoO"
         curr_file_name = inner_fold + '_' + adverserial_method + filenam_addition + "_Results.txt"
