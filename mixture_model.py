@@ -536,7 +536,7 @@ if __name__=='__main__':
 
 
         curr_file_name = inner_fold + '_LMIR.'  + model_to_run + ".txt"
-        with open(os.path.join(save_folder + 'final_res/', curr_file_name), 'w') as f:
+        with open(os.path.join(save_folder , curr_file_name), 'w') as f:
             f.write(convert_df_to_trec(all_folds_df))
-        with open(os.path.join(save_folder + 'final_res/', curr_file_name.replace('_Results', '_Params')), 'w') as f:
+        with open(os.path.join(save_folder , curr_file_name.replace('.txt', '_Params.txt')), 'w') as f:
             f.write(all_fold_params_summary)
