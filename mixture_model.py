@@ -156,7 +156,7 @@ def get_scored_df_for_query(
             query_stem_dict=query_dict,
             doc_proba_dict=doc_proba_dict,
             collection_dict=collection_dict,
-            beta=params,
+            params=params,
             model_to_run=model_to_run,
             doc_len=doc_dict['NumWords'])
 
