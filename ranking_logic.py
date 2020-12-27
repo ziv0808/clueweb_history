@@ -345,4 +345,4 @@ if __name__=="__main__":
     print('Updated docs!')
     sys.stdout.flush()
     backupDocuments(currentTime,baseDir)
-    changeStatus()
+    # changeStatus()
