@@ -250,6 +250,22 @@ def upload_data_to_mongo(data,user_query_map):
             object["description"]=data[query]["description"]
             db.documents.insert(object)
 
+def upload_data_to_mongo_2nd_phase(data,user_query_map):
+    client = MongoClient('asr2.iem.technion.ac.il', 27017)
+    db = client.asr16
+
+    for user in user_query_map:
+        for query in user_query_map[user]:
+            object={}
+            object["username"]=user
+            object["current_document"]=data[query.split("_")[0]]["document"]
+            object["posted_document"]=data[query.split("_")[0]]["document"]
+            object["query_id"] = query
+            object["query"]=data[query.split("_")[0]]["query_text"]
+            object["description"]=data[query.split("_")[0]]["description"]
+            db.documents.insert(object)
+
+
 def read_current_doc_file(doc_filepath):
     stats = {}
     with open(doc_filepath, 'r') as f:
@@ -468,39 +484,44 @@ def resolve_last_q(mapping, query_user_map, queries, prev_user_assined_queries):
 
 
 
-get_curr_user_query_mapping_and_backup_doc_collection()
 
-#
-# seed(9001)
-# users = retrieve_users()
-# data = read_initial_data("documents.trectext", "topics.full.xml")
-# queries = list(data.keys())
-# user_q_curr_map = get_curr_user_query_mapping()
-#
-# expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
-# while True:
-#     mapping, query_user_map = user_query_mapping_z_second_phase(
-#         users=users,
-#         queries=expanded_queries,
-#         number_of_user_per_query=4,
-#         max_allowed_ovelap=1,
-#         prev_user_assined_queries=user_q_curr_map)
-#     if test_number_of_queries_with_leftover(mapping,3,4):
-#         res, mapping, query_user_map = resolve_last_q(mapping=mapping,
-#                                                       query_user_map=query_user_map,
-#                                                       queries=queries,
-#                                                       prev_user_assined_queries=user_q_curr_map)
-#         if (res == True) and test_number_of_queries(mapping,3):
-#             break
-#
-# for q in query_user_map:
-#     print(q, len(query_user_map[q]), query_user_map[q])
-# print("Len Q list: " + str(len(query_user_map)))
-# for user in users:
-#     curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002_0')
-#     print(user_overlap_dict)
-# print(mapping)
+seed(9001)
+users = retrieve_users()
+data = read_initial_data("documents.trectext", "topics.full.xml")
+queries = list(data.keys())
+user_q_curr_map = get_curr_user_query_mapping()
 
+expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
+while True:
+    mapping, query_user_map = user_query_mapping_z_second_phase(
+        users=users,
+        queries=expanded_queries,
+        number_of_user_per_query=4,
+        max_allowed_ovelap=1,
+        prev_user_assined_queries=user_q_curr_map)
+    if test_number_of_queries_with_leftover(mapping,3,4):
+        res, mapping, query_user_map = resolve_last_q(mapping=mapping,
+                                                      query_user_map=query_user_map,
+                                                      queries=queries,
+                                                      prev_user_assined_queries=user_q_curr_map)
+        if (res == True) and test_number_of_queries(mapping,3):
+            break
+
+for q in query_user_map:
+    print(q, len(query_user_map[q]), query_user_map[q])
+print("Len Q list: " + str(len(query_user_map)))
+for user in users:
+    curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002_0')
+    print(user_overlap_dict)
+print(mapping)
+
+with open('/lv_local/home/zivvasilisky/ASR20/bkup/UserQueryMapping_2nd_phase.txt', 'w') as f:
+    f.write(str(mapping))
+with open('/lv_local/home/zivvasilisky/ASR20/bkup/QueryUserMapping_2nd_phase.txt', 'w') as f:
+    f.write(str(query_user_map))
+
+upload_data_to_mongo_2nd_phase(data,mapping)
+changeStatus()
 # print(query_user_map)
 # for user in users:
 #     curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002')
