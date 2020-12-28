@@ -17,7 +17,7 @@ def read_initial_data(docs_path, query_meta_path):
         fulltext = doc_.find('text').text
         query = docno.split('-')[2]
         stats[query] = {}
-        stats[query]['document'] = fulltext
+        stats[query]['document'] = unicodedata.normalize('NFKD',fulltext).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').rstrip()
 
     with open(query_meta_path, 'r') as f:
         soup = BeautifulSoup(f.read())
@@ -485,42 +485,42 @@ def resolve_last_q(mapping, query_user_map, queries, prev_user_assined_queries):
 
 
 
-# seed(9001)
-# users = retrieve_users()
-# data = read_initial_data("documents.trectext", "topics.full.xml")
-# queries = list(data.keys())
-# user_q_curr_map = get_curr_user_query_mapping()
-#
-# expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
-# while True:
-#     mapping, query_user_map = user_query_mapping_z_second_phase(
-#         users=users,
-#         queries=expanded_queries,
-#         number_of_user_per_query=4,
-#         max_allowed_ovelap=1,
-#         prev_user_assined_queries=user_q_curr_map)
-#     if test_number_of_queries_with_leftover(mapping,3,4):
-#         res, mapping, query_user_map = resolve_last_q(mapping=mapping,
-#                                                       query_user_map=query_user_map,
-#                                                       queries=queries,
-#                                                       prev_user_assined_queries=user_q_curr_map)
-#         if (res == True) and test_number_of_queries(mapping,3):
-#             break
-#
-# for q in query_user_map:
-#     print(q, len(query_user_map[q]), query_user_map[q])
-# print("Len Q list: " + str(len(query_user_map)))
-# for user in users:
-#     curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002_0')
-#     print(user_overlap_dict)
-# print(mapping)
-#
-# with open('/lv_local/home/zivvasilisky/ASR20/bkup/UserQueryMapping_2nd_phase.txt', 'w') as f:
-#     f.write(str(mapping))
-# with open('/lv_local/home/zivvasilisky/ASR20/bkup/QueryUserMapping_2nd_phase.txt', 'w') as f:
-#     f.write(str(query_user_map))
-#
-# upload_data_to_mongo_2nd_phase(data,mapping)
+seed(9001)
+users = retrieve_users()
+data = read_initial_data("documents.trectext", "topics.full.xml")
+queries = list(data.keys())
+user_q_curr_map = get_curr_user_query_mapping()
+
+expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
+while True:
+    mapping, query_user_map = user_query_mapping_z_second_phase(
+        users=users,
+        queries=expanded_queries,
+        number_of_user_per_query=4,
+        max_allowed_ovelap=1,
+        prev_user_assined_queries=user_q_curr_map)
+    if test_number_of_queries_with_leftover(mapping,3,4):
+        res, mapping, query_user_map = resolve_last_q(mapping=mapping,
+                                                      query_user_map=query_user_map,
+                                                      queries=queries,
+                                                      prev_user_assined_queries=user_q_curr_map)
+        if (res == True) and test_number_of_queries(mapping,3):
+            break
+
+for q in query_user_map:
+    print(q, len(query_user_map[q]), query_user_map[q])
+print("Len Q list: " + str(len(query_user_map)))
+for user in users:
+    curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002_0')
+    print(user_overlap_dict)
+print(mapping)
+
+with open('/lv_local/home/zivvasilisky/ASR20/bkup/UserQueryMapping_2nd_phase.txt', 'w') as f:
+    f.write(str(mapping))
+with open('/lv_local/home/zivvasilisky/ASR20/bkup/QueryUserMapping_2nd_phase.txt', 'w') as f:
+    f.write(str(query_user_map))
+
+upload_data_to_mongo_2nd_phase(data,mapping)
 changeStatus()
 # print(query_user_map)
 # for user in users:
