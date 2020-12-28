@@ -417,6 +417,8 @@ def get_curr_user_query_mapping_and_backup_doc_collection():
     backup_list = []
     user_to_query_dict = {}
     for document in documents:
+        del document['_id']
+        del document['edittion_time']
         backup_list.append(document)
         if document['username'] not in user_to_query_dict:
             user_to_query_dict[document['username']] = [document['query_id']]
@@ -465,38 +467,38 @@ def resolve_last_q(mapping, query_user_map, queries, prev_user_assined_queries):
 
 
 
+get_curr_user_query_mapping_and_backup_doc_collection()
 
-
-
-seed(9001)
-users = retrieve_users()
-data = read_initial_data("documents.trectext", "topics.full.xml")
-queries = list(data.keys())
-user_q_curr_map = get_curr_user_query_mapping()
-
-expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
-while True:
-    mapping, query_user_map = user_query_mapping_z_second_phase(
-        users=users,
-        queries=expanded_queries,
-        number_of_user_per_query=4,
-        max_allowed_ovelap=1,
-        prev_user_assined_queries=user_q_curr_map)
-    if test_number_of_queries_with_leftover(mapping,3,4):
-        res, mapping, query_user_map = resolve_last_q(mapping=mapping,
-                                                      query_user_map=query_user_map,
-                                                      queries=queries,
-                                                      prev_user_assined_queries=user_q_curr_map)
-        if (res == True) and test_number_of_queries(mapping,3):
-            break
-
-for q in query_user_map:
-    print(q, len(query_user_map[q]), query_user_map[q])
-print("Len Q list: " + str(len(query_user_map)))
-for user in users:
-    curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002_0')
-    print(user_overlap_dict)
-print(mapping)
+#
+# seed(9001)
+# users = retrieve_users()
+# data = read_initial_data("documents.trectext", "topics.full.xml")
+# queries = list(data.keys())
+# user_q_curr_map = get_curr_user_query_mapping()
+#
+# expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
+# while True:
+#     mapping, query_user_map = user_query_mapping_z_second_phase(
+#         users=users,
+#         queries=expanded_queries,
+#         number_of_user_per_query=4,
+#         max_allowed_ovelap=1,
+#         prev_user_assined_queries=user_q_curr_map)
+#     if test_number_of_queries_with_leftover(mapping,3,4):
+#         res, mapping, query_user_map = resolve_last_q(mapping=mapping,
+#                                                       query_user_map=query_user_map,
+#                                                       queries=queries,
+#                                                       prev_user_assined_queries=user_q_curr_map)
+#         if (res == True) and test_number_of_queries(mapping,3):
+#             break
+#
+# for q in query_user_map:
+#     print(q, len(query_user_map[q]), query_user_map[q])
+# print("Len Q list: " + str(len(query_user_map)))
+# for user in users:
+#     curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002_0')
+#     print(user_overlap_dict)
+# print(mapping)
 
 # print(query_user_map)
 # for user in users:
