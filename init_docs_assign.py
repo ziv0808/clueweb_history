@@ -80,35 +80,35 @@ def update_user_banned_queries(user_banned_queries,user_groups,user,queries):
     user_banned_queries[user]=list(set(user_banned_queries[user]))
     return user_banned_queries
 
-def user_query_mapping(users, expanded_queries, number_of_user_per_query):
-    user_query_map = {user: [] for user in users}
-    user_groups = {user: [] for user in users}
-    user_banned_query_map = {user: [] for user in users}
-    groups = ["0","1","2","3","4"]
-    user_ranker_index = {}
-    working_queries = copy(expanded_queries)
-    queries_competitor_number = {query: 0 for query in expanded_queries}
-    while working_queries:
-        for user in users:
-            tmp = list(set(working_queries) - set(user_banned_query_map[user]))
-            shuffle(tmp)
-            if not tmp:continue
-            query_to_user = get_query_to_user(user_query_map,expanded_queries)
-            query = get_query_for_user(user_query_map,query_to_user,user,tmp)
-            user_groups[user].append(query.split("_")[1])
-            user_query_map[user].append(query)
-            if not user_ranker_index.get(user,False):
-                user_ranker_index[user]=query.split("_")[1]
-            user_banned_query_map[user].append(query)
-            more_groups = [i for i in groups if i != query.split("_")[1]]
-            for group in more_groups:
-                user_banned_query_map[user].append(query.split("_")[0]+"_"+group)
-            user_banned_query_map=update_user_banned_queries(user_banned_query_map,user_groups[user],user,tmp)
-            queries_competitor_number[query] += 1
-            working_queries = [q for q in working_queries if queries_competitor_number[q] < number_of_user_per_query]
-            if not working_queries:
-                break
-    return user_query_map
+# def user_query_mapping(users, expanded_queries, number_of_user_per_query):
+#     user_query_map = {user: [] for user in users}
+#     user_groups = {user: [] for user in users}
+#     user_banned_query_map = {user: [] for user in users}
+#     groups = ["0","1","2","3","4"]
+#     user_ranker_index = {}
+#     working_queries = copy(expanded_queries)
+#     queries_competitor_number = {query: 0 for query in expanded_queries}
+#     while working_queries:
+#         for user in users:
+#             tmp = list(set(working_queries) - set(user_banned_query_map[user]))
+#             shuffle(tmp)
+#             if not tmp:continue
+#             query_to_user = get_query_to_user(user_query_map,expanded_queries)
+#             query = get_query_for_user(user_query_map,query_to_user,user,tmp)
+#             user_groups[user].append(query.split("_")[1])
+#             user_query_map[user].append(query)
+#             if not user_ranker_index.get(user,False):
+#                 user_ranker_index[user]=query.split("_")[1]
+#             user_banned_query_map[user].append(query)
+#             more_groups = [i for i in groups if i != query.split("_")[1]]
+#             for group in more_groups:
+#                 user_banned_query_map[user].append(query.split("_")[0]+"_"+group)
+#             user_banned_query_map=update_user_banned_queries(user_banned_query_map,user_groups[user],user,tmp)
+#             queries_competitor_number[query] += 1
+#             working_queries = [q for q in working_queries if queries_competitor_number[q] < number_of_user_per_query]
+#             if not working_queries:
+#                 break
+#     return user_query_map
 
 def user_query_mapping_z(users, queries, number_of_user_per_query, num_of_queries_with_additional_user, max_allowed_ovelap):
     user_query_map = {user: [] for user in users}
@@ -135,6 +135,55 @@ def user_query_mapping_z(users, queries, number_of_user_per_query, num_of_querie
                     break
             curr_max_overlap, user_overlap_dict = find_user_query_overlaps(user_query_map, query_user_map, user, query)
             if curr_max_overlap < max_allowed_ovelap:
+                query_user_map[query].append(user)
+                user_query_map[user].append(query)
+                queries_competitor_number[query] += 1
+                if len(user_query_map[user]) == 3:
+                    finished_users.append(user)
+
+    if queries_competitor_number[query] == number_of_user_per_query:
+        print("Query: " + query)
+        finished_queries.append(query)
+
+    if len(finished_users) != len(users):
+        print('Not all users assined: ' +str(len(finished_users)))
+    if len(finished_queries) != len(queries):
+        print('Not all queries assined: ' + str(len(finished_queries)))
+    for user in users:
+        curr_max_overlap, user_overlap_dict = find_user_query_overlaps(user_query_map, query_user_map, user, query)
+        if len(user_query_map[user]) < 3:
+            print(user, user_query_map[user])
+    return user_query_map, query_user_map
+
+def user_query_mapping_z_second_phase(
+        users,
+        queries,
+        number_of_user_per_query,
+        max_allowed_ovelap,
+        prev_user_assined_queries):
+    user_query_map = {user: [] for user in users}
+    user_query_group_map = {}
+    query_user_map = {query: [] for query in queries}
+    queries_competitor_number = {query: 0 for query in queries}
+    working_queries = copy(queries)
+    shuffle(working_queries)
+    finished_users = []
+    finished_queries = []
+    for query in working_queries:
+        possible_users = list(set(users) - set(finished_users))
+        shuffle(possible_users)
+        for user in possible_users:
+            if queries_competitor_number[query] == number_of_user_per_query:
+                print("Query: " +query)
+                finished_queries.append(query)
+                break
+            if query.split('_')[0] in prev_user_assined_queries[user]:
+                continue
+            if user in user_query_group_map and user_query_group_map[user] != query.split('_')[1]:
+                continue
+            curr_max_overlap, user_overlap_dict = find_user_query_overlaps(user_query_map, query_user_map, user, query)
+            if curr_max_overlap < max_allowed_ovelap:
+                user_query_group_map[user] = query.split('_')[1]
                 query_user_map[query].append(user)
                 user_query_map[user].append(query)
                 queries_competitor_number[query] += 1
@@ -339,6 +388,20 @@ def test_number_of_queries(mapping,number_of_queries):
             return False
     return True
 
+def test_number_of_queries_with_leftover(mapping,number_of_queries, leftover):
+    curr_leftover = 0
+    for user in mapping:
+        if len(mapping[user])!=number_of_queries:
+            diff = number_of_queries - len(mapping[user])
+            if diff > 1:
+                return False
+            else:
+                curr_leftover += 1
+    if curr_leftover == leftover:
+        return True
+    else:
+        return False
+
 def changeStatus():
     client = MongoClient('asr2.iem.technion.ac.il',27017)
     db = client.asr16
@@ -376,6 +439,20 @@ data = read_initial_data("documents.trectext", "topics.full.xml")
 queries = list(data.keys())
 user_q_curr_map = get_curr_user_query_mapping()
 
+expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
+while True:
+    mapping, query_user_map = user_query_mapping_z_second_phase(
+        users=users,
+        queries=expanded_queries,
+        number_of_user_per_query=8,
+        max_allowed_ovelap=1,
+        prev_user_assined_queries=user_q_curr_map)
+    if test_number_of_queries_with_leftover(mapping,3,4):
+        break
+
+for user in users:
+    curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002')
+    print(user_overlap_dict)
 # data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
 # print("First Round VS Zero:")
 # compare_doc_files(data_round_1, data, is_first=True)
