@@ -432,6 +432,39 @@ def get_curr_user_query_mapping():
         user_q_curr_map = ast.literal_eval(f.read())
     return user_q_curr_map
 
+def resolve_last_q(mapping, query_user_map, queries, prev_user_assined_queries):
+    need_to_assign_list = []
+    for user in mapping:
+        if len(mapping[user]) == 2:
+            need_to_assign_list.append(user)
+
+    for user in need_to_assign_list:
+        curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002_0')
+        for user_2 in need_to_assign_list:
+            if user != user_2 and user_2 in user_overlap_dict:
+                return False, mapping, query_user_map
+
+    potential_queries = []
+    for query in queries:
+        possible = True
+        for user in need_to_assign_list:
+            if query in prev_user_assined_queries[user]:
+                possible = False
+        if possible == True:
+            potential_queries.append(query)
+    shuffle(potential_queries)
+    curr_q = potential_queries[0] + '_2'
+    query_user_map[curr_q] = []
+    for user in need_to_assign_list:
+        mapping[user].append(curr_q)
+        query_user_map[curr_q].append(user)
+
+
+
+
+
+
+
 
 seed(9001)
 users = retrieve_users()
@@ -448,11 +481,21 @@ while True:
         max_allowed_ovelap=1,
         prev_user_assined_queries=user_q_curr_map)
     if test_number_of_queries_with_leftover(mapping,3,4):
-        break
+        res, mapping, query_user_map = resolve_last_q(mapping=mapping,
+                                                      query_user_map=query_user_map,
+                                                      queries=queries,
+                                                      prev_user_assined_queries=user_q_curr_map)
+        if (res == True) and test_number_of_queries(mapping,3):
+            break
 
 for q in query_user_map:
     print(q, len(query_user_map[q]), query_user_map[q])
+print("Len Q list: " + str(len(query_user_map)))
+for user in users:
+    curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002_0')
+    print(user_overlap_dict)
 print(mapping)
+
 # print(query_user_map)
 # for user in users:
 #     curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002')
