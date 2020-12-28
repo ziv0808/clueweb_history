@@ -365,11 +365,11 @@ def get_curr_user_query_mapping_and_backup_doc_collection():
 
 
 seed(9001)
-users = retrieve_users()
-data = read_initial_data("documents.trectext", "topics.full.xml")
-queries = list(data.keys())
+# users = retrieve_users()
+# data = read_initial_data("documents.trectext", "topics.full.xml")
+# queries = list(data.keys())
 
-
+get_curr_user_query_mapping_and_backup_doc_collection()
 
 # data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
 # print("First Round VS Zero:")
