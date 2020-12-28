@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from copy import copy,deepcopy
 from random import shuffle,seed
 import csv
+import ast
 import unicodedata
 
 def read_initial_data(docs_path, query_meta_path):
@@ -363,13 +364,17 @@ def get_curr_user_query_mapping_and_backup_doc_collection():
     with open('/lv_local/home/zivvasilisky/ASR20/bkup/UserQueryMapping.txt', 'w') as f:
         f.write(str(user_to_query_dict))
 
+def get_curr_user_query_mapping():
+    with open('/lv_local/home/zivvasilisky/ASR20/bkup/UserQueryMapping.txt', 'r') as f:
+        user_q_curr_map = ast.literal_eval(f.read())
+    return user_q_curr_map
+
 
 seed(9001)
-# users = retrieve_users()
-# data = read_initial_data("documents.trectext", "topics.full.xml")
-# queries = list(data.keys())
-
-get_curr_user_query_mapping_and_backup_doc_collection()
+users = retrieve_users()
+data = read_initial_data("documents.trectext", "topics.full.xml")
+queries = list(data.keys())
+user_q_curr_map = get_curr_user_query_mapping()
 
 # data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
 # print("First Round VS Zero:")
