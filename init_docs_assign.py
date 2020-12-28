@@ -444,7 +444,7 @@ while True:
     mapping, query_user_map = user_query_mapping_z_second_phase(
         users=users,
         queries=expanded_queries,
-        number_of_user_per_query=8,
+        number_of_user_per_query=4,
         max_allowed_ovelap=1,
         prev_user_assined_queries=user_q_curr_map)
     if test_number_of_queries_with_leftover(mapping,3,4):
