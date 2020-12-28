@@ -450,9 +450,13 @@ while True:
     if test_number_of_queries_with_leftover(mapping,3,4):
         break
 
-for user in users:
-    curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002')
-    print(user_overlap_dict)
+for q in query_user_map:
+    print(q, len(query_user_map[q]), query_user_map[q])
+print(mapping)
+# print(query_user_map)
+# for user in users:
+#     curr_max_overlap, user_overlap_dict = find_user_query_overlaps(mapping, query_user_map, user, '002')
+#     print(user_overlap_dict)
 # data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-11-09-23-55-23-857656')
 # print("First Round VS Zero:")
 # compare_doc_files(data_round_1, data, is_first=True)
