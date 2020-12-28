@@ -459,6 +459,8 @@ def resolve_last_q(mapping, query_user_map, queries, prev_user_assined_queries):
         mapping[user].append(curr_q)
         query_user_map[curr_q].append(user)
 
+    return True, mapping, query_user_map
+
 
 
 
