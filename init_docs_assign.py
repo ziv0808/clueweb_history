@@ -346,6 +346,24 @@ def changeStatus():
     status['indeterminate'] = not(indeterminate)
     db.status.save(status)
 
+def get_curr_user_query_mapping_and_backup_doc_collection():
+    client = MongoClient('asr2.iem.technion.ac.il', 27017)
+    db = client.asr16
+    documents = db.documents.find({}).sort('query_id', 1)
+    backup_list = []
+    user_to_query_dict = {}
+    for document in documents:
+        backup_list.append(document)
+        if document['username'] not in user_to_query_dict:
+            user_to_query_dict[document['username']] = [document['query_id']]
+        else:
+            user_to_query_dict[document['username']].append(document['query_id'])
+    with open('/lv_local/home/zivvasilisky/ASR20/bkup/BackupDocs.txt', 'w') as f:
+        f.write(str(backup_list))
+    with open('/lv_local/home/zivvasilisky/ASR20/bkup/UserQueryMapping.txt', 'w') as f:
+        f.write(str(user_to_query_dict))
+
+
 seed(9001)
 users = retrieve_users()
 data = read_initial_data("documents.trectext", "topics.full.xml")
@@ -400,13 +418,13 @@ queries = list(data.keys())
 # print("Curr Round VS Zero:")
 # compare_doc_files_vs_db(data,is_first=True)
 
-data_round_6 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-12-21-09-38-10-759298')
-rank_round_6 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-12-21-09-38-10-759298')
-
-print("Curr Round VS 6TH:")
-compare_doc_files_vs_db(data_round_6,is_first=False,rank_dict=rank_round_6)
-print("Curr Round VS Zero:")
-compare_doc_files_vs_db(data,is_first=True)
+# data_round_6 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-12-21-09-38-10-759298')
+# rank_round_6 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-12-21-09-38-10-759298')
+#
+# print("Curr Round VS 6TH:")
+# compare_doc_files_vs_db(data_round_6,is_first=False,rank_dict=rank_round_6)
+# print("Curr Round VS Zero:")
+# compare_doc_files_vs_db(data,is_first=True)
 # while True:
 #     mapping, query_user_map = user_query_mapping_z(
 #         users=users,
