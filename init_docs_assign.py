@@ -418,7 +418,8 @@ def get_curr_user_query_mapping_and_backup_doc_collection():
     user_to_query_dict = {}
     for document in documents:
         del document['_id']
-        del document['edittion_time']
+        if 'edittion_time' in document:
+            del document['edittion_time']
         backup_list.append(document)
         if document['username'] not in user_to_query_dict:
             user_to_query_dict[document['username']] = [document['query_id']]
