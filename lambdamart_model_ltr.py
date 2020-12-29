@@ -686,6 +686,7 @@ if __name__ == '__main__':
         is_new_server = ast.literal_eval(sys.argv[3])
         with_bert_as_feature = False
         feature_for_ablation_list = ast.literal_eval(sys.argv[4])
+        limited_features_list = ast.literal_eval(sys.argv[5])
 
         for feature_for_ablation in feature_for_ablation_list:
             run_grid_search_over_params_for_config(
@@ -702,4 +703,5 @@ if __name__ == '__main__':
                 snap_choosing_config=snap_choosing_config,
                 is_new_server=is_new_server,
                 with_bert_as_feature=with_bert_as_feature,
-                feature_for_ablation=feature_for_ablation)
+                feature_for_ablation=feature_for_ablation,
+                limited_features_list=limited_features_list)
