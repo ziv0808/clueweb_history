@@ -1765,7 +1765,7 @@ def create_mixture_models_feature_dict(
     mixture_model_res_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/'
     mm_features_dict = {}
     for filename in os.listdir(mixture_model_res_path):
-        if filename.startswith(dataset_name.lower()):
+        if filename.startswith(dataset_name.lower()) and not filename.endswith('_Params.txt'):
             broken_name = filename.split('_')
             round = broken_name[1]
             method = broken_name[2]
