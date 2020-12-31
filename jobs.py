@@ -1780,7 +1780,7 @@ def create_mixture_models_feature_dict(
             for index, row in curr_df.iterrows():
                 if row['Query_ID'] not in mm_features_dict:
                     mm_features_dict[int(row['Query_ID'])] = {}
-                if row['Docno'] not in mm_features_dict[row['Query_ID']]:
+                if row['Docno'] not in mm_features_dict[int(row['Query_ID'])]:
                     mm_features_dict[int(row['Query_ID'])][row['Docno']] = {}
                 mm_features_dict[int(row['Query_ID'])][row['Docno']][model + method] = float(row['Score'])
 
