@@ -1760,6 +1760,33 @@ def create_base_features_for_asrc(
         fin_df_dict[round_]['FinDF'].to_csv(os.path.join(save_folder, filename +'_Round' + round_ +'_with_meta.tsv'), sep='\t', index=False)
         fin_df_dict[round_]['SnapDF'].to_csv(os.path.join(save_folder, filename + '_Round' + round_ + '_all_snaps.tsv'), sep='\t', index=False)
 
+def create_mixture_models_feature_dict(
+        dataset_name):
+    mixture_model_res_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/'
+    mm_features_dict = {}
+    for filename in os.listdir(mixture_model_res_path):
+        if filename.startswith(dataset_name.lower()):
+            broken_name = filename.split('_')
+            round = broken_name[1]
+            method = broken_name[2]
+            model = broken_name[3]
+            if model == 'MixtureDIR':
+                model = 'DIR'
+            elif model == 'LoO':
+                model = 'JM'
+            else:
+                raise Exception("create_mixture_models_feature_dict: Unknown model")
+            curr_df = convert_trec_results_file_to_pandas_df(os.path.join(mixture_model_res_path,filename))
+            for index, row in curr_df.iterrows():
+                if row['Query_ID'] not in mm_features_dict:
+                    mm_features_dict[int(row['Query_ID'])] = {}
+                if row['Docno'] not in mm_features_dict[row['Query_ID']]:
+                    mm_features_dict[int(row['Query_ID'])][row['Docno']] = {}
+                mm_features_dict[int(row['Query_ID'])][row['Docno']][model + method] = float(row['Score'])
+
+    return mm_features_dict
+
+
 def create_ltr_feature_dict(
         feature_folder):
     res_dict = {}
@@ -1818,6 +1845,8 @@ def create_base_features_for_asrc_with_ltr_features(
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
                          'TFNormMean','TFNormStd','VSM', 'SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore','BM25Score']
 
+    mm_feature_list = ['JMPrevWinner', 'JMPrev3Winners','JMPrevBestImprove','JMPrev3BestImprove','DIRPrevWinner', 'DIRPrev3Winners','DIRPrevBestImprove','DIRPrev3BestImprove']
+    base_feature_list.extend(mm_feature_list)
     col_list = ['NumSnapshots']
     for suffix in ["", "_M", "_STD", "_LG", "_MG", "_RMG"]:
         for feature in base_feature_list:
@@ -1831,6 +1860,7 @@ def create_base_features_for_asrc_with_ltr_features(
         fin_df_dict[round_]['NextIdx'] = 0
 
     feature_ref_dict = create_ltr_feature_dict(os.path.join(os.path.join(os.path.join(meta_data_base_fold,'datsets'),inner_fold),'feat_dir'))
+    mm_feature_ref = create_mixture_models_feature_dict(inner_fold)
     for query_user_str in big_doc_index:
         all_rounds = list(big_doc_index[query_user_str].keys())
         query_num = query_user_str.split('-')[0]
@@ -1859,6 +1889,8 @@ def create_base_features_for_asrc_with_ltr_features(
                 feature_ref_dict[query_num][curr_docno]['Stopwords'] = doc_dict['json']['NumStopWords']
                 feature_ref_dict[query_num][curr_docno]['-Query-SW'] = doc_dict['json']['NumWords'] - (doc_dict['json']['NumQueryWords'] + doc_dict['json']['NumStopWords'])
                 feature_ref_dict[query_num][curr_docno]['BERTScore'] = doc_dict['json']['BERTScore']
+                for mm_feat in mm_feature_list:
+                    feature_ref_dict[query_num][curr_docno][mm_feat] = mm_feature_ref[int(query_num)][curr_docno][mm_feat]
                 insert_row =[]
                 for feature_name in base_feature_list:
                     insert_row.append(feature_ref_dict[query_num][curr_docno][feature_name])
