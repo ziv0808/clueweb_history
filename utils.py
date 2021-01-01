@@ -945,7 +945,15 @@ def create_feature_list_shortcut_string(feat_list):
         'SimClueWeb': 'SCw',
         'BM25Score': 'BM25',
         'BERTScore' : 'BRT',
-        '-Query-SW' : 'nQSw'
+        '-Query-SW' : 'nQSw',
+        'JMPrevWinner': 'MJmPw',
+        'JMPrev3Winners': 'MJmP3w',
+        'JMPrevBestImprove': 'MJmBi',
+        'JMPrev3BestImprove': 'MJmB3i',
+        'DIRPrevWinner': 'MDrPw',
+        'DIRPrev3Winners': 'MDrP3w',
+        'DIRPrevBestImprove': 'MDrBi',
+        'DIRPrev3BestImprove': 'MDrB3i',
     }
     for feat in feat_list:
         ret_str += '_' + feat_short_dict[feat]
