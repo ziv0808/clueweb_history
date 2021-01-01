@@ -146,10 +146,13 @@ def run_grid_search_over_params_for_config(
         limited_features_list):
 
     if feat_group_list is None:
-        optional_feat_groups_list = ['Static','Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap_RMGXXSnap',
+        optional_feat_groups_list = ['Static',
+                                     # 'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap_RMGXXSnap',
                                     'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap',
                                      'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap',
-                                    'Static_MGXXSnap','Static_RMGXXSnap']
+                                    'Static_MGXXSnap',
+                                     # 'Static_RMGXXSnap'
+                                     ]
     else:
         optional_feat_groups_list = feat_group_list
     save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/'
@@ -305,7 +308,10 @@ def create_all_x_snap_aggregations(
     base_feature_list = ['Boolean.AND', 'Boolean.OR', 'CoverQueryNum', 'CoverQueryRatio', 'Ent', 'FracStops',
                          'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
-                         'TFNormMean','TFNormStd', 'VSM','SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore', 'BM25Score']
+                         'TFNormMean','TFNormStd', 'VSM','SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore', 'BM25Score',
+                         'JMPrevWinner', 'JMPrev3Winners', 'JMPrevBestImprove', 'JMPrev3BestImprove', 'DIRPrevWinner',
+                         'DIRPrev3Winners', 'DIRPrevBestImprove', 'DIRPrev3BestImprove'
+                         ]
 
     work_df = pd.read_csv(os.path.join(base_file_folder, base_feature_filename), sep = '\t', index_col = False)
     if '2008' in base_feature_filename:

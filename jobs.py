@@ -1892,9 +1892,9 @@ def create_base_features_for_asrc_with_ltr_features(
                 for mm_feat in mm_feature_list:
                     if int(curr_docno.split('-')[1]) == 1:
                         if 'DIR' in mm_feat:
-                            feature_ref_dict[query_num][curr_docno][mm_feat] = doc_dict['json']['LMIR.DIR']
+                            feature_ref_dict[query_num][curr_docno][mm_feat] = feature_ref_dict[query_num][curr_docno]['LMIR.DIR']
                         elif 'JM' in mm_feat :
-                            feature_ref_dict[query_num][curr_docno][mm_feat] = doc_dict['json']['LMIR.JM']
+                            feature_ref_dict[query_num][curr_docno][mm_feat] = feature_ref_dict[query_num][curr_docno]['LMIR.JM']
                     else:
                         feature_ref_dict[query_num][curr_docno][mm_feat] = mm_feature_ref[int(query_num)][curr_docno][mm_feat]
                 insert_row =[]
