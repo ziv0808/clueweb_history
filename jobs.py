@@ -1778,7 +1778,7 @@ def create_mixture_models_feature_dict(
                 raise Exception("create_mixture_models_feature_dict: Unknown model")
             curr_df = convert_trec_results_file_to_pandas_df(os.path.join(mixture_model_res_path,filename))
             for index, row in curr_df.iterrows():
-                if row['Query_ID'] not in mm_features_dict:
+                if int(row['Query_ID']) not in mm_features_dict:
                     mm_features_dict[int(row['Query_ID'])] = {}
                 if row['Docno'] not in mm_features_dict[int(row['Query_ID'])]:
                     mm_features_dict[int(row['Query_ID'])][row['Docno']] = {}
