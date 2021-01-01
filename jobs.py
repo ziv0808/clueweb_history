@@ -1890,7 +1890,13 @@ def create_base_features_for_asrc_with_ltr_features(
                 feature_ref_dict[query_num][curr_docno]['-Query-SW'] = doc_dict['json']['NumWords'] - (doc_dict['json']['NumQueryWords'] + doc_dict['json']['NumStopWords'])
                 feature_ref_dict[query_num][curr_docno]['BERTScore'] = doc_dict['json']['BERTScore']
                 for mm_feat in mm_feature_list:
-                    feature_ref_dict[query_num][curr_docno][mm_feat] = mm_feature_ref[int(query_num)][curr_docno][mm_feat]
+                    if int(curr_docno.split('-')[1]) == 1:
+                        if 'DIR' in mm_feat:
+                            feature_ref_dict[query_num][curr_docno][mm_feat] = doc_dict['json']['LMIR.DIR']
+                        elif 'JM' in mm_feat :
+                            feature_ref_dict[query_num][curr_docno][mm_feat] = doc_dict['json']['LMIR.JM']
+                    else:
+                        feature_ref_dict[query_num][curr_docno][mm_feat] = mm_feature_ref[int(query_num)][curr_docno][mm_feat]
                 insert_row =[]
                 for feature_name in base_feature_list:
                     insert_row.append(feature_ref_dict[query_num][curr_docno][feature_name])
