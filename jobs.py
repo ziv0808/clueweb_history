@@ -2075,7 +2075,7 @@ def unite_asrc_data_results(
     for feat in feature_list:
         feat_col_list.append(feat + '_sign')
 
-    big_res_dict  = {}
+    big_res_dict = {}
     round_res_dict = {}
     num_files = 0
     num_rounds = 0
@@ -2093,7 +2093,7 @@ def unite_asrc_data_results(
     if limited_features_list is not None:
         addition_to_inner_fold += create_feature_list_shortcut_string(limited_features_list)
 
-    for round_ in range(2,round_limit + 1):
+    for round_ in range(2, round_limit + 1):
         if dataset_name == 'herd_control':
             inner_fold_sep = dataset_name.upper() + '_LTR_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths' + addition_to_inner_fold
         else:
@@ -2245,6 +2245,102 @@ def unite_asrc_data_results(
         plt.xlabel('round')
         plt.ylabel(measure)
         plt.savefig(dataset_name.upper()+'_All_Rounds_SNL' + str(snap_limit) + '_' + ret_model +'_'+big_model+ '_' +measure + addition_to_inner_fold+ '.png', dpi =300)
+
+def orginize_ablation_results(
+        dataset_name,
+        round_limit,
+        limited_snap_num,
+        limited_features_list):
+
+    from rank_svm_model import create_sinificance_df
+    base_folder = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
+    if dataset_name == 'asrc':
+        qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
+    elif dataset_name == 'bot':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents_fixed.relevance'
+    elif dataset_name == 'herd_control':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel'
+    elif dataset_name == 'united':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel'
+    elif dataset_name == 'comp2020':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/curr_comp.rel'
+
+    base_folder = os.path.join(base_folder, 'lambdamart_res')
+
+    base_2_folder = os.path.join(base_folder, 'ret_res')
+    feature_list = ['NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR']
+    feat_col_list = feature_list[:]
+    for feat in feature_list:
+        feat_col_list.append(feat + '_sign')
+
+    big_res_dict = {}
+    num_files = 0
+    num_rounds = 0
+    addition_to_inner_fold = ""
+    if limited_snap_num != "None":
+        addition_to_inner_fold += '_' + str(limited_snap_num)
+
+    addition_to_inner_fold += "_LoO_Ablation"
+    if limited_features_list is not None:
+        addition_to_inner_fold += create_feature_list_shortcut_string(limited_features_list)
+
+    for round_ in range(2, round_limit + 1):
+        inner_fold_sep = dataset_name.upper() + '_LTR_All_features_Round0' + str(round_) + '_with_meta.tsvSNL1_BM25_ByMonths' + addition_to_inner_fold
+        inner_fold = os.path.join(base_2_folder, inner_fold_sep)
+        num_rounds += 1
+        for filename in os.listdir(inner_fold):
+            print(inner_fold + '/' + filename)
+            num_files += 1
+            sys.stdout.flush()
+            tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                file_path=inner_fold,
+                filename=filename,
+                qrel_filepath=qrel_filepath,
+                calc_ndcg_mrr=True)
+            print(tmp_res_dict.keys())
+            feat_name = filename.split('_Abla_')[-1].split(create_feature_list_shortcut_string(limited_features_list))[0].replace('SimClueWeb','Similarity')
+            if feat_name == 'Similarity':
+                continue
+            print(feat_name)
+            if feat_name in big_res_dict:
+                print(num_files)
+                sys.stdout.flush()
+                for q in tmp_res_dict:
+                    for measure in tmp_res_dict[q]:
+                        big_res_dict[feat_name][q][measure] = (float(big_res_dict[feat_name][q][measure]) * (num_rounds - 1) + tmp_res_dict[q][measure]) / float(num_rounds)
+            else:
+                print("here!")
+                sys.stdout.flush()
+                big_res_dict[feat_name] = tmp_res_dict
+
+    measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR', 'nMRR']
+    big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
+    next_idx = 0
+    for feat_name in big_res_dict:
+        insert_row = [feat_name]
+        for measure in measure_list:
+            if measure == 'P@5' or measure == 'P@10':
+                measure = measure.replace('@', '_')
+            insert_row.append(big_res_dict[feat_name]['all'][measure])
+        big_summary_df.loc[next_idx] = insert_row
+        next_idx += 1
+
+    for measure in ['NDCG@1', 'NDCG@3', 'NDCG@5']:
+        plot_df = big_summary_df[['FeatureGroup', measure]].set_index('FeatureGroup')
+        plot_df.sort_values(measure, inplace = True)
+        plt.cla()
+        plt.clf()
+        plot_df.plot(legend=False, kind='bar', color='b')
+        plt.ylabel(measure)
+        min_val = big_summary_df[measure].min()
+        max_val = big_summary_df[measure].max()
+        plt.ylim((min_val - 0.01, max_val + 0.01))
+        plt.title(measure + ' Ablation Results')
+        plt.xticks(rotation=90, fontsize=6)
+        plt.subplots_adjust(bottom=0.35)
+        plt.savefig('Ablation_Res_' + measure + '_' + dataset_name.upper() + addition_to_inner_fold + '.png',
+                    dpi=200)
+
 
 
 def handle_rank_svm_params_asrc(
@@ -2854,6 +2950,17 @@ if __name__ == '__main__':
             trectext_file=trectext_file)
     elif operation == 'LMScores':
         add_lm_score_files()
+
+    elif operation == 'AblationSummary':
+        dataset_name = sys.argv[2]
+        round_limit = int(sys.argv[3])
+        limited_snap_num = sys.argv[4]
+        limited_features_list= ast.literal_eval(sys.argv[5])
+        orginize_ablation_results(
+            dataset_name,
+            round_limit,
+            limited_snap_num,
+            limited_features_list)
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
