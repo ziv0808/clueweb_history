@@ -2326,7 +2326,7 @@ def orginize_ablation_results(
         next_idx += 1
 
     for measure in ['NDCG@1', 'NDCG@3', 'NDCG@5']:
-        plot_df = big_summary_df[['FeatureGroup', measure]].set_index('FeatureGroup')
+        plot_df = big_summary_df[['FeatureGroup', measure]].rename(columns={'FeatureGroup' : 'Removed Feature'}).set_index('Removed Feature')
         plot_df.sort_values(measure, inplace = True)
         plt.cla()
         plt.clf()
@@ -2336,10 +2336,10 @@ def orginize_ablation_results(
         max_val = big_summary_df[measure].max()
         plt.ylim((min_val - 0.01, max_val + 0.01))
         plt.title(measure + ' Ablation Results')
-        plt.xticks(rotation=90, fontsize=6)
+        plt.xticks(rotation=90, fontsize=5)
         plt.subplots_adjust(bottom=0.35)
         plt.savefig('Ablation_Res_' + measure + '_' + dataset_name.upper() + addition_to_inner_fold + '.png',
-                    dpi=200)
+                    dpi=300)
 
 
 
