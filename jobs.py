@@ -2298,7 +2298,7 @@ def orginize_ablation_results(
                 qrel_filepath=qrel_filepath,
                 calc_ndcg_mrr=True)
             print(tmp_res_dict.keys())
-            feat_name = filename.split('_Abla_')[-1].split(create_feature_list_shortcut_string(limited_features_list))[0].replace('SimClueWeb','Similarity')
+            feat_name = filename.split('_Abla_')[-1].split(create_feature_list_shortcut_string(limited_features_list))[0].replace('SimClueWeb','Similarity').replace('XXSnaps','')
             if feat_name == 'Similarity':
                 continue
             print(feat_name)
