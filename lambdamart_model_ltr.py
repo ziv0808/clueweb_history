@@ -353,12 +353,20 @@ def run_cv_for_config(
     if with_bert_as_feature == True:
         base_feature_list.append('BERTScore')
 
+    mm_feature_list = ['JMPrevWinner', 'JMPrev3Winners', 'JMPrevBestImprove', 'JMPrev3BestImprove', 'DIRPrevWinner',
+                         'DIRPrev3Winners', 'DIRPrevBestImprove', 'DIRPrev3BestImprove']
+    mm_features = []
     if limited_features_list is not None:
         base_feature_list = limited_features_list
+        for feature in limited_features_list[:]:
+            if feature in mm_feature_list:
+                base_feature_list.remove(feature)
+                mm_features.append(feature)
 
     if 'Static' in broken_feature_groupname:
-        feature_list.extend(base_feature_list)
+        feature_list.extend(base_feature_list + mm_features)
         len_handled += 1
+
     if 'M' in broken_feature_groupname:
         for base_feat in base_feature_list:
             feature_list.append(base_feat + '_M')
