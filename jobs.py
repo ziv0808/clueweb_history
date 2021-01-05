@@ -2382,14 +2382,119 @@ def orginize_ablation_results(
                     dpi=300)
 
 
+def orginize_mm_features_data_compare(
+        dataset_name,
+        round_limit,
+        limited_snap_num,
+        limited_features_list):
+
+
+    from rank_svm_model import create_sinificance_df
+
+    base_folder = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
+    if dataset_name == 'asrc':
+        qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
+    elif dataset_name == 'bot':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents_fixed.relevance'
+    elif dataset_name == 'herd_control':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/control.rel'
+    elif dataset_name == 'united':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel'
+    elif dataset_name == 'comp2020':
+        qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/curr_comp.rel'
+
+    base_folder = os.path.join(base_folder, 'lambdamart_res')
+
+    base_2_folder = os.path.join(base_folder, 'ret_res')
+    feature_list = ['NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR']
+    feat_col_list = feature_list[:]
+    for feat in feature_list:
+        feat_col_list.append(feat + '_sign')
+
+    big_res_dict = {}
+    num_files = 0
+    num_rounds = 0
+    addition_to_inner_fold = ""
+    if limited_snap_num != "None":
+        addition_to_inner_fold += '_' + str(limited_snap_num)
+
+    addition_to_inner_fold += "_LoO"
+    if limited_features_list is not None:
+        addition_to_inner_fold += create_feature_list_shortcut_string(limited_features_list)
+
+    addition_to_inner_fold_bkp = addition_to_inner_fold
+    feature_inner_fold_list = [('None', addition_to_inner_fold)]
+    mm_feature_list = ['JMPrevWinner', 'JMPrev3Winners', 'JMPrevBestImprove', 'JMPrev3BestImprove', 'DIRPrevWinner',
+                       'DIRPrev3Winners', 'DIRPrevBestImprove', 'DIRPrev3BestImprove']
+    for mm_feture in mm_feature_list:
+        feature_inner_fold_list.append((mm_feture, addition_to_inner_fold + create_feature_list_shortcut_string([mm_feture])))
+
+    for round_ in range(2, round_limit + 1):
+        num_rounds += 1
+        for mm_fetue_config in feature_inner_fold_list:
+            mm_feture = mm_fetue_config[0]
+            addition_to_inner_fold = mm_fetue_config[1]
+            inner_fold_sep = dataset_name.upper() + '_LTR_All_features_Round0' + str(round_) + '_with_meta.tsvSNL1_BM25_ByMonths' + addition_to_inner_fold
+            inner_fold = os.path.join(base_2_folder, inner_fold_sep)
+            for filename in os.listdir(inner_fold):
+                if 'MinMax_Static_All' in filename:
+                    method = 'S'
+                elif 'MinMax_Static_M_STD_Min_Max_MG_All' in filename:
+                    method = 'S+MSMM+MG'
+                else:
+                    continue
+                print(inner_fold + '/' + filename)
+                num_files += 1
+                sys.stdout.flush()
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                    file_path=inner_fold,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True)
+                print(tmp_res_dict.keys())
+                feat_name = mm_feture + '_' + method
+                print(feat_name)
+                if feat_name in big_res_dict:
+                    print(num_files)
+                    sys.stdout.flush()
+                    for q in tmp_res_dict:
+                        for measure in tmp_res_dict[q]:
+                            big_res_dict[feat_name][q][measure] = (float(big_res_dict[feat_name][q][measure]) * (
+                            num_rounds - 1) + tmp_res_dict[q][measure]) / float(num_rounds)
+                else:
+                    print("here!")
+                    sys.stdout.flush()
+                    big_res_dict[feat_name] = tmp_res_dict
+
+    measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR', 'nMRR']
+    big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
+    next_idx = 0
+    for feat_name in big_res_dict:
+        insert_row = [feat_name]
+        for measure in measure_list:
+            if measure == 'P@5' or measure == 'P@10':
+                measure = measure.replace('@', '_')
+            insert_row.append(big_res_dict[feat_name]['all'][measure])
+        big_summary_df.loc[next_idx] = insert_row
+        next_idx += 1
+
+    significance_df = create_sinificance_df(
+        big_res_dict,
+        calc_ndcg_mrr=True)
+    big_summary_df = pd.merge(
+        big_summary_df,
+        significance_df,
+        on=['FeatureGroup'],
+        how='inner')
+
+    big_summary_df.to_csv('MM_Features_Summary_' + dataset_name.upper() + addition_to_inner_fold + '.tsv', sep='\t',
+                          index=False)
+
 
 def handle_rank_svm_params_asrc(
         dataset_name,
-        snap_limit,
-        ret_model,
-        leave_one_out_train,
         round_limit,
-        backward_elimination):
+        limited_features_list):
 
     data_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/'
     num_rounds = 0
@@ -2397,12 +2502,19 @@ def handle_rank_svm_params_asrc(
     addition_to_filename = ""
     if leave_one_out_train == True:
         addition_to_filename += "_LoO"
-    if backward_elimination == True:
-        addition_to_filename += "_BElim"
+
+    if limited_snap_num != "None":
+        addition_to_filename += '_' + str(limited_snap_num)
+
+    if leave_one_out_train == True:
+        addition_to_filename += "_LoO"
+
+    if limited_features_list is not None:
+        addition_to_filename += create_feature_list_shortcut_string(limited_features_list)
 
     for round_ in range(2, round_limit + 1):
         for filename in os.listdir(data_folder):
-            if filename.startswith(dataset_name.upper()+'_LTR_All_features_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths'+addition_to_filename+'_MinMax') and (filename.endswith('_Params.tsv')):
+            if filename.startswith(dataset_name.upper()+'_LTR_All_features_Round0'+str(round_)+'_with_meta.tsvSNL1_BM25_ByMonths'+addition_to_filename+'_MinMax') and (filename.endswith('_Params.tsv')):
                 print(filename)
                 sys.stdout.flush()
                 num_rounds += 1
@@ -2428,11 +2540,13 @@ def handle_rank_svm_params_asrc(
         next_idx = 0
         for feature in weight_dict[feat_group]:
             if not pd.np.isnan(weight_dict[feat_group][feature]):
+                if feature.replace('XXSnaps', '').replace('SimClueWeb', 'Similarity') == 'Similarity':
+                    continue
                 feat_df.loc[next_idx] = [feature.replace('XXSnaps', '').replace('SimClueWeb', 'Similarity'), weight_dict[feat_group][feature]]
                 next_idx += 1
         feat_df.set_index('Feature', inplace = True)
         feat_df.sort_values('Weight', inplace = True)
-        if len(feat_df) > 60:
+        if len(feat_df) > 70:
             bottom_df = feat_df.head(50)
             plt.cla()
             plt.clf()
@@ -2470,7 +2584,7 @@ def handle_rank_svm_params_asrc(
             feat_df.plot(legend=False, kind='bar', color='b')
             plt.ylabel('Weight')
             plt.title(feat_group +' SVM Weights')
-            plt.yticks(rotation = 90)
+            plt.yticks(rotation=90, fontsize=5)
             plt.subplots_adjust(bottom=0.35)
             plt.savefig(feat_group + dataset_name.upper() + addition_to_filename + '_RankSVM_Weights.png', dpi = 200)
 
@@ -2952,19 +3066,13 @@ if __name__ == '__main__':
 
     elif operation == 'ASRCSVMWeights':
         dataset_name = sys.argv[2]
-        snap_limit = int(sys.argv[3])
-        ret_model = sys.argv[4]
-        round_limit = int(sys.argv[5])
-        leave_one_out_train = ast.literal_eval(sys.argv[6])
-        backward_elimination = ast.literal_eval(sys.argv[7])
+        round_limit = int(sys.argv[3])
+        limited_features_list = ast.literal_eval(sys.argv[4])
 
         handle_rank_svm_params_asrc(
             dataset_name=dataset_name,
-            snap_limit=snap_limit,
-            ret_model=ret_model,
             round_limit=round_limit,
-            leave_one_out_train=leave_one_out_train,
-            backward_elimination=backward_elimination)
+            limited_features_list=limited_features_list)
 
     elif operation == 'ASRCFeatLTRFiles':
         doc_file_path = sys.argv[2]
@@ -2997,6 +3105,16 @@ if __name__ == '__main__':
         limited_snap_num = sys.argv[4]
         limited_features_list= ast.literal_eval(sys.argv[5])
         orginize_ablation_results(
+            dataset_name,
+            round_limit,
+            limited_snap_num,
+            limited_features_list)
+    elif operation == 'MMFeatureCompare':
+        dataset_name = sys.argv[2]
+        round_limit = int(sys.argv[3])
+        limited_snap_num = sys.argv[4]
+        limited_features_list = ast.literal_eval(sys.argv[5])
+        orginize_mm_features_data_compare(
             dataset_name,
             round_limit,
             limited_snap_num,
