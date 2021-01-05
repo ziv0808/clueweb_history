@@ -2368,7 +2368,7 @@ def orginize_ablation_results(
                 colors.append('k')
         print(colors)
         plot_df['Color'] = colors
-        plot_df[measure].plot(legend=False, kind='bar', color=plot_df['Color'])
+        plot_df[measure].plot(legend=False, kind='bar', color=[plot_df['Color']])
         plt.axhline(y=plot_ref_plot.loc[0][measure], color='r', linestyle='--', label='Full Model')
         plt.legend(loc='best')
         plt.ylabel(measure)
