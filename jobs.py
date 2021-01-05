@@ -2500,11 +2500,8 @@ def handle_rank_svm_params_asrc(
     num_rounds = 0
     weight_dict = {}
     addition_to_filename = ""
-
     addition_to_filename += '_All'
-
-    if leave_one_out_train == True:
-        addition_to_filename += "_LoO"
+    addition_to_filename += "_LoO"
 
     if limited_features_list is not None:
         addition_to_filename += create_feature_list_shortcut_string(limited_features_list)
