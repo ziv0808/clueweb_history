@@ -291,11 +291,13 @@ def compare_doc_files(curr_stats, old_stats, is_first, rank_dict = None):
         winner_unchanged = 0
         loser_unchanged = 0
         under_4_unchanged = 0
+    group_dict = {'0' : 0, '1' : 0, '2' : 0}
     for query in curr_stats:
         for user in curr_stats[query]:
             if is_first == True:
                 if unicodedata.normalize('NFKD', old_stats[query.split('_')[0]]['document']).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').strip() == unicodedata.normalize('NFKD',curr_stats[query][user]).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').strip():
                     unchanged_docs += 1
+                    group_dict[query.split('_')[1]] += 1
                     if user not in unchanged_users_dict:
                         unchanged_users_dict[user] = 1
                     else:
@@ -330,6 +332,7 @@ def compare_doc_files(curr_stats, old_stats, is_first, rank_dict = None):
             unchanged_users += 1
 
     print('Unchnged Users: ' + str(unchanged_users))
+    print('Unchanged by group : ' + str(group_dict))
 
 def compare_doc_files_vs_db(curr_stats, is_first, rank_dict = None):
     unchanged_docs = 0
