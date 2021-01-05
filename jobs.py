@@ -2312,25 +2312,68 @@ def orginize_ablation_results(
                 print("here!")
                 sys.stdout.flush()
                 big_res_dict[feat_name] = tmp_res_dict
+        ref_model_inner_fold = os.path.join(base_2_folder, inner_fold_sep.replace('_Ablation',''))
+        for filename in os.listdir(ref_model_inner_fold):
+            if 'MinMax_Static_M_STD_Min_Max_MG_AllByMonths' in filename:
+                print(ref_model_inner_fold + '/' + filename)
+                num_files += 1
+                sys.stdout.flush()
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                    file_path=ref_model_inner_fold,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True)
+                print(tmp_res_dict.keys())
+                feat_name = 'Full Model'
+                if feat_name in big_res_dict:
+                    print(num_files)
+                    sys.stdout.flush()
+                    for q in tmp_res_dict:
+                        for measure in tmp_res_dict[q]:
+                            big_res_dict[feat_name][q][measure] = (float(big_res_dict[feat_name][q][measure]) * (num_rounds - 1) +
+                                                                   tmp_res_dict[q][measure]) / float(num_rounds)
+                else:
+                    print("here!")
+                    sys.stdout.flush()
+                    big_res_dict[feat_name] = tmp_res_dict
 
     measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR', 'nMRR']
     big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
     next_idx = 0
+    sinificanse_dict = {}
     for feat_name in big_res_dict:
         insert_row = [feat_name]
         for measure in measure_list:
             if measure == 'P@5' or measure == 'P@10':
                 measure = measure.replace('@', '_')
             insert_row.append(big_res_dict[feat_name]['all'][measure])
+            sinificanse_dict[feat_name] = check_statistical_significance(big_res_dict[feat_name], big_res_dict['Full Model'], ndcg_mrr=True)
         big_summary_df.loc[next_idx] = insert_row
         next_idx += 1
 
+
+    plot_ref_plot = big_summary_df[big_summary_df['FeatureGroup'] == 'Full Model'].reset_index()
+    big_summary_df = big_summary_df[big_summary_df['FeatureGroup'] != 'Full Model']
     for measure in ['NDCG@1', 'NDCG@3', 'NDCG@5']:
         plot_df = big_summary_df[['FeatureGroup', measure]].rename(columns={'FeatureGroup' : 'Removed Feature'}).set_index('Removed Feature')
         plot_df.sort_values(measure, inplace = True)
         plt.cla()
         plt.clf()
-        plot_df.plot(legend=False, kind='bar', color='b')
+        ax = plot_df.plot(legend=False, kind='bar', color='b')
+        plt.axhline(y=plot_ref_plot.loc[0][measure], color='r', linestyle='--', label='Full Model')
+        x_labels = ax.get_xticklabels()
+        rects = ax.patches
+        labels = []
+        for x_label in x_labels:
+            if sinificanse_dict[x_label][measure]['Pval'] <= 0.05:
+                labels.append('*')
+            else:
+                labels.append('')
+        for rect, label in zip(rects, labels):
+            height = rect.get_height()
+            ax.text(rect.get_x() + rect.get_width() / 2, height + 5, label,
+                    ha='center', va='bottom')
+        plt.legend(loc='best')
         plt.ylabel(measure)
         min_val = big_summary_df[measure].min()
         max_val = big_summary_df[measure].max()
