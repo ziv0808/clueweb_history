@@ -2351,7 +2351,7 @@ def orginize_ablation_results(
         big_summary_df.loc[next_idx] = insert_row
         next_idx += 1
 
-    print(sinificanse_dict)
+
     plot_ref_plot = big_summary_df[big_summary_df['FeatureGroup'] == 'Full Model'].reset_index()
     big_summary_df = big_summary_df[big_summary_df['FeatureGroup'] != 'Full Model']
     for measure in ['NDCG@1', 'NDCG@3', 'NDCG@5']:
@@ -2362,10 +2362,11 @@ def orginize_ablation_results(
         colors = []
         x_labels = list(plot_df.index)
         for x_label in x_labels:
-            if sinificanse_dict[x_label][measure]['Pval'] <= 0.05:
+            if sinificanse_dict[x_label][measure]['Significant'] == True:
                 colors.append('b')
             else:
                 colors.append('k')
+        print(colors)
         plot_df.plot(legend=False, kind='bar', color=colors)
         plt.axhline(y=plot_ref_plot.loc[0][measure], color='r', linestyle='--', label='Full Model')
         plt.legend(loc='best')
