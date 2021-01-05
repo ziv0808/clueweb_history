@@ -2578,7 +2578,7 @@ def handle_rank_svm_params_asrc(
             feat_df.plot(legend=False, kind='bar', color='b')
             plt.ylabel('Weight')
             plt.title(feat_group +' SVM Weights')
-            plt.xticks(rotation=90, fontsize=5)
+            plt.xticks(rotation=90, fontsize=6)
             plt.subplots_adjust(bottom=0.35)
             plt.savefig(feat_group + dataset_name.upper() + addition_to_filename + '_RankSVM_Weights.png', dpi = 200)
 
