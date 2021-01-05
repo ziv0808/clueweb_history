@@ -2500,9 +2500,7 @@ def handle_rank_svm_params_asrc(
     num_rounds = 0
     weight_dict = {}
     addition_to_filename = ""
-    if leave_one_out_train == True:
-        addition_to_filename += "_LoO"
-
+   
     if limited_snap_num != "None":
         addition_to_filename += '_' + str(limited_snap_num)
 
