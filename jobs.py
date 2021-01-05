@@ -2365,10 +2365,11 @@ def orginize_ablation_results(
         rects = ax.patches
         labels = []
         for x_label in x_labels:
-            if sinificanse_dict[x_label.get_text()][measure]['Pval'] <= 0.05:
-                labels.append('*')
-            else:
-                labels.append('')
+            labels.append(str(sinificanse_dict[x_label.get_text()][measure]['Pval']))
+            # if sinificanse_dict[x_label.get_text()][measure]['Pval'] <= 0.05:
+            #     labels.append('*')
+            # else:
+            #     labels.append('')
         for rect, label in zip(rects, labels):
             height = rect.get_height()
             ax.text(rect.get_x() + rect.get_width() / 2, height + 5, label,
