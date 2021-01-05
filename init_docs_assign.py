@@ -294,7 +294,7 @@ def compare_doc_files(curr_stats, old_stats, is_first, rank_dict = None):
     for query in curr_stats:
         for user in curr_stats[query]:
             if is_first == True:
-                if unicodedata.normalize('NFKD', old_stats[query]['document']).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').strip() == unicodedata.normalize('NFKD',curr_stats[query][user]).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').strip():
+                if unicodedata.normalize('NFKD', old_stats[query.split('_')[0]]['document']).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').strip() == unicodedata.normalize('NFKD',curr_stats[query][user]).encode('cp1252', "ignore").decode('utf-8', 'replace').replace(u'\uFFFD', ' ').strip():
                     unchanged_docs += 1
                     if user not in unchanged_users_dict:
                         unchanged_users_dict[user] = 1
@@ -575,7 +575,21 @@ user_q_curr_map = get_curr_user_query_mapping()
 
 # data_round_6 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2020-12-21-09-38-10-759298')
 # rank_round_6 = parse_res_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART2020-12-21-09-38-10-759298')
-#
+
+
+
+
+
+
+data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2021-01-03-23-05-55-344126')
+print("Step 2 -> First Round VS Zero:")
+compare_doc_files(data_round_1, data, is_first=True)
+
+
+
+
+
+
 # print("Curr Round VS 6TH:")
 # compare_doc_files_vs_db(data_round_6,is_first=False,rank_dict=rank_round_6)
 # print("Curr Round VS Zero:")
