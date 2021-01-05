@@ -2359,21 +2359,15 @@ def orginize_ablation_results(
         plot_df.sort_values(measure, inplace = True)
         plt.cla()
         plt.clf()
-        ax = plot_df.plot(legend=False, kind='bar', color='b')
+        colors = []
+        x_labels = list(plot_df.index)
+        for x_label  in x_labels:
+            if sinificanse_dict[x_label][measure]['Pval'] <= 0.05:
+                colors.append('b')
+            else:
+                colors.append('k')
+        ax = plot_df.plot(legend=False, kind='bar', color=colors)
         plt.axhline(y=plot_ref_plot.loc[0][measure], color='r', linestyle='--', label='Full Model')
-        x_labels = ax.get_xticklabels()
-        rects = ax.patches
-        labels = []
-        for x_label in x_labels:
-            labels.append(str(sinificanse_dict[x_label.get_text()][measure]['Pval']))
-            # if sinificanse_dict[x_label.get_text()][measure]['Pval'] <= 0.05:
-            #     labels.append('*')
-            # else:
-            #     labels.append('')
-        for rect, label in zip(rects, labels):
-            height = rect.get_height()
-            ax.text(rect.get_x() + rect.get_width() / 2, height + 5, label,
-                    ha='center', va='bottom')
         plt.legend(loc='best')
         plt.ylabel(measure)
         min_val = big_summary_df[measure].min()
