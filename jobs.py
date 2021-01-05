@@ -2365,7 +2365,7 @@ def orginize_ablation_results(
         rects = ax.patches
         labels = []
         for x_label in x_labels:
-            if sinificanse_dict[x_label][measure]['Pval'] <= 0.05:
+            if sinificanse_dict[x_label.get_text()][measure]['Pval'] <= 0.05:
                 labels.append('*')
             else:
                 labels.append('')
