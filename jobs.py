@@ -2501,7 +2501,7 @@ def handle_rank_svm_params_asrc(
     weight_dict = {}
     addition_to_filename = ""
 
-    addition_to_filename += '_All
+    addition_to_filename += '_All'
 
     if leave_one_out_train == True:
         addition_to_filename += "_LoO"
