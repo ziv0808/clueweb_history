@@ -6,6 +6,7 @@ import unicodedata
 import xml.etree.ElementTree as ET
 import csv
 import subprocess
+from bs4 import BeautifulSoup
 
 
 
@@ -124,6 +125,10 @@ def mergeIndices(asrIndex, baseDir):
 
 
 
+def run_bert_model(currentTime):
+    command = 'python3 /lv_local/home/zivvasilisky/ziv/clueweb_history/run_bert_on_curr_comp_docs.py /lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/' + currentTime
+    out = run_bash_command(command)
+    print(out)
 
 
 
@@ -141,7 +146,6 @@ def rewrite_features(scores, features_fname):
             new.write(new_data)
     new.close()
     return new_file
-
 
 
 
@@ -176,7 +180,7 @@ def create_normalized_scores(waterloo_scores):
 
 
 
-def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
+def runRankingModels_old(mergedIndex, workingSet, currentTime, baseDir):
     scriptDir = '/lv_local/home/zivvasilisky/ziv/content_modification_code/scripts/'
     pathToFolder = baseDir + 'Results/'
     if not os.path.exists(pathToFolder):
@@ -225,7 +229,56 @@ def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
 
 
 
+def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
+    scriptDir = '/lv_local/home/zivvasilisky/ziv/content_modification_code/scripts/'
+    pathToFolder = baseDir + 'Results/'
+    if not os.path.exists(pathToFolder):
+        os.makedirs(pathToFolder)
+    INDEX = mergedIndex
+    WORKING_SET_FILE = workingSet
+    MODEL_DIR = baseDir+"content_modification_code/rank_models/"
+    MODEL_FILE = MODEL_DIR+"model_lambdatamart"
+    QUERIES_FILE = baseDir+'Data/QueriesFile.xml'
+    FEATURES_DIR = pathToFolder + 'Features/' +  currentTime
+    if not os.path.exists(FEATURES_DIR):
+        os.makedirs(FEATURES_DIR)
+    ORIGINAL_FEATURES_FILE = 'features'
+    command = scriptDir+'LTRFeatures ' + QUERIES_FILE + ' -stream=doc -index=' + INDEX + ' -repository='+ INDEX +' -useWorkingSet=true -workingSetFile='+ WORKING_SET_FILE + ' -workingSetFormat=trec'
+    print(command)
+    out = run_bash_command(command)
+    print(out)
+    run_command('mv doc*_* ' + FEATURES_DIR)
+    run_bert_model(currentTime)
 
+
+
+    #
+    # command='perl '+scriptDir+'generate.pl ' + FEATURES_DIR + ' ' + WORKING_SET_FILE
+    # print(command)
+    # out=run_bash_command(command)
+    # print(out)
+    # # waterloo=get_waterloo_scores()
+    # # normalized_scores = create_normalized_scores(waterloo)
+    # # FEATURES_FILE=rewrite_features(normalized_scores,ORIGINAL_FEATURES_FILE)
+    # FEATURES_FILE = ORIGINAL_FEATURES_FILE
+    # command = 'java -jar '+scriptDir+'RankLib.jar -load ' + MODEL_FILE + ' -rank '+FEATURES_FILE+' -score predictions.tmp'
+    # print(command)
+    # out=run_bash_command(command)
+    # print(out)
+    # command = 'cut -f3 predictions.tmp > predictions'
+    # print(command)
+    # out=run_bash_command(command)
+    # print(out)
+    # run_bash_command('rm predictions.tmp')
+    # RANKED_LIST_DIR = pathToFolder+'RankedLists/'
+    # if not os.path.exists(RANKED_LIST_DIR):
+    #     os.makedirs(RANKED_LIST_DIR)
+    # PREDICTIONS_FILE = 'predictions'
+    # command='perl '+scriptDir+'order.pl ' + RANKED_LIST_DIR+ 'LambdaMART' + currentTime + ' ' +FEATURES_FILE + ' ' + PREDICTIONS_FILE
+    # print(command)
+    # out=run_bash_command(command)
+    # print(out)
+    # return RANKED_LIST_DIR+ 'LambdaMART' + currentTime
 
 
 
@@ -320,24 +373,25 @@ def backupDocuments(currentTime,baseDir):
 
 
 if __name__=="__main__":
-    baseDir = '/lv_local/home/zivvasilisky/ASR20/epoch_run/'
-    if not os.path.exists(baseDir):
-        os.makedirs(baseDir)
-    changeStatus()
-    print('Status Changed!')
-    sys.stdout.flush()
-    trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
-    print('Files created!')
-    sys.stdout.flush()
-    asrIndex = buildIndex(trecFileName, currentTime, baseDir)
-    print('Index Built!')
-    sys.stdout.flush()
-    mergedIndex = mergeIndices(asrIndex, baseDir)
-    print('Index Merged!')
-    sys.stdout.flush()
+    # baseDir = '/lv_local/home/zivvasilisky/ASR20/epoch_run/'
+    # if not os.path.exists(baseDir):
+    #     os.makedirs(baseDir)
+    # changeStatus()
+    # print('Status Changed!')
+    # sys.stdout.flush()
+    # trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
+    # print('Files created!')
+    # sys.stdout.flush()
+    # asrIndex = buildIndex(trecFileName, currentTime, baseDir)
+    # print('Index Built!')
+    # sys.stdout.flush()
+    # mergedIndex = mergeIndices(asrIndex, baseDir)
+    # print('Index Merged!')
+    # sys.stdout.flush()
     # mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
     # workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2020-11-09-23-55-23-857656'
-    # currentTime = '2021-01-03-23-05-55-344126'
+    currentTime = '2021-01-10-22-42-25-566245'
+    run_bert_model(currentTime)
     # rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir)
     # print('Ranked docs!')
     # rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
