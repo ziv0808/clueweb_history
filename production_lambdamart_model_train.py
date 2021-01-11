@@ -212,8 +212,8 @@ def run_cv_for_config(
         len_handled += 1
 
     feature_groups_num = len(broken_feature_groupname)
-    if snap_calc_limit is not None:
-        feature_groups_num = feature_groups_num - 1
+
+    print(feature_list)
     if len_handled != feature_groups_num:
         raise Exception('Undefined feature group!')
 
