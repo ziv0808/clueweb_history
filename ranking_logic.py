@@ -273,8 +273,6 @@ def create_model_ready_feature_df(
     fin_df = pd.DataFrame({})
     for q in sorted(all_queries):
         tmp_q_df = feature_df[feature_df['QueryNum'] == q].copy()
-        if len(tmp_q_df[tmp_q_df['Relevance'] > 0]) == 0:
-            continue
         for feature in feature_list:
             min_feat = tmp_q_df[feature].min()
             max_feat = tmp_q_df[feature].max()
