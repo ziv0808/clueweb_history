@@ -473,15 +473,15 @@ if __name__=="__main__":
     # mergedIndex = mergeIndices(asrIndex, baseDir)
     # print('Index Merged!')
     # sys.stdout.flush()
-    mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
-    workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-10-22-42-25-566245'
+    # mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
+    # workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-10-22-42-25-566245'
     currentTime = '2021-01-10-22-42-25-566245'
-    rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir)
-    # print('Ranked docs!')
-    # rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
-    # sys.stdout.flush()
-    # updateScores((rankedLists,))
-    # print('Updated docs!')
-    # sys.stdout.flush()
-    # backupDocuments(currentTime,baseDir)
-    # changeStatus()
+    # rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir)
+    print('Ranked docs!')
+    rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
+    sys.stdout.flush()
+    updateScores((rankedLists,))
+    print('Updated docs!')
+    sys.stdout.flush()
+    backupDocuments(currentTime,baseDir)
+    changeStatus()
