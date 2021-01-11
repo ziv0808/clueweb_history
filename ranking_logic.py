@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 import os
+import ast
 import sys
 import datetime
 import unicodedata
@@ -7,7 +8,7 @@ import xml.etree.ElementTree as ET
 import csv
 import subprocess
 from bs4 import BeautifulSoup
-
+import pandas as pd
 
 
 
@@ -227,6 +228,102 @@ def runRankingModels_old(mergedIndex, workingSet, currentTime, baseDir):
     return RANKED_LIST_DIR+ 'LambdaMART' + currentTime
 
 
+def turn_df_to_feature_str_for_model(
+        df,
+        feature_list):
+
+    feature_str = ""
+    for index, row in df.iterrows():
+        feature_str += "0 qid:" + str(int(row['QueryNum']))
+        feat_num = 1
+        for feature in feature_list:
+            feature_str += " " + str(feat_num) + ":" + str(row[feature])
+            feat_num += 1
+
+        feature_str += " # " +row['Docno'] + '\n'
+
+    return feature_str
+
+def create_model_ready_feature_df(
+        currentTime,
+        feature_list = ['Ent', 'FracStops', 'Len', 'LMIR.DIR', 'StopCover', 'TFSum', 'TFNormSum', 'SimClueWeb', 'BM25Score',
+                    'IDF', 'BERTScore']
+        ):
+    with open('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/FeatureIdx/' + currentTime +  '_BERT.json', 'r') as f:
+        bert_dict = ast.literal_eval(f.read())
+
+    all_feature_dict = create_ltr_feature_dict('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/Features/' + currentTime +'/')
+
+    feature_df = pd.DataFrame(columns = ['QueryNum', 'Docno'] + feature_list)
+    next_idx = 0
+    for query in all_feature_dict:
+        for docno in all_feature_dict[query]:
+            insert_row = [query, docno]
+            for feature in feature_list:
+                if feature == 'SimClueWeb':
+                    insert_row.append(1.0)
+                elif feature == 'BERTScore':
+                    insert_row.append(bert_dict[query][docno.split('-')[1]]['BERTScore'])
+                else:
+                    insert_row.append(all_feature_dict[query][docno][feature])
+            feature_df.loc[next_idx] = insert_row
+            next_idx += 1
+
+    all_queries = list(feature_df['QueryNum'].drop_duplicates())
+    fin_df = pd.DataFrame({})
+    for q in sorted(all_queries):
+        tmp_q_df = feature_df[feature_df['QueryNum'] == q].copy()
+        if len(tmp_q_df[tmp_q_df['Relevance'] > 0]) == 0:
+            continue
+        for feature in feature_list:
+            min_feat = tmp_q_df[feature].min()
+            max_feat = tmp_q_df[feature].max()
+            tmp_q_df[feature] = tmp_q_df[feature].apply(
+                lambda x: (x - min_feat) / float(max_feat - min_feat) if (max_feat - min_feat) != 0 else 0.0)
+
+        fin_df = fin_df.append(tmp_q_df, ignore_index=True)
+
+    fin_df.fillna(0.0, inplace=True)
+    feature_str = turn_df_to_feature_str_for_model(df=fin_df, feature_list=feature_list)
+    with open('features', 'w') as f:
+        f.write(feature_str)
+
+
+
+def create_ltr_feature_dict(
+        feature_folder):
+    res_dict = {}
+    for filename in os.listdir(feature_folder):
+        if filename.startswith('doc') and '_' in filename:
+            print(filename)
+            sys.stdout.flush()
+            feature = filename.split('_')[0].replace('doc', '')
+            if feature == 'BM25':
+                feature = 'BM25Score'
+            query = filename.split('_')[1] + '_' + filename.split('_')[2]
+            if query not in res_dict:
+                res_dict[query] = {}
+            with open(os.path.join(feature_folder, filename), 'r') as f:
+                file_str = f.read()
+            file_lines = file_str.split('\n')
+            first_ = True
+            for line in file_lines:
+                if line == '':
+                    continue
+                docno = line.split(' ')[0]
+                if docno not in res_dict[query]:
+                    res_dict[query][docno] = {}
+                if len(line.split(' ')) > 2:
+                    if first_ == True:
+                        print('multiple Features!')
+                        first_ = False
+                    feature_additions = ['Sum', 'Min', 'Max', 'Mean', 'Std']
+                    for i in range(len(feature_additions)):
+                        res_dict[query][docno][feature + feature_additions[i]] = float(line.split(' ')[i + 1])
+                else:
+                    val = float(line.split(' ')[1])
+                    res_dict[query][docno][feature] = val
+    return res_dict
 
 
 def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
@@ -237,7 +334,7 @@ def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
     INDEX = mergedIndex
     WORKING_SET_FILE = workingSet
     MODEL_DIR = baseDir+"content_modification_code/rank_models/"
-    MODEL_FILE = MODEL_DIR+"model_lambdatamart"
+    MODEL_FILE = MODEL_DIR+"static_model_lambdamart_round_2"
     QUERIES_FILE = baseDir+'Data/QueriesFile.xml'
     FEATURES_DIR = pathToFolder + 'Features/' +  currentTime
     if not os.path.exists(FEATURES_DIR):
@@ -249,36 +346,26 @@ def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
     print(out)
     run_command('mv doc*_* ' + FEATURES_DIR)
     run_bert_model(currentTime)
-
-
-
-    #
-    # command='perl '+scriptDir+'generate.pl ' + FEATURES_DIR + ' ' + WORKING_SET_FILE
-    # print(command)
-    # out=run_bash_command(command)
-    # print(out)
-    # # waterloo=get_waterloo_scores()
-    # # normalized_scores = create_normalized_scores(waterloo)
-    # # FEATURES_FILE=rewrite_features(normalized_scores,ORIGINAL_FEATURES_FILE)
-    # FEATURES_FILE = ORIGINAL_FEATURES_FILE
-    # command = 'java -jar '+scriptDir+'RankLib.jar -load ' + MODEL_FILE + ' -rank '+FEATURES_FILE+' -score predictions.tmp'
-    # print(command)
-    # out=run_bash_command(command)
-    # print(out)
-    # command = 'cut -f3 predictions.tmp > predictions'
-    # print(command)
-    # out=run_bash_command(command)
-    # print(out)
-    # run_bash_command('rm predictions.tmp')
-    # RANKED_LIST_DIR = pathToFolder+'RankedLists/'
-    # if not os.path.exists(RANKED_LIST_DIR):
-    #     os.makedirs(RANKED_LIST_DIR)
-    # PREDICTIONS_FILE = 'predictions'
-    # command='perl '+scriptDir+'order.pl ' + RANKED_LIST_DIR+ 'LambdaMART' + currentTime + ' ' +FEATURES_FILE + ' ' + PREDICTIONS_FILE
-    # print(command)
-    # out=run_bash_command(command)
-    # print(out)
-    # return RANKED_LIST_DIR+ 'LambdaMART' + currentTime
+    create_model_ready_feature_df(currentTime)
+    FEATURES_FILE = ORIGINAL_FEATURES_FILE
+    command = 'java -jar '+scriptDir+'RankLib.jar -load ' + MODEL_FILE + ' -rank '+FEATURES_FILE+' -score predictions.tmp'
+    print(command)
+    out=run_bash_command(command)
+    print(out)
+    command = 'cut -f3 predictions.tmp > predictions'
+    print(command)
+    out=run_bash_command(command)
+    print(out)
+    run_bash_command('rm predictions.tmp')
+    RANKED_LIST_DIR = pathToFolder+'RankedLists/'
+    if not os.path.exists(RANKED_LIST_DIR):
+        os.makedirs(RANKED_LIST_DIR)
+    PREDICTIONS_FILE = 'predictions'
+    command='perl '+scriptDir+'order.pl ' + RANKED_LIST_DIR+ 'LambdaMART' + currentTime + ' ' +FEATURES_FILE + ' ' + PREDICTIONS_FILE
+    print(command)
+    out=run_bash_command(command)
+    print(out)
+    return RANKED_LIST_DIR+ 'LambdaMART' + currentTime
 
 
 
@@ -373,7 +460,7 @@ def backupDocuments(currentTime,baseDir):
 
 
 if __name__=="__main__":
-    # baseDir = '/lv_local/home/zivvasilisky/ASR20/epoch_run/'
+    baseDir = '/lv_local/home/zivvasilisky/ASR20/epoch_run/'
     # if not os.path.exists(baseDir):
     #     os.makedirs(baseDir)
     # changeStatus()
@@ -388,11 +475,10 @@ if __name__=="__main__":
     # mergedIndex = mergeIndices(asrIndex, baseDir)
     # print('Index Merged!')
     # sys.stdout.flush()
-    # mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
-    # workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2020-11-09-23-55-23-857656'
+    mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
+    workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-10-22-42-25-566245'
     currentTime = '2021-01-10-22-42-25-566245'
-    run_bert_model(currentTime)
-    # rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir)
+    rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir)
     # print('Ranked docs!')
     # rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
     # sys.stdout.flush()
