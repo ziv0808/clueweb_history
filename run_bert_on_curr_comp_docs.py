@@ -46,7 +46,7 @@ def read_current_doc_file(doc_filepath):
             stats[query] = {}
 
         stats[query][user] = {}
-        stats[query]['FullText'] = fulltext
+        stats[query][user]['FullText'] = fulltext
 
     return stats
 
