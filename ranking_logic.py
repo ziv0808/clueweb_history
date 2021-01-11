@@ -234,7 +234,7 @@ def turn_df_to_feature_str_for_model(
 
     feature_str = ""
     for index, row in df.iterrows():
-        feature_str += "0 qid:" + str(int(row['QueryNum']))
+        feature_str += "0 qid:" + str(row['QueryNum'])
         feat_num = 1
         for feature in feature_list:
             feature_str += " " + str(feat_num) + ":" + str(row[feature])
