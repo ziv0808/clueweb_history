@@ -249,6 +249,18 @@ def make_adverserial_dict_by_method(
             adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
                                                     docno_list=docno_list,
                                                     dataset_name=dataset_name)
+    elif adverserial_method == 'Prev2Winners':
+        rel_df = pd.DataFrame({})
+        for round_ in range(max(1, int(curr_round) - 2), int(curr_round)):
+            rel_df = rel_df.append(prev_rounds_dict[round_], ignore_index=True)
+        for q in list(rel_df['Query_ID'].drop_duplicates()):
+            q_df = rel_df[rel_df['Query_ID'] == q].copy()
+            q_df = q_df[q_df['Rank'] == 1]
+            docno_list = list(q_df['Docno'])
+            adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
+                docno_list=docno_list,
+                dataset_name=dataset_name)
+
     elif adverserial_method == 'Prev3Winners':
         rel_df = pd.DataFrame({})
         for round_ in range(max(1, int(curr_round) -3), int(curr_round)):
@@ -280,7 +292,7 @@ def make_adverserial_dict_by_method(
                 docno_list=docno_list,
                 dataset_name=dataset_name)
 
-    elif adverserial_method == 'Prev3BestImprove':
+    elif adverserial_method == 'Prev2BestImprove':
         rel_round = int(curr_round) - 1
         rel_df = prev_rounds_dict[rel_round]
         rel_df = pd.merge(
@@ -296,7 +308,30 @@ def make_adverserial_dict_by_method(
                 q_df = q_df[q_df['Rank'] == q_df['Rank'].max()]
             docno_list = list(q_df['Docno'])
             if (rel_round - 2) >= 1:
+                docno_list.append('EPOCH-' + str(rel_round - 1).zfill(2) + '-' + list(q_df['Query-User'])[0])
+            adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
+                docno_list=docno_list,
+                dataset_name=dataset_name)
+
+    elif adverserial_method == 'Prev3BestImprove':
+        rel_round = int(curr_round) - 1
+        rel_df = prev_rounds_dict[rel_round]
+        rel_df = pd.merge(
+            rel_df,
+            prev_rounds_dict[max(rel_round - 3, 1)][['Query-User', 'Rank']].rename(columns={'Rank': 'PrevRank'}),
+            on=['Query-User'],
+            how='inner')
+        rel_df['RankDiff'] = rel_df['PrevRank'] - rel_df['Rank']
+        for q in list(rel_df['Query_ID'].drop_duplicates()):
+            q_df = rel_df[rel_df['Query_ID'] == q].copy()
+            q_df = q_df[q_df['RankDiff'] == q_df['RankDiff'].max()]
+            if len(q_df) > 1:
+                q_df = q_df[q_df['Rank'] == q_df['Rank'].max()]
+            docno_list = list(q_df['Docno'])
+            if (rel_round - 2) >= 1:
                 docno_list.append('EPOCH-' + str(rel_round - 1).zfill(2) + '-' +list(q_df['Query-User'])[0])
+            if (rel_round - 3) >= 1:
+                docno_list.append('EPOCH-' + str(rel_round - 2).zfill(2) + '-' + list(q_df['Query-User'])[0])
             adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
                 docno_list=docno_list,
                 dataset_name=dataset_name)
