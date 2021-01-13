@@ -362,7 +362,6 @@ if __name__=='__main__':
     model_to_run = sys.argv[1]
     inner_fold = sys.argv[2]
     train_leave_one_out = ast.literal_eval(sys.argv[3])
-    only_reservoir_lambda = ast.literal_eval(sys.argv[3])
 
     sw_rmv = True
     asrc_round = inner_fold.split('_')[-1]
@@ -392,6 +391,8 @@ if __name__=='__main__':
 
     if 'Mixture' in model_to_run:
         adverserial_method = sys.argv[4]
+        only_reservoir_lambda = ast.literal_eval(sys.argv[5])
+
         save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/'
         if 'JM' in model_to_run:
             beta_option_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
