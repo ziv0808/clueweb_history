@@ -362,6 +362,7 @@ if __name__=='__main__':
     model_to_run = sys.argv[1]
     inner_fold = sys.argv[2]
     train_leave_one_out = ast.literal_eval(sys.argv[3])
+    only_reservoir_lambda = ast.literal_eval(sys.argv[3])
 
     sw_rmv = True
     asrc_round = inner_fold.split('_')[-1]
@@ -399,7 +400,10 @@ if __name__=='__main__':
 
         lambda1_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
         lambda2_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-
+        addition_to_filename = ""
+        if only_reservoir_lambda == True:
+            lambda1_option_list = [0.0]
+        addition_to_filename = "_OnlyReservoir"
         adverserial_dict = make_adverserial_dict_by_method(
             dataset_name=datset_name,
             curr_round=asrc_round,
@@ -408,7 +412,7 @@ if __name__=='__main__':
         for fold in fold_list:
             start_test_q = int(fold[0])
             end_test_q = int(fold[1])
-            affix = inner_fold + '_' + str(start_test_q) + '_' + str(end_test_q) + "_" + adverserial_method + "_" + model_to_run
+            affix = inner_fold + '_' + str(start_test_q) + '_' + str(end_test_q) + "_" + adverserial_method + "_" + model_to_run +addition_to_filename
 
             stemmed_queries_df = create_stemmed_queries_df(sw_rmv=sw_rmv, limited_q_list=limited_q_list)
 
@@ -494,7 +498,7 @@ if __name__=='__main__':
             all_folds_df = all_folds_df.append(test_fold_df, ignore_index=True)
             all_fold_params_summary += str(start_test_q) + '_' + str(end_test_q) + '\t' + str(best_config_dict) + '\n'
 
-        filenam_addition = "_" + model_to_run
+        filenam_addition = "_" + model_to_run + addition_to_filename
         if train_leave_one_out == True:
             filenam_addition += "_LoO"
         curr_file_name = inner_fold + '_' + adverserial_method + filenam_addition + "_Results.txt"
