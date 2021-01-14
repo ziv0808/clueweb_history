@@ -335,6 +335,8 @@ def make_adverserial_dict_by_method(
             adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
                 docno_list=docno_list,
                 dataset_name=dataset_name)
+    else:
+        raise Exception("unknown method!")
 
     return adverserial_dict
 
@@ -455,37 +457,61 @@ if __name__=='__main__':
                     best_config_dict = params.copy()
                     print(best_config_dict)
 
-            for lambda1 in lambda1_option_list:
-                for lambda2 in lambda2_option_list:
-                    if (lambda1 + lambda2) >= 1:
-                        continue
-                    params = {'Lambda1': lambda1,
-                              'Lambda2': lambda2}
-                    if 'JM' in model_to_run:
-                        params['Beta'] = best_config_dict['Beta']
-                    elif 'DIR' in model_to_run:
-                        params['Mue'] = best_config_dict['Mue']
-                    print(params)
-                    big_df = test_queries(
-                                stemmed_queries_df=train_queries_df,
-                                query_to_doc_mapping_df=query_to_doc_mapping_df,
-                                all_query_adveserial_dict=adverserial_dict,
-                                collection_dict=cc_dict,
-                                params=params,
-                                processed_docs_path=processed_docs_folder,
-                                model_to_run=model_to_run)
+            for k in range(1,4):
+                if adverserial_method == 'PrevWinner':
+                    if k == 1:
+                        curr_adverserial_method = 'PrevWinner'
+                    else:
+                        curr_adverserial_method = 'Prev' + str(k) +'Winners'
+                    adverserial_dict = make_adverserial_dict_by_method(
+                        dataset_name=datset_name,
+                        curr_round=asrc_round,
+                        adverserial_method=curr_adverserial_method)
+                elif adverserial_method == 'PrevBestImprove':
+                    if k == 1:
+                        curr_adverserial_method = 'PrevBestImprove'
+                    else:
+                        curr_adverserial_method = 'Prev' + str(k) + 'BestImprove'
+                else:
+                    raise Exception("Fucker!!!")
 
-                    res_dict = get_score_retrieval_score_for_df(
-                        affix=affix,
-                        big_df=big_df,
-                        qrel_filepath=qrel_filepath,
-                        save_folder=save_folder)
+                for lambda1 in lambda1_option_list:
+                    for lambda2 in lambda2_option_list:
+                        if (lambda1 + lambda2) >= 1:
+                            continue
+                        params = {'Lambda1': lambda1,
+                                  'Lambda2': lambda2,
+                                  'AdverMethod' : curr_adverserial_method}
+                        if 'JM' in model_to_run:
+                            params['Beta'] = best_config_dict['Beta']
+                        elif 'DIR' in model_to_run:
+                            params['Mue'] = best_config_dict['Mue']
+                        print(params)
+                        big_df = test_queries(
+                                    stemmed_queries_df=train_queries_df,
+                                    query_to_doc_mapping_df=query_to_doc_mapping_df,
+                                    all_query_adveserial_dict=adverserial_dict,
+                                    collection_dict=cc_dict,
+                                    params=params,
+                                    processed_docs_path=processed_docs_folder,
+                                    model_to_run=model_to_run)
 
-                    if res_dict['all']['NDCG@5'] > best_ndcg:
-                        print(affix + " " + "SCORE : " + str(res_dict['all']))
-                        best_ndcg = res_dict['all']['NDCG@5']
-                        best_config_dict = params.copy()
-                        print(best_config_dict)
+                        res_dict = get_score_retrieval_score_for_df(
+                            affix=affix,
+                            big_df=big_df,
+                            qrel_filepath=qrel_filepath,
+                            save_folder=save_folder)
+
+                        if res_dict['all']['NDCG@5'] > best_ndcg:
+                            print(affix + " " + "SCORE : " + str(res_dict['all']))
+                            best_ndcg = res_dict['all']['NDCG@5']
+                            best_config_dict = params.copy()
+                            print(best_config_dict)
+
+            adverserial_dict = make_adverserial_dict_by_method(
+                dataset_name=datset_name,
+                curr_round=asrc_round,
+                adverserial_method=best_config_dict['AdverMethod'])
 
             test_fold_df = test_queries(
                                     stemmed_queries_df=test_queries_df,
