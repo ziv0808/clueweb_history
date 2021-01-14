@@ -406,7 +406,8 @@ if __name__=='__main__':
         addition_to_filename = ""
         if only_reservoir_lambda == True:
             lambda1_option_list = [0.0]
-        addition_to_filename = "_OnlyReservoir"
+            addition_to_filename = "_OnlyReservoir"
+
         adverserial_dict = make_adverserial_dict_by_method(
             dataset_name=datset_name,
             curr_round=asrc_round,
