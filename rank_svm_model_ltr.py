@@ -43,8 +43,11 @@ def run_cv_for_config(
     if with_bert_as_feature == True:
         base_feature_list.append('BERTScore')
 
-    mm_feature_list = ['JMPrevWinner', 'JMPrev3Winners', 'JMPrevBestImprove', 'JMPrev3BestImprove', 'DIRPrevWinner',
-                           'DIRPrev3Winners', 'DIRPrevBestImprove', 'DIRPrev3BestImprove']
+    mm_feature_list = ['JMPrevWinner', 'JMPrev2Winners', 'JMPrev3Winners',
+                       'JMPrevBestImprove','JMPrev2BestImprove','JMPrev3BestImprove',
+                       'DIRPrevWinner', 'DIRPrev2Winners', 'DIRPrev3Winners',
+                       'DIRPrevBestImprove','DIRPrev2BestImprove','DIRPrev3BestImprove',
+                       'JMOnlyReservoir', 'DIROnlyReservoir']
     mm_features = []
     if limited_features_list is not None:
         base_feature_list = limited_features_list
