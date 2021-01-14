@@ -9,7 +9,7 @@ import csv
 import subprocess
 from bs4 import BeautifulSoup
 import pandas as pd
-
+from utils import calc_cosine
 
 
 def changeStatus():
@@ -244,49 +244,170 @@ def turn_df_to_feature_str_for_model(
 
     return feature_str
 
+def read_current_doc_file(doc_filepath):
+    stats = {}
+    with open(doc_filepath, 'r') as f:
+        soup = BeautifulSoup(f.read())
+    all_docs = soup.find_all('doc')
+
+    for doc_ in list(all_docs):
+        docno = doc_.find('docno').text
+        fulltext = doc_.find('text').text
+        query = docno.split('-')[0]
+        user =docno.split('-')[1]
+        if query not in stats:
+            stats[query] = {}
+
+        stats[query][user] = {}
+        stats[query][user]['FullText'] = fulltext
+
+    return stats
+
 def create_model_ready_feature_df(
         currentTime,
         feature_list = ['Ent', 'FracStops', 'Len', 'LMIR.DIR', 'StopCover', 'TFSum', 'TFNormSum', 'SimClueWeb', 'BM25Score',
-                    'IDF', 'BERTScore']
-        ):
+                    'IDF', 'BERTScore'],
+        static = True,
+        prev_rounds_list = [],
+        baseDir =None):
     with open('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/FeatureIdx/' + currentTime +  '_BERT.json', 'r') as f:
         bert_dict = ast.literal_eval(f.read())
 
     all_feature_dict = create_ltr_feature_dict('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/Features/' + currentTime +'/')
 
-    feature_df = pd.DataFrame(columns = ['QueryNum', 'Docno'] + feature_list)
-    next_idx = 0
-    for query in all_feature_dict:
-        for docno in all_feature_dict[query]:
-            insert_row = [query, docno]
+    if static == True:
+        feature_df = pd.DataFrame(columns = ['QueryNum', 'Docno'] + feature_list)
+        next_idx = 0
+        for query in all_feature_dict:
+            if query.split('_')[1] == '0':
+                for docno in all_feature_dict[query]:
+                    insert_row = [query, docno]
+                    for feature in feature_list:
+                        if feature == 'SimClueWeb':
+                            insert_row.append(1.0)
+                        elif feature == 'BERTScore':
+                            insert_row.append(bert_dict[query][docno.split('-')[1]]['BERTScore'])
+                        else:
+                            insert_row.append(all_feature_dict[query][docno][feature])
+                    feature_df.loc[next_idx] = insert_row
+                    next_idx += 1
+
+        all_queries = list(feature_df['QueryNum'].drop_duplicates())
+        fin_df = pd.DataFrame({})
+        for q in sorted(all_queries):
+            tmp_q_df = feature_df[feature_df['QueryNum'] == q].copy()
             for feature in feature_list:
-                if feature == 'SimClueWeb':
-                    insert_row.append(1.0)
-                elif feature == 'BERTScore':
-                    insert_row.append(bert_dict[query][docno.split('-')[1]]['BERTScore'])
-                else:
-                    insert_row.append(all_feature_dict[query][docno][feature])
-            feature_df.loc[next_idx] = insert_row
-            next_idx += 1
+                min_feat = tmp_q_df[feature].min()
+                max_feat = tmp_q_df[feature].max()
+                tmp_q_df[feature] = tmp_q_df[feature].apply(
+                    lambda x: (x - min_feat) / float(max_feat - min_feat) if (max_feat - min_feat) != 0 else 0.0)
 
-    all_queries = list(feature_df['QueryNum'].drop_duplicates())
-    fin_df = pd.DataFrame({})
-    for q in sorted(all_queries):
-        tmp_q_df = feature_df[feature_df['QueryNum'] == q].copy()
-        for feature in feature_list:
-            min_feat = tmp_q_df[feature].min()
-            max_feat = tmp_q_df[feature].max()
-            tmp_q_df[feature] = tmp_q_df[feature].apply(
-                lambda x: (x - min_feat) / float(max_feat - min_feat) if (max_feat - min_feat) != 0 else 0.0)
+            fin_df = fin_df.append(tmp_q_df, ignore_index=True)
 
-        fin_df = fin_df.append(tmp_q_df, ignore_index=True)
+        fin_df.fillna(0.0, inplace=True)
+        feature_str = turn_df_to_feature_str_for_model(df=fin_df, feature_list=feature_list)
+        with open('features_0', 'w') as f:
+            f.write(feature_str)
+    else:
+        base_feature_list = feature_list[:]
+        broken_feature_groupname = "".split('_')
+        if 'MGXXSnap' in broken_feature_groupname:
+            for base_feat in base_feature_list:
+                feature_list.append(base_feat + '_MGXXSnaps')
+        if 'MXXSnap' in broken_feature_groupname:
+            for base_feat in base_feature_list:
+                feature_list.append(base_feat + '_MXXSnaps')
+        if 'STDXXSnap' in broken_feature_groupname:
+            for base_feat in base_feature_list:
+                feature_list.append(base_feat + '_STDXXSnaps')
+        if 'MinXXSnap' in broken_feature_groupname:
+            for base_feat in base_feature_list:
+                feature_list.append(base_feat + '_MinXXSnaps')
+        if 'MaxXXSnap' in broken_feature_groupname:
+            for base_feat in base_feature_list:
+                feature_list.append(base_feat + '_MaxXXSnaps')
 
-    fin_df.fillna(0.0, inplace=True)
-    feature_str = turn_df_to_feature_str_for_model(df=fin_df, feature_list=feature_list)
-    with open('features', 'w') as f:
-        f.write(feature_str)
+        historical_feature_dict = {}
+        parsed_curr_file_dict = read_current_doc_file(baseDir + 'Collections/TrecText/' + currentTime)
+        for historical_snap in prev_rounds_list:
+            with open('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/FeatureIdx/' + historical_snap + '_BERT.json','r') as f:
+                curr_snap_bert_dict = ast.literal_eval(f.read())
+            curr_snap_all_feature_dict = create_ltr_feature_dict('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/Features/' + historical_snap + '/')
+            parsed_curr_snap_file_dict = read_current_doc_file(baseDir + 'Collections/TrecText/' + historical_snap)
 
+            for query in curr_snap_all_feature_dict:
+                if query.split('_')[1] != '0':
+                    if query not in historical_feature_dict:
+                        historical_feature_dict[query] = {}
+                    for docno in curr_snap_all_feature_dict[query]:
+                        if docno not in historical_feature_dict[query]:
+                            historical_feature_dict[query][docno] = {}
+                        for feature in base_feature_list:
+                            if feature not in historical_feature_dict[query][docno]:
+                                historical_feature_dict[query][docno][feature] = []
+                            if feature == 'SimClueWeb':
+                                pass
+                            elif feature == 'BERTScore':
+                                historical_feature_dict[query][docno][feature].append(curr_snap_bert_dict[query][docno.split('-')[1]]['BERTScore'])
+                            else:
+                                historical_feature_dict[query][docno][feature].append(curr_snap_all_feature_dict[query][docno][feature])
 
+        feature_df = pd.DataFrame(columns=['QueryNum', 'Docno'] + feature_list)
+        next_idx = 0
+        for query in all_feature_dict:
+            if query.split('_')[1] != '0':
+                for docno in all_feature_dict[query]:
+                    insert_row = [query, docno]
+                    for feature in feature_list:
+                        if 'XXSnap' in feature:
+                            if '_MXXSnaps' in feature:
+                                insert_row.append(pd.np.mean(historical_feature_dict[query][docno][feature.replace('_MXXSnaps','')]))
+                            elif '_STDXXSnaps' in feature:
+                                insert_row.append(pd.np.std(historical_feature_dict[query][docno][feature.replace('_STDXXSnaps', '')]))
+                            elif '_MinXXSnaps' in feature:
+                                insert_row.append(pd.np.min(historical_feature_dict[query][docno][feature.replace('_MinXXSnaps', '')]))
+                            elif '_MaxXXSnaps' in feature:
+                                insert_row.append(pd.np.max(historical_feature_dict[query][docno][feature.replace('_MaxXXSnaps', '')]))
+                            elif '_MGXXSnaps' in feature:
+                                raw_feat = feature.replace('_MGXXSnaps', '')
+                                if raw_feat == 'SimClueWeb':
+                                    curr_snap_score = 1.0
+                                elif raw_feat == 'BERTScore':
+                                    curr_snap_score = bert_dict[query][docno.split('-')[1]]['BERTScore']
+                                else:
+                                    curr_snap_score = all_feature_dict[query][docno][raw_feat]
+                                curr_feat_list = historical_feature_dict[query][docno][raw_feat]
+                                curr_feat_list.append(curr_snap_score)
+                                avg_score = 0.0
+                                for i in range(1,len(curr_feat_list)):
+                                    avg_score += (curr_feat_list[i] - curr_feat_list[i-1]) / float(curr_feat_list[i-1])
+                                avg_score = avg_score / float(len(curr_feat_list) - 1)
+                                insert_row.append(avg_score)
+
+                        elif feature == 'SimClueWeb':
+                            insert_row.append(1.0)
+                        elif feature == 'BERTScore':
+                            insert_row.append(bert_dict[query][docno.split('-')[1]]['BERTScore'])
+                        else:
+                            insert_row.append(all_feature_dict[query][docno][feature])
+                    feature_df.loc[next_idx] = insert_row
+                    next_idx += 1
+        all_queries = list(feature_df['QueryNum'].drop_duplicates())
+        fin_df = pd.DataFrame({})
+        for q in sorted(all_queries):
+            tmp_q_df = feature_df[feature_df['QueryNum'] == q].copy()
+            for feature in feature_list:
+                min_feat = tmp_q_df[feature].min()
+                max_feat = tmp_q_df[feature].max()
+                tmp_q_df[feature] = tmp_q_df[feature].apply(
+                    lambda x: (x - min_feat) / float(max_feat - min_feat) if (max_feat - min_feat) != 0 else 0.0)
+
+            fin_df = fin_df.append(tmp_q_df, ignore_index=True)
+
+        fin_df.fillna(0.0, inplace=True)
+        feature_str = turn_df_to_feature_str_for_model(df=fin_df, feature_list=feature_list)
+        with open('features_1', 'w') as f:
+            f.write(feature_str)
 
 def create_ltr_feature_dict(
         feature_folder):
@@ -324,7 +445,7 @@ def create_ltr_feature_dict(
     return res_dict
 
 
-def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
+def runRankingModels(mergedIndex, workingSet, currentTime, baseDir, curr_static_model, curr_s_msmm_mg_model, prev_rounds_list):
     scriptDir = '/lv_local/home/zivvasilisky/ziv/content_modification_code/scripts/'
     pathToFolder = baseDir + 'Results/'
     if not os.path.exists(pathToFolder):
@@ -332,21 +453,22 @@ def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
     INDEX = mergedIndex
     WORKING_SET_FILE = workingSet
     MODEL_DIR = baseDir+"content_modification_code/rank_models/"
-    MODEL_FILE = MODEL_DIR+"static_model_lambdamart_round_2"
+    STATIC_MODEL_FILE = MODEL_DIR+curr_static_model
+    FULL_MODEL_FILE = MODEL_DIR+curr_s_msmm_mg_model
     QUERIES_FILE = baseDir+'Data/QueriesFile.xml'
     FEATURES_DIR = pathToFolder + 'Features/' +  currentTime
     if not os.path.exists(FEATURES_DIR):
         os.makedirs(FEATURES_DIR)
-    ORIGINAL_FEATURES_FILE = 'features'
+    CONTROL_FEATURES_FILE = 'features_0'
     command = scriptDir+'LTRFeatures ' + QUERIES_FILE + ' -stream=doc -index=' + INDEX + ' -repository='+ INDEX +' -useWorkingSet=true -workingSetFile='+ WORKING_SET_FILE + ' -workingSetFormat=trec'
     print(command)
     out = run_bash_command(command)
     print(out)
     run_command('mv doc*_* ' + FEATURES_DIR)
     run_bert_model(currentTime)
-    create_model_ready_feature_df(currentTime)
-    FEATURES_FILE = ORIGINAL_FEATURES_FILE
-    command = 'java -jar '+scriptDir+'RankLib.jar -load ' + MODEL_FILE + ' -rank '+FEATURES_FILE+' -score predictions.tmp'
+    create_model_ready_feature_df(currentTime, static=True)
+    FEATURES_FILE = CONTROL_FEATURES_FILE
+    command = 'java -jar '+scriptDir+'RankLib.jar -load ' + STATIC_MODEL_FILE + ' -rank '+FEATURES_FILE+' -score predictions.tmp'
     print(command)
     out=run_bash_command(command)
     print(out)
@@ -359,10 +481,34 @@ def runRankingModels(mergedIndex, workingSet, currentTime, baseDir):
     if not os.path.exists(RANKED_LIST_DIR):
         os.makedirs(RANKED_LIST_DIR)
     PREDICTIONS_FILE = 'predictions'
-    command='perl '+scriptDir+'order.pl ' + RANKED_LIST_DIR+ 'LambdaMART' + currentTime + ' ' +FEATURES_FILE + ' ' + PREDICTIONS_FILE
+    command='perl '+scriptDir+'order.pl ' + RANKED_LIST_DIR+ 'LambdaMART_0_' + currentTime + ' ' +FEATURES_FILE + ' ' + PREDICTIONS_FILE
     print(command)
     out=run_bash_command(command)
     print(out)
+
+    create_model_ready_feature_df(currentTime, static=False,prev_rounds_list=prev_rounds_list,baseDir=baseDir)
+    TEST_FEATURES_FILE = 'features_1'
+    FEATURES_FILE = TEST_FEATURES_FILE
+
+    command = 'java -jar ' + scriptDir + 'RankLib.jar -load ' + FULL_MODEL_FILE + ' -rank ' + FEATURES_FILE + ' -score predictions.tmp'
+    print(command)
+    out = run_bash_command(command)
+    print(out)
+    command = 'cut -f3 predictions.tmp > predictions'
+    print(command)
+    out = run_bash_command(command)
+    print(out)
+    run_bash_command('rm predictions.tmp')
+    PREDICTIONS_FILE = 'predictions'
+    command = 'perl ' + scriptDir + 'order.pl ' + RANKED_LIST_DIR + 'LambdaMART_1_' + currentTime + ' ' + FEATURES_FILE + ' ' + PREDICTIONS_FILE
+    print(command)
+    out = run_bash_command(command)
+    print(out)
+
+    static_res_file = RANKED_LIST_DIR + 'LambdaMART_0_' + currentTime
+    full_model_res_file = RANKED_LIST_DIR + 'LambdaMART_1_' + currentTime
+    run_bash_command('cat '  + static_res_file + ' ' + full_model_res_file + ' > ' +RANKED_LIST_DIR +'LambdaMART' + currentTime)
+
     return RANKED_LIST_DIR+ 'LambdaMART' + currentTime
 
 
@@ -459,29 +605,32 @@ def backupDocuments(currentTime,baseDir):
 
 if __name__=="__main__":
     baseDir = '/lv_local/home/zivvasilisky/ASR20/epoch_run/'
-    # if not os.path.exists(baseDir):
-    #     os.makedirs(baseDir)
-    # changeStatus()
-    # print('Status Changed!')
-    # sys.stdout.flush()
-    # trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
-    # print('Files created!')
-    # sys.stdout.flush()
-    # asrIndex = buildIndex(trecFileName, currentTime, baseDir)
-    # print('Index Built!')
-    # sys.stdout.flush()
-    # mergedIndex = mergeIndices(asrIndex, baseDir)
-    # print('Index Merged!')
-    # sys.stdout.flush()
-    # mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
-    # workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-10-22-42-25-566245'
-    currentTime = '2021-01-10-22-42-25-566245'
-    # rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir)
-    print('Ranked docs!')
-    rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
-    sys.stdout.flush()
-    updateScores((rankedLists,))
-    print('Updated docs!')
-    sys.stdout.flush()
-    backupDocuments(currentTime,baseDir)
+    if not os.path.exists(baseDir):
+        os.makedirs(baseDir)
     changeStatus()
+    print('Status Changed!')
+    sys.stdout.flush()
+    trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
+    print('Files created!')
+    sys.stdout.flush()
+    asrIndex = buildIndex(trecFileName, currentTime, baseDir)
+    print('Index Built!')
+    sys.stdout.flush()
+    mergedIndex = mergeIndices(asrIndex, baseDir)
+    print('Index Merged!')
+    sys.stdout.flush()
+    curr_static_model = 'static_model_lambdamart_round_2'
+    curr_s_msmm_mg_model = 'static_msmm_mg_model_lambdamart_round_2'
+    prev_rounds_list = ['2021-01-10-22-42-25-566245']
+    ### mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
+    ### workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-10-22-42-25-566245'
+    ### currentTime = '2021-01-10-22-42-25-566245'
+    # rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir, curr_static_model, curr_s_msmm_mg_model, prev_rounds_list)
+    # print('Ranked docs!')
+    # rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
+    # sys.stdout.flush()
+    # updateScores((rankedLists,))
+    # print('Updated docs!')
+    # sys.stdout.flush()
+    # backupDocuments(currentTime,baseDir)
+    # changeStatus()
