@@ -2032,20 +2032,32 @@ def unite_asrc_data_results(
                      'FileTemplate': '<DatasetName>_0<RoundNum>_BERT_Concat_Inc_Results.txt'},
             'MM PrevWinner JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                 'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_Results.txt'},
+            'MM Prev2Winners JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+                                   'FileTemplate': '<DatasetName>_0<RoundNum>_Prev2Winners_MixtureJM_Results.txt'},
             'MM Prev3Winners JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                 'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3Winners_Results.txt'},
             'MM PrevBestImprove JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                 'FileTemplate': '<DatasetName>_0<RoundNum>_PrevBestImprove_Results.txt'},
+            'MM Prev2BestImprove JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+                                        'FileTemplate': '<DatasetName>_0<RoundNum>_Prev2BestImprove_MixtureJM_Results.txt'},
             'MM Prev3BestImprove JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
-                                'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3BestImprove_Results.txt'},
+                                'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3BestImprove_MixtureJM_Results.txt'},
             'MM PrevWinner DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                  'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_MixtureDIR_Results.txt'},
+            'MM Prev2Winners DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+                                    'FileTemplate': '<DatasetName>_0<RoundNum>_Prev2Winners_MixtureDIR_Results.txt'},
             'MM Prev3Winners DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                     'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3Winners_MixtureDIR_Results.txt'},
             'MM PrevBestImprove DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                       'FileTemplate': '<DatasetName>_0<RoundNum>_PrevBestImprove_MixtureDIR_Results.txt'},
+            'MM Prev2BestImprove DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+                                        'FileTemplate': '<DatasetName>_0<RoundNum>_Prev2BestImprove_MixtureDIR_Results.txt'},
             'MM Prev3BestImprove DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                         'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3BestImprove_MixtureDIR_Results.txt'},
+            'MM OnlyReservoir DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+                                        'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_MixtureDIR_OnlyReservoir_Results.txt'},
+            'MM OnlyReservoir JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+                                     'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_MixtureJM_OnlyReservoir_Results.txt'},
             'Orig. Ranker': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/data/<DatasetName>/<DatasetName>_0<RoundNum>/RankedLists/',
                             'FileTemplate': 'LambdaMART_<DatasetName>_0<RoundNum>'},
             'LM JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/basic_lm/',
@@ -2430,8 +2442,11 @@ def orginize_mm_features_data_compare(
 
     addition_to_inner_fold_bkp = addition_to_inner_fold
     feature_inner_fold_list = [('None', addition_to_inner_fold)]
-    mm_feature_list = ['JMPrevWinner', 'JMPrev3Winners', 'JMPrevBestImprove', 'JMPrev3BestImprove', 'DIRPrevWinner',
-                       'DIRPrev3Winners', 'DIRPrevBestImprove', 'DIRPrev3BestImprove']
+    mm_feature_list = ['JMPrevWinner', 'JMPrev2Winners', 'JMPrev3Winners',
+                       'JMPrevBestImprove','JMPrev2BestImprove','JMPrev3BestImprove',
+                       'DIRPrevWinner', 'DIRPrev2Winners', 'DIRPrev3Winners',
+                       'DIRPrevBestImprove','DIRPrev2BestImprove','DIRPrev3BestImprove',
+                       'JMOnlyReservoir', 'DIROnlyReservoir']
     for mm_feture in mm_feature_list:
         feature_inner_fold_list.append((mm_feture, addition_to_inner_fold + create_feature_list_shortcut_string([mm_feture])))
 
