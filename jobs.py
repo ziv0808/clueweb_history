@@ -1770,9 +1770,11 @@ def create_mixture_models_feature_dict(
             round = broken_name[1]
             method = broken_name[2]
             model = broken_name[3]
+            if '_OnlyReservoir' in filename:
+                method = 'OnlyReservoir'
             if model == 'MixtureDIR':
                 model = 'DIR'
-            elif model == 'LoO':
+            elif model == 'LoO' or model == 'MixtureJM':
                 model = 'JM'
             else:
                 raise Exception("create_mixture_models_feature_dict: Unknown model")
@@ -1845,7 +1847,11 @@ def create_base_features_for_asrc_with_ltr_features(
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
                          'TFNormMean','TFNormStd','VSM', 'SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore','BM25Score']
 
-    mm_feature_list = ['JMPrevWinner', 'JMPrev3Winners','JMPrevBestImprove','JMPrev3BestImprove','DIRPrevWinner', 'DIRPrev3Winners','DIRPrevBestImprove','DIRPrev3BestImprove']
+    mm_feature_list = ['JMPrevWinner', 'JMPrev2Winners', 'JMPrev3Winners',
+                       'JMPrevBestImprove','JMPrev2BestImprove','JMPrev3BestImprove',
+                       'DIRPrevWinner', 'DIRPrev2Winners', 'DIRPrev3Winners',
+                       'DIRPrevBestImprove','DIRPrev2BestImprove','DIRPrev3BestImprove',
+                       'JMOnlyReservoir', 'DIROnlyReservoir']
     base_feature_list.extend(mm_feature_list)
     col_list = ['NumSnapshots']
     for suffix in ["", "_M", "_STD", "_LG", "_MG", "_RMG"]:
