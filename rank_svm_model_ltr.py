@@ -316,8 +316,11 @@ def create_all_x_snap_aggregations(
                          'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
                          'TFNormMean','TFNormStd', 'VSM','SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore', 'BM25Score',
-                         'JMPrevWinner', 'JMPrev3Winners', 'JMPrevBestImprove', 'JMPrev3BestImprove', 'DIRPrevWinner',
-                         'DIRPrev3Winners', 'DIRPrevBestImprove', 'DIRPrev3BestImprove'
+                         'JMPrevWinner', 'JMPrev2Winners', 'JMPrev3Winners',
+                       'JMPrevBestImprove','JMPrev2BestImprove','JMPrev3BestImprove',
+                       'DIRPrevWinner', 'DIRPrev2Winners', 'DIRPrev3Winners',
+                       'DIRPrevBestImprove','DIRPrev2BestImprove','DIRPrev3BestImprove',
+                       'JMOnlyReservoir', 'DIROnlyReservoir'
                          ]
 
     work_df = pd.read_csv(os.path.join(base_file_folder, base_feature_filename), sep = '\t', index_col = False)
