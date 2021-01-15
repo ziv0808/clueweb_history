@@ -431,7 +431,8 @@ if __name__=='__main__':
             init_lam_2 = 0.0
             for beta in beta_option_list:
                 params = {'Lambda1': init_lam_1,
-                          'Lambda2': init_lam_2}
+                          'Lambda2': init_lam_2,
+                          'AdverMethod' : adverserial_method}
                 if 'JM' in model_to_run:
                     params['Beta'] = beta
                 elif 'DIR' in model_to_run:
