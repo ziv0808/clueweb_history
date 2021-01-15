@@ -672,12 +672,12 @@ if __name__=="__main__":
     mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
     workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-14-22-37-00-218428'
     currentTime = '2021-01-14-22-37-00-218428'
-    rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir, curr_static_model, curr_s_msmm_mg_model, prev_rounds_list)
-    print('Ranked docs!')
-    # rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
-    # sys.stdout.flush()
-    # updateScores((rankedLists,))
-    # print('Updated docs!')
-    # sys.stdout.flush()
-    # backupDocuments(currentTime,baseDir)
-    # changeStatus()
+    # rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir, curr_static_model, curr_s_msmm_mg_model, prev_rounds_list)
+    # print('Ranked docs!')
+    rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
+    sys.stdout.flush()
+    updateScores((rankedLists,))
+    print('Updated docs!')
+    sys.stdout.flush()
+    backupDocuments(currentTime,baseDir)
+    changeStatus()
