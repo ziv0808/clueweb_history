@@ -1,15 +1,17 @@
 from pymongo import MongoClient
 import os
+import re
 import ast
 import sys
 import datetime
 import unicodedata
+import krovetzstemmer
 import xml.etree.ElementTree as ET
 import csv
 import subprocess
 from bs4 import BeautifulSoup
 import pandas as pd
-from utils import calc_cosine
+from utils import calc_cosine, calc_tfidf_dict
 
 
 def changeStatus():
@@ -263,6 +265,48 @@ def read_current_doc_file(doc_filepath):
 
     return stats
 
+def create_tdfidf_dicts_per_doc_for_file(doc_filepath):
+    fulltext_dict = read_current_doc_file(doc_filepath)
+    df_dict = {}
+    stemmer = krovetzstemmer.Stemmer()
+    for query in fulltext_dict:
+        for user in fulltext_dict[query]:
+            fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', fulltext_dict[query][user]['FullText'])
+            fulltext_dict[query][user]['TFDict'] = {}
+            fulltext_dict[query][user]['StemList'] = []
+            curr_fulltext_list = fulltext.split(" ")
+            for stem in curr_fulltext_list:
+                stem = stemmer.stem(stem)
+                if stem == '' or stem == '\n':
+                    continue
+                if stem not in fulltext_dict[query][user]['TfDict']:
+                    fulltext_dict[query][user]['StemList'].append(stem)
+                    fulltext_dict[query][user]['TfDict'][stem] = 1
+                else:
+                    fulltext_dict[query][user]['TfDict'][stem] += 1
+            for stem in fulltext_dict[query][user]['StemList']:
+                if stem in df_dict:
+                    df_dict[stem] += 1
+                else:
+                    df_dict[stem] = 1
+
+    for query in fulltext_dict:
+        for user in fulltext_dict[query]:
+            fulltext_dict[query][user]['DFList'] = []
+            fulltext_dict[query][user]['TFList'] = []
+            for stem in fulltext_dict[query][user]['StemList']:
+                fulltext_dict[query][user]['DFList'].append(df_dict[stem])
+                fulltext_dict[query][user]['TFList'].append(fulltext_dict[query][user]['TfDict'][stem])
+            fulltext_dict[query][user]['TfIdf'] = calc_tfidf_dict(
+                stem_list=fulltext_dict[query][user]['StemList'],
+                tf_list=fulltext_dict[query][user]['TFList'],
+                df_list=fulltext_dict[query][user]['DFList'])
+
+    return fulltext_dict
+
+
+
+
 def create_model_ready_feature_df(
         currentTime,
         feature_list = ['Ent', 'FracStops', 'Len', 'LMIR.DIR', 'StopCover', 'TFSum', 'TFNormSum', 'SimClueWeb', 'BM25Score',
@@ -306,6 +350,7 @@ def create_model_ready_feature_df(
 
         fin_df.fillna(0.0, inplace=True)
         feature_str = turn_df_to_feature_str_for_model(df=fin_df, feature_list=feature_list)
+        fin_df.to_csv('df_features_0.tsv', sep='\t', index=False)
         with open('features_0', 'w') as f:
             f.write(feature_str)
     else:
@@ -328,12 +373,12 @@ def create_model_ready_feature_df(
                 feature_list.append(base_feat + '_MaxXXSnaps')
 
         historical_feature_dict = {}
-        parsed_curr_file_dict = read_current_doc_file(baseDir + 'Collections/TrecText/' + currentTime)
+        parsed_curr_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + currentTime)
         for historical_snap in prev_rounds_list:
             with open('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/FeatureIdx/' + historical_snap + '_BERT.json','r') as f:
                 curr_snap_bert_dict = ast.literal_eval(f.read())
             curr_snap_all_feature_dict = create_ltr_feature_dict('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/Features/' + historical_snap + '/')
-            parsed_curr_snap_file_dict = read_current_doc_file(baseDir + 'Collections/TrecText/' + historical_snap)
+            parsed_curr_snap_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + historical_snap)
 
             for query in curr_snap_all_feature_dict:
                 if query.split('_')[1] != '0':
@@ -346,7 +391,8 @@ def create_model_ready_feature_df(
                             if feature not in historical_feature_dict[query][docno]:
                                 historical_feature_dict[query][docno][feature] = []
                             if feature == 'SimClueWeb':
-                                pass
+                                curr_sim = calc_cosine(parsed_curr_file_dict[query][docno.split('-')[1]]['TfIdf'], parsed_curr_snap_file_dict[query][docno.split('-')[1]]['TfIdf'])
+                                historical_feature_dict[query][docno][feature].append(curr_sim)
                             elif feature == 'BERTScore':
                                 historical_feature_dict[query][docno][feature].append(curr_snap_bert_dict[query][docno.split('-')[1]]['BERTScore'])
                             else:
@@ -406,6 +452,7 @@ def create_model_ready_feature_df(
 
         fin_df.fillna(0.0, inplace=True)
         feature_str = turn_df_to_feature_str_for_model(df=fin_df, feature_list=feature_list)
+        fin_df.to_csv('df_features_1.tsv', sep ='\t', index =False)
         with open('features_1', 'w') as f:
             f.write(feature_str)
 
@@ -605,28 +652,28 @@ def backupDocuments(currentTime,baseDir):
 
 if __name__=="__main__":
     baseDir = '/lv_local/home/zivvasilisky/ASR20/epoch_run/'
-    if not os.path.exists(baseDir):
-        os.makedirs(baseDir)
-    changeStatus()
-    print('Status Changed!')
-    sys.stdout.flush()
-    trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
-    print('Files created!')
-    sys.stdout.flush()
-    asrIndex = buildIndex(trecFileName, currentTime, baseDir)
-    print('Index Built!')
-    sys.stdout.flush()
-    mergedIndex = mergeIndices(asrIndex, baseDir)
-    print('Index Merged!')
-    sys.stdout.flush()
+    # if not os.path.exists(baseDir):
+    #     os.makedirs(baseDir)
+    # changeStatus()
+    # print('Status Changed!')
+    # sys.stdout.flush()
+    # trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
+    # print('Files created!')
+    # sys.stdout.flush()
+    # asrIndex = buildIndex(trecFileName, currentTime, baseDir)
+    # print('Index Built!')
+    # sys.stdout.flush()
+    # mergedIndex = mergeIndices(asrIndex, baseDir)
+    # print('Index Merged!')
+    # sys.stdout.flush()
     curr_static_model = 'static_model_lambdamart_round_2'
     curr_s_msmm_mg_model = 'static_msmm_mg_model_lambdamart_round_2'
     prev_rounds_list = ['2021-01-10-22-42-25-566245']
-    ### mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
-    ### workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-10-22-42-25-566245'
-    ### currentTime = '2021-01-10-22-42-25-566245'
-    # rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir, curr_static_model, curr_s_msmm_mg_model, prev_rounds_list)
-    # print('Ranked docs!')
+    mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
+    workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-14-22-37-00-218428'
+    currentTime = '2021-01-14-22-37-00-218428'
+    rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir, curr_static_model, curr_s_msmm_mg_model, prev_rounds_list)
+    print('Ranked docs!')
     # rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
     # sys.stdout.flush()
     # updateScores((rankedLists,))
