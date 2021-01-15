@@ -11,7 +11,7 @@ import csv
 import subprocess
 from bs4 import BeautifulSoup
 import pandas as pd
-from utils import calc_cosine, calc_tfidf_dict
+from utils import calc_cosine, calc_tfidf_dict, calc_releational_measure
 
 
 def changeStatus():
@@ -426,7 +426,7 @@ def create_model_ready_feature_df(
                                 curr_feat_list.append(curr_snap_score)
                                 avg_score = 0.0
                                 for i in range(1,len(curr_feat_list)):
-                                    avg_score += (curr_feat_list[i] - curr_feat_list[i-1]) / float(curr_feat_list[i-1])
+                                    avg_score += calc_releational_measure(measure_obs=curr_feat_list[i], reletional_measure_obs=curr_feat_list[i-1])
                                 avg_score = avg_score / float(len(curr_feat_list) - 1)
                                 insert_row.append(avg_score)
 
