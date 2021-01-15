@@ -355,7 +355,7 @@ def create_model_ready_feature_df(
             f.write(feature_str)
     else:
         base_feature_list = feature_list[:]
-        broken_feature_groupname = "".split('_')
+        broken_feature_groupname = "Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap".split('_')
         if 'MGXXSnap' in broken_feature_groupname:
             for base_feat in base_feature_list:
                 feature_list.append(base_feat + '_MGXXSnaps')
