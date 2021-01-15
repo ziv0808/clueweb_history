@@ -272,7 +272,7 @@ def create_tdfidf_dicts_per_doc_for_file(doc_filepath):
     for query in fulltext_dict:
         for user in fulltext_dict[query]:
             fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', fulltext_dict[query][user]['FullText'])
-            fulltext_dict[query][user]['TFDict'] = {}
+            fulltext_dict[query][user]['TfDict'] = {}
             fulltext_dict[query][user]['StemList'] = []
             curr_fulltext_list = fulltext.split(" ")
             for stem in curr_fulltext_list:
