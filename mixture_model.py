@@ -395,7 +395,7 @@ if __name__=='__main__':
     if 'Mixture' in model_to_run:
         adverserial_method = sys.argv[4]
         only_reservoir_lambda = ast.literal_eval(sys.argv[5])
-        init_k_method = sys.argv[5]
+        init_k_method = sys.argv[6]
 
         save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/'
         if 'JM' in model_to_run:
