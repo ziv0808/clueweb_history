@@ -967,11 +967,11 @@ def create_feature_list_shortcut_string(feat_list):
         'JMPrevWinnerRand': 'MJmPwRd',
         'DIRPrevWinnerRand': 'MDrPwRd',
         'DIRPrevBestImproveK1': 'MDrBiK1',
-        'JMPrevBestImproveK1': 'MDrBiK1',
+        'JMPrevBestImproveK1': 'MJmBiK1',
         'DIRPrevBestImproveK3': 'MDrBiK3',
-        'JMPrevBestImproveK3': 'MDrBiK3',
+        'JMPrevBestImproveK3': 'MJmBiK3',
         'DIRPrevBestImproveRand': 'MDrBiRd',
-        'JMPrevBestImproveRand': 'MDrBiRd',
+        'JMPrevBestImproveRand': 'MJmBiRd',
     }
     for feat in feat_list:
         ret_str += '_' + feat_short_dict[feat]
