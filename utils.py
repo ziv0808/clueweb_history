@@ -960,6 +960,18 @@ def create_feature_list_shortcut_string(feat_list):
         'DIRPrev3BestImprove': 'MDrB3i',
         'JMOnlyReservoir' : 'MJmOr',
         'DIROnlyReservoir': 'MDrOr',
+        'JMPrevWinnerK1': 'MJmPwK1',
+        'DIRPrevWinnerK1': 'MDrPwK1',
+        'JMPrevWinnerK3': 'MJmPwK3',
+        'DIRPrevWinnerK3': 'MDrPwK3',
+        'JMPrevWinnerRand': 'MJmPwRd',
+        'DIRPrevWinnerRand': 'MDrPwRd',
+        'DIRPrevBestImproveK1': 'MDrBiK1',
+        'JMPrevBestImproveK1': 'MDrBiK1',
+        'DIRPrevBestImproveK3': 'MDrBiK3',
+        'JMPrevBestImproveK3': 'MDrBiK3',
+        'DIRPrevBestImproveRand': 'MDrBiRd',
+        'JMPrevBestImproveRand': 'MDrBiRd',
     }
     for feat in feat_list:
         ret_str += '_' + feat_short_dict[feat]
