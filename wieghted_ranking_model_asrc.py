@@ -229,11 +229,11 @@ class WeightedListRanker():
                         affix=self.affix + str(test_q_list[0]) +'_' + str(test_q_list[-1]),
                         big_df=res_df)
 
-                    if res_dict['all']['NDCG@3'] > best_config_dict[weight_list_type]['BestNDCG']:
-                        best_config_dict[weight_list_type]['BestNDCG'] = res_dict['all']['NDCG@3']
+                    if res_dict['all']['NDCG@5'] > best_config_dict[weight_list_type]['BestNDCG']:
+                        best_config_dict[weight_list_type]['BestNDCG'] = res_dict['all']['NDCG@5']
                         best_config_dict[weight_list_type]['BestWieghts'] = weight_list
                         best_config_dict[weight_list_type]['BestK'] = K
-                        print("Curr Best " + weight_list_type + " config gets NDCG@3: " +str(best_config_dict[weight_list_type]['BestNDCG']))
+                        print("Curr Best " + weight_list_type + " config gets NDCG@5: " +str(best_config_dict[weight_list_type]['BestNDCG']))
                         sys.stdout.flush()
         res_df_dict = {}
         for weight_list_type in best_config_dict.keys():

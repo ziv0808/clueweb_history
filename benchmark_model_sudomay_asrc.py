@@ -324,8 +324,8 @@ if __name__=="__main__":
                         save_folder=save_folder)
                     print(res_dict['all'])
                     sys.stdout.flush()
-                    if res_dict['all']['NDCG@3'] > max_ndcg:
-                        max_ndcg = res_dict['all']['NDCG@3']
+                    if res_dict['all']['NDCG@5'] > max_ndcg:
+                        max_ndcg = res_dict['all']['NDCG@5']
                         best_config = hyper_param_dict
         for l_labmda in optional_lambda_list:
             hyper_param_dict =  {'S': {'Mue': best_config['S']['Mue'], 'Lambda': (1-l_labmda)/2.0},
@@ -342,11 +342,11 @@ if __name__=="__main__":
                 save_folder=save_folder)
             print(res_dict['all'])
             sys.stdout.flush()
-            if res_dict['all']['NDCG@3'] > max_ndcg:
-                max_ndcg = res_dict['all']['NDCG@3']
+            if res_dict['all']['NDCG@5'] > max_ndcg:
+                max_ndcg = res_dict['all']['NDCG@5']
                 best_config = hyper_param_dict
 
-        print("Best Config: " + str(best_config) + " NDCG@3 : " + str(max_ndcg))
+        print("Best Config: " + str(best_config) + " NDCG@5 : " + str(max_ndcg))
         sys.stdout.flush()
         big_df = benchmark_obj.score_queries(query_list=test_q_list,
                                              hyper_param_dict=best_config)

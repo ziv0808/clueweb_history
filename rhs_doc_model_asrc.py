@@ -356,9 +356,9 @@ if __name__=='__main__':
                 qrel_filepath=qrel_filepath,
                 save_folder=save_folder)
 
-            if res_dict['all']['NDCG@3'] > best_ndcg:
+            if res_dict['all']['NDCG@5'] > best_ndcg:
                 print(affix + " " + "SCORE : " + str(res_dict['all']))
-                best_ndcg = res_dict['all']['NDCG@3']
+                best_ndcg = res_dict['all']['NDCG@5']
                 best_config_dict = init_params.copy()
                 print(best_config_dict)
 
@@ -392,9 +392,9 @@ if __name__=='__main__':
                     qrel_filepath=qrel_filepath,
                     save_folder=save_folder)
 
-                if res_dict['all']['NDCG@3'] > best_ndcg:
+                if res_dict['all']['NDCG@5'] > best_ndcg:
                     print(affix + " " + "SCORE : " + str(res_dict['all']))
-                    best_ndcg = res_dict['all']['NDCG@3']
+                    best_ndcg = res_dict['all']['NDCG@5']
                     best_config_dict = init_params.copy()
                     print(best_config_dict)
 
@@ -427,9 +427,9 @@ if __name__=='__main__':
                         qrel_filepath=qrel_filepath,
                         save_folder=save_folder)
 
-                    if res_dict['all']['NDCG@3'] > best_ndcg:
+                    if res_dict['all']['NDCG@5'] > best_ndcg:
                         print(affix + " " + "SCORE : " + str(res_dict['all']))
-                        best_ndcg = res_dict['all']['NDCG@3']
+                        best_ndcg = res_dict['all']['NDCG@5']
                         best_config_dict = init_params.copy()
                         print(best_config_dict)
         # test set run

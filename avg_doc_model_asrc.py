@@ -173,8 +173,8 @@ if __name__=='__main__':
                     print(affix  + " " + "SCORE : " + str(res_dict['all']))
                     sys.stdout.flush()
 
-                    if res_dict['all']['NDCG@3'] > best_config_dict[weight_list_type]['BestNDCG']:
-                        best_config_dict[weight_list_type]['BestNDCG'] = res_dict['all']['NDCG@3']
+                    if res_dict['all']['NDCG@5'] > best_config_dict[weight_list_type]['BestNDCG']:
+                        best_config_dict[weight_list_type]['BestNDCG'] = res_dict['all']['NDCG@5']
                         best_config_dict[weight_list_type]['BestWieghts'] = weight_list
                         best_config_dict[weight_list_type]['WDf'] = tmp_weights_df
 
@@ -203,8 +203,8 @@ if __name__=='__main__':
         print(affix + " " + "SCORE : " + str(res_dict['all']))
         sys.stdout.flush()
         for weight_list_type in ['Uniform','Decaying','RDecaying']:
-            if res_dict['all']['NDCG@3'] >  best_config_dict[weight_list_type]['BestNDCG']:
-                best_config_dict[weight_list_type]['BestNDCG'] = res_dict['all']['NDCG@3']
+            if res_dict['all']['NDCG@5'] >  best_config_dict[weight_list_type]['BestNDCG']:
+                best_config_dict[weight_list_type]['BestNDCG'] = res_dict['all']['NDCG@5']
                 best_config_dict[weight_list_type]['BestWieghts'] = weight_list
                 best_config_dict[weight_list_type]['WDf'] = tmp_weights_df
 
