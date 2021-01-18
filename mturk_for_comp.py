@@ -1,6 +1,5 @@
 import sys
 import boto3
-import xmltodict
 import pandas as pd
 from bs4 import BeautifulSoup
 
