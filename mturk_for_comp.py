@@ -39,11 +39,13 @@ def read_initial_data(docs_path, query_meta_path):
     all_q = soup.find_all('topic')
     for query in all_q:
         q_num = query['number'].zfill(3)
-        if q_num in stats:
-            q_text = query.find('query').text
-            q_describe = query.find('description').text
-            stats[q_num]['query_text'] = q_text
-            stats[q_num]['description'] = q_describe
+        q_text = query.find('query').text
+        q_describe = query.find('description').text
+        for group in ['' , '_0','_1' ,'_2']:
+            q_num_ = q_num + group
+            if q_num_ in stats:
+                stats[q_num_]['query_text'] = q_text
+                stats[q_num_]['description'] = q_describe
     return stats
 
 
