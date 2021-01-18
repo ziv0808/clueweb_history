@@ -184,7 +184,7 @@ if __name__ == '__main__':
     operation = sys.argv[1]
     query_and_init_doc_data = read_initial_data("documents.trectext", "topics.full.xml")
     if operation == 'HIT':
-        round_list = ['2020-12-09-22-44-03-416874']
+        round_list = ['2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428']
         for curr_round_file in round_list:
             print(curr_round_file)
             curr_round_file = "/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/" + curr_round_file
