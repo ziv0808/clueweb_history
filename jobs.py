@@ -1778,6 +1778,12 @@ def create_mixture_models_feature_dict(
                 model = 'JM'
             else:
                 raise Exception("create_mixture_models_feature_dict: Unknown model")
+            if '_K1_' in filename:
+                method += 'K1'
+            elif '_K3_' in filename:
+                method += 'K3'
+            elif '_Rand_' in filename:
+                method += 'Rand'
             curr_df = convert_trec_results_file_to_pandas_df(os.path.join(mixture_model_res_path,filename))
             for index, row in curr_df.iterrows():
                 if int(row['Query_ID']) not in mm_features_dict:
@@ -1847,8 +1853,12 @@ def create_base_features_for_asrc_with_ltr_features(
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
                          'TFNormMean','TFNormStd','VSM', 'SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore','BM25Score']
 
-    mm_feature_list = ['JMPrevWinner','JMPrevBestImprove',
-                       'DIRPrevWinner','DIRPrevBestImprove',
+    mm_feature_list = ['JMPrevWinnerK1','JMPrevBestImproveK1',
+                       'DIRPrevWinnerK1','DIRPrevBestImproveK1',
+                       'JMPrevWinnerK3', 'JMPrevBestImproveK3',
+                       'DIRPrevWinnerK3', 'DIRPrevBestImproveK3',
+                       'JMPrevWinnerRand', 'JMPrevBestImproveRand',
+                       'DIRPrevWinnerRand', 'DIRPrevBestImproveRand',
                        'JMOnlyReservoir', 'DIROnlyReservoir']
     base_feature_list.extend(mm_feature_list)
     col_list = ['NumSnapshots']
