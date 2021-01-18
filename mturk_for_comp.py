@@ -39,13 +39,11 @@ def read_initial_data(docs_path, query_meta_path):
     all_q = soup.find_all('topic')
     for query in all_q:
         q_num = query['number'].zfill(3)
-        q_text = query.find('query').text
-        q_describe = query.find('description').text
-        for group in ['' , '_0','_1' ,'_2']:
-            q_num_ = q_num + group
-            if q_num_ in stats:
-                stats[q_num_]['query_text'] = q_text
-                stats[q_num_]['description'] = q_describe
+        if q_num in stats:
+            q_text = query.find('query').text
+            q_describe = query.find('description').text
+            stats[q_num]['query_text'] = q_text
+            stats[q_num]['description'] = q_describe
     return stats
 
 
@@ -80,13 +78,16 @@ def create_hits_in_mturk(
     for query_num in query_and_init_doc_data:
         query = query_and_init_doc_data[query_num]['query_text']
         description = query_and_init_doc_data[query_num]['description']
-        for user in curr_round_data[query_num]:
-            current_document = curr_round_data[query_num][user]
-            insert_row = [query, description, current_document, user]
-            summary_df.loc[next_idx] = insert_row
-            insert_row = [query, description, current_document]
-            hit_df.loc[next_idx] = insert_row
-            next_idx += 1
+        for group in ['', '_0', '_1', '_2']:
+            query_num_ = query_num + group
+            if query_num_ in curr_round_data:
+                for user in curr_round_data[query_num_]:
+                    current_document = curr_round_data[query_num_][user]
+                    insert_row = [query, description, current_document, user]
+                    summary_df.loc[next_idx] = insert_row
+                    insert_row = [query, description, current_document]
+                    hit_df.loc[next_idx] = insert_row
+                    next_idx += 1
     summary_df.to_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/Summary_' + curr_round_file.split('/')[-1] + '.tsv', sep ='\t', index = False)
     hit_df.to_csv('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/HITs/HITs_' + curr_round_file.split('/')[-1] + '.csv', index = False)
 
