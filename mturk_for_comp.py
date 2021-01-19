@@ -216,6 +216,8 @@ def split_res_files_to_groups(file_mapping_dict):
             group_file_dict[grp]['TrecTextCount'] += 1
 
     qrel_df = get_relevant_docs_df(qrel_filepath)
+    qrel_df.sort_values('Docno', inplace=True)
+    qrel_df.sort_values('Query', inplace=True)
     for index, row in qrel_df.iterrows():
         docno = row['Docno']
         query = docno.split('-')[2]
