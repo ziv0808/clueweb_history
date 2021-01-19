@@ -206,13 +206,14 @@ def split_res_files_to_groups(file_mapping_dict):
         query = docno.split('-')[2]
         grp = '_' + query.split('_')[1]
         user = docno.split('-')[3]
-        group_file_dict[grp]['TrecText'] += '<DOC>\n'
-        group_file_dict[grp]['TrecText'] += '<DOCNO>' + docno.replace(grp + '-', '-') + '</DOCNO>\n'
-        group_file_dict[grp]['TrecText'] += '<TEXT>\n'
-        group_file_dict[grp]['TrecText'] += fulltext
-        group_file_dict[grp]['TrecText'] += '\n</TEXT>\n'
-        group_file_dict[grp]['TrecText'] += '</DOC>\n'
-        group_file_dict[grp]['TrecTextCount'] += 1
+        if grp in rel_groups:
+            group_file_dict[grp]['TrecText'] += '<DOC>\n'
+            group_file_dict[grp]['TrecText'] += '<DOCNO>' + docno.replace(grp + '-', '-') + '</DOCNO>\n'
+            group_file_dict[grp]['TrecText'] += '<TEXT>\n'
+            group_file_dict[grp]['TrecText'] += fulltext
+            group_file_dict[grp]['TrecText'] += '\n</TEXT>\n'
+            group_file_dict[grp]['TrecText'] += '</DOC>\n'
+            group_file_dict[grp]['TrecTextCount'] += 1
 
     qrel_df = get_relevant_docs_df(qrel_filepath)
     for index, row in qrel_df.iterrows():
