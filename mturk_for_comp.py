@@ -190,6 +190,7 @@ def split_res_files_to_groups(file_mapping_dict):
 
     group_file_dict = {}
     for grp in rel_groups:
+        group_file_dict[grp] = {}
         group_file_dict[grp]['TrecText'] = ""
         group_file_dict[grp]['Qrel'] = ""
         group_file_dict[grp]['TrecTextCount'] = 0
