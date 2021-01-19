@@ -2,6 +2,7 @@ import sys
 import boto3
 import pandas as pd
 from bs4 import BeautifulSoup
+from jobs import get_relevant_docs_df
 
 def read_current_doc_file(doc_filepath):
     stats = {}
@@ -181,6 +182,61 @@ def creat_trectext_for_all_rounds(file_mapping_dict):
     with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/comp2020/comp2020.terctext', 'w') as f:
         f.write(trectext_str)
 
+def split_res_files_to_groups(file_mapping_dict):
+    group_ref_dict = read_current_doc_file("/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/" + file_mapping_dict['01']['TS'])
+    rel_groups = ['_0', '_1']
+    terctext_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/data/datsets/comp2020/comp2020.terctext'
+    qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/curr_comp.rel'
+
+    group_file_dict = {}
+    for grp in rel_groups:
+        group_file_dict[grp]['TrecText'] = ""
+        group_file_dict[grp]['Qrel'] = ""
+        group_file_dict[grp]['TrecTextCount'] = 0
+        group_file_dict[grp]['QrelCount'] = 0
+
+    with open(terctext_filepath, 'r') as f:
+        soup = BeautifulSoup(f.read())
+    all_docs = soup.find_all('doc')
+
+    for doc_ in list(all_docs):
+        docno = doc_.find('docno').text
+        fulltext = doc_.find('text').text
+        query = docno.split('-')[2]
+        user = docno.split('-')[3]
+        for grp in rel_groups:
+            if user in group_ref_dict[query + grp]:
+                group_file_dict[grp]['TrecText'] += '<DOC>\n'
+                group_file_dict[grp]['TrecText'] += '<DOCNO>' + docno.replace(grp + '-', '-') + '</DOCNO>\n'
+                group_file_dict[grp]['TrecText'] += '<TEXT>\n'
+                group_file_dict[grp]['TrecText'] += fulltext
+                group_file_dict[grp]['TrecText'] += '\n</TEXT>\n'
+                group_file_dict[grp]['TrecText'] += '</DOC>\n'
+                group_file_dict[grp]['TrecTextCount'] += 1
+
+    qrel_df = get_relevant_docs_df(qrel_filepath)
+    for index, row in qrel_df.iterrows():
+        docno = row['Docno']
+        query = docno.split('-')[2]
+        user = docno.split('-')[3]
+        for grp in rel_groups:
+            if user in group_ref_dict[query + grp]:
+                group_file_dict[grp]['Qrel'] += query + ' 0 ' + docno + ' ' + str(row['Relevance']) + '\n'
+                group_file_dict[grp]['QrelCount'] += 1
+
+    for grp in rel_groups:
+        file_addition = grp.replace('_0','')
+        print("Group: " + grp + ' #TrecDocs : ' + str(group_file_dict[grp]['TrecTextCount']) + "  #QrelDocs : "  + str(group_file_dict[grp]['QrelCount']))
+        with open(terctext_filepath + file_addition, 'w') as f:
+            f.write(group_file_dict[grp]['TrecText'])
+        with open(qrel_filepath + file_addition, 'w') as f:
+            f.write(group_file_dict[grp]['Qrel'])
+
+
+
+
+
+
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -196,19 +252,20 @@ if __name__ == '__main__':
                                  query_and_init_doc_data=query_and_init_doc_data)
     elif operation == 'CreateFiles':
         file_mapping_dict = {
-            '01' : {'TS' : '2020-11-09-23-55-23-857656',
-                    'Hit': 'Batch_4273950_batch_results.csv'},
-            '02': {'TS': '2020-11-17-10-30-21-396460',
-                   'Hit': 'Batch_4274137_batch_results.csv'},
-            '03': {'TS': '2020-11-23-23-12-59-474081',
-                   'Hit': 'Batch_4274144_batch_results.csv'},
-            '04': {'TS': '2020-12-02-22-02-13-998936',
-                   'Hit': 'Batch_4274149_batch_results.csv'},
-            '05': {'TS': '2020-12-09-22-44-03-416874',
-                   'Hit': 'Batch_4275854_batch_results.csv'}
+            '01' : {'TS' : '2021-01-10-22-42-25-566245',
+                    'Hit': 'Batch_4306887_batch_results.csv'},
+            '02': {'TS': '2021-01-14-22-37-00-218428',
+                   'Hit': 'Batch_4306972_batch_results.csv'},
+            '03': {'TS': '2021-01-19-01-59-48-181622',
+                   'Hit': 'Batch_4307491_batch_results.csv'},
+            # '04': {'TS': '2020-12-02-22-02-13-998936',
+                   # 'Hit': 'Batch_4274149_batch_results.csv'},
+            # '05': {'TS': '2020-12-09-22-44-03-416874',
+                   # 'Hit': 'Batch_4275854_batch_results.csv'}
             }
-
         create_qrel_file(file_mapping_dict, query_and_init_doc_data)
         creat_trectext_for_all_rounds(file_mapping_dict)
+        split_res_files_to_groups(file_mapping_dict)
+
 
 
