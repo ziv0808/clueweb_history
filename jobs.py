@@ -1853,13 +1853,15 @@ def create_base_features_for_asrc_with_ltr_features(
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
                          'TFNormMean','TFNormStd','VSM', 'SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore','BM25Score']
 
-    mm_feature_list = ['JMPrevWinnerK1','JMPrevBestImproveK1',
-                       'DIRPrevWinnerK1','DIRPrevBestImproveK1',
-                       'JMPrevWinnerK3', 'JMPrevBestImproveK3',
-                       'DIRPrevWinnerK3', 'DIRPrevBestImproveK3',
-                       'JMPrevWinnerRand', 'JMPrevBestImproveRand',
-                       'DIRPrevWinnerRand', 'DIRPrevBestImproveRand',
-                       'JMOnlyReservoir', 'DIROnlyReservoir']
+    mm_feature_list = [
+        # 'JMPrevWinnerK1','JMPrevBestImproveK1',
+        #                'DIRPrevWinnerK1','DIRPrevBestImproveK1',
+        #                'JMPrevWinnerK3', 'JMPrevBestImproveK3',
+        #                'DIRPrevWinnerK3', 'DIRPrevBestImproveK3',
+        #                'JMPrevWinnerRand', 'JMPrevBestImproveRand',
+        #                'DIRPrevWinnerRand', 'DIRPrevBestImproveRand',
+        #                'JMOnlyReservoir', 'DIROnlyReservoir'
+    ]
     base_feature_list.extend(mm_feature_list)
     col_list = ['NumSnapshots']
     for suffix in ["", "_M", "_STD", "_LG", "_MG", "_RMG"]:
