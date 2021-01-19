@@ -395,7 +395,6 @@ if __name__=='__main__':
     if 'Mixture' in model_to_run:
         adverserial_method = sys.argv[4]
         only_reservoir_lambda = ast.literal_eval(sys.argv[5])
-        init_k_method = sys.argv[6]
 
         save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/'
         if 'JM' in model_to_run:
@@ -405,7 +404,7 @@ if __name__=='__main__':
 
         lambda1_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
         lambda2_option_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-        addition_to_filename = '_' + init_k_method
+        addition_to_filename = ''
         if only_reservoir_lambda == True:
             lambda1_option_list = [0.0]
             addition_to_filename = "_OnlyReservoir"
@@ -433,8 +432,7 @@ if __name__=='__main__':
             init_lam_2 = 0.0
             for beta in beta_option_list:
                 params = {'Lambda1': init_lam_1,
-                          'Lambda2': init_lam_2,
-                          'AdverMethod' : adverserial_method}
+                          'Lambda2': init_lam_2}
                 if 'JM' in model_to_run:
                     params['Beta'] = beta
                 elif 'DIR' in model_to_run:
@@ -461,39 +459,14 @@ if __name__=='__main__':
                     best_config_dict = params.copy()
                     print(best_config_dict)
 
-            if init_k_method == 'K1':
-                init_k = 1
-            elif init_k_method == 'K3':
-                init_k = 3
-            elif init_k_method == 'Rand':
-                init_k = random.randint(1,3)
 
-            if adverserial_method == 'PrevWinner':
-                if init_k == 1:
-                    curr_adverserial_method = 'PrevWinner'
-                else:
-                    curr_adverserial_method = 'Prev' + str(init_k) +'Winners'
-
-            elif adverserial_method == 'PrevBestImprove':
-                if init_k == 1:
-                    curr_adverserial_method = 'PrevBestImprove'
-                else:
-                    curr_adverserial_method = 'Prev' + str(init_k) + 'BestImprove'
-            else:
-                raise Exception("Fucker!!!")
-
-            adverserial_dict = make_adverserial_dict_by_method(
-                dataset_name=datset_name,
-                curr_round=asrc_round,
-                adverserial_method=curr_adverserial_method)
 
             for lambda1 in lambda1_option_list:
                 for lambda2 in lambda2_option_list:
                     if (lambda1 + lambda2) >= 1:
                         continue
                     params = {'Lambda1': lambda1,
-                              'Lambda2': lambda2,
-                              'AdverMethod' : curr_adverserial_method}
+                              'Lambda2': lambda2}
                     if 'JM' in model_to_run:
                         params['Beta'] = best_config_dict['Beta']
                     elif 'DIR' in model_to_run:
@@ -519,60 +492,6 @@ if __name__=='__main__':
                         best_ndcg = res_dict['all']['NDCG@5']
                         best_config_dict = params.copy()
                         print(best_config_dict)
-
-            for k in range(1, 4):
-                if adverserial_method == 'PrevWinner':
-                    if k == 1:
-                        curr_adverserial_method = 'PrevWinner'
-                    else:
-                        curr_adverserial_method = 'Prev' + str(k) + 'Winners'
-
-                elif adverserial_method == 'PrevBestImprove':
-                    if k == 1:
-                        curr_adverserial_method = 'PrevBestImprove'
-                    else:
-                        curr_adverserial_method = 'Prev' + str(k) + 'BestImprove'
-                else:
-                    raise Exception("Fucker!!!")
-
-                adverserial_dict = make_adverserial_dict_by_method(
-                    dataset_name=datset_name,
-                    curr_round=asrc_round,
-                    adverserial_method=curr_adverserial_method)
-
-                params = {'Lambda1': best_config_dict['Lambda1'],
-                          'Lambda2': best_config_dict['Lambda2'],
-                          'AdverMethod': curr_adverserial_method}
-                if 'JM' in model_to_run:
-                    params['Beta'] = best_config_dict['Beta']
-                elif 'DIR' in model_to_run:
-                    params['Mue'] = best_config_dict['Mue']
-                print(params)
-                big_df = test_queries(
-                    stemmed_queries_df=train_queries_df,
-                    query_to_doc_mapping_df=query_to_doc_mapping_df,
-                    all_query_adveserial_dict=adverserial_dict,
-                    collection_dict=cc_dict,
-                    params=params,
-                    processed_docs_path=processed_docs_folder,
-                    model_to_run=model_to_run)
-
-                res_dict = get_score_retrieval_score_for_df(
-                    affix=affix,
-                    big_df=big_df,
-                    qrel_filepath=qrel_filepath,
-                    save_folder=save_folder)
-
-                if res_dict['all']['NDCG@5'] > best_ndcg:
-                    print(affix + " " + "SCORE : " + str(res_dict['all']))
-                    best_ndcg = res_dict['all']['NDCG@5']
-                    best_config_dict = params.copy()
-                    print(best_config_dict)
-
-            adverserial_dict = make_adverserial_dict_by_method(
-                dataset_name=datset_name,
-                curr_round=asrc_round,
-                adverserial_method=best_config_dict['AdverMethod'])
 
             test_fold_df = test_queries(
                                     stemmed_queries_df=test_queries_df,
