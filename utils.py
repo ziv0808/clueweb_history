@@ -770,7 +770,10 @@ def calc_ndcg_mrr_for_file(
 
     for measure in ['NDCG@1', 'NDCG@3','NDCG@5', 'nMRR']:
         res_dict['all'][measure] = res_dict['all'][measure] / float(len(all_q))
-    res_dict['all']['MRR'] = res_dict['all']['MRR'] / float(mrr_denom)
+    if mrr_denom > 0:
+        res_dict['all']['MRR'] = res_dict['all']['MRR'] / float(mrr_denom)
+    else:
+        res_dict['all']['MRR'] = np.nan
     return res_dict
 
 
