@@ -319,13 +319,13 @@ def create_all_x_snap_aggregations(
                          'IDF', 'Len', 'LMIR.ABS', 'LMIR.DIR', 'LMIR.JM', 'StopCover','TFSum','TFMin','TFMax','TFMean','TFStd',
                          'TFIDFSum','TFIDFMin','TFIDFMax','TFIDFMean','TFIDFStd','TFNormSum','TFNormMin','TFNormMax',
                          'TFNormMean','TFNormStd', 'VSM','SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore', 'BM25Score',
-                         'JMPrevWinnerK1','JMPrevBestImproveK1',
-                           'DIRPrevWinnerK1','DIRPrevBestImproveK1',
-                           'JMPrevWinnerK3', 'JMPrevBestImproveK3',
-                           'DIRPrevWinnerK3', 'DIRPrevBestImproveK3',
-                           'JMPrevWinnerRand', 'JMPrevBestImproveRand',
-                           'DIRPrevWinnerRand', 'DIRPrevBestImproveRand',
-                           'JMOnlyReservoir', 'DIROnlyReservoir'
+                         # 'JMPrevWinnerK1','JMPrevBestImproveK1',
+                         #   'DIRPrevWinnerK1','DIRPrevBestImproveK1',
+                         #   'JMPrevWinnerK3', 'JMPrevBestImproveK3',
+                         #   'DIRPrevWinnerK3', 'DIRPrevBestImproveK3',
+                         #   'JMPrevWinnerRand', 'JMPrevBestImproveRand',
+                         #   'DIRPrevWinnerRand', 'DIRPrevBestImproveRand',
+                         #   'JMOnlyReservoir', 'DIROnlyReservoir'
                          ]
 
     work_df = pd.read_csv(os.path.join(base_file_folder, base_feature_filename), sep = '\t', index_col = False)
