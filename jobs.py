@@ -2046,7 +2046,7 @@ def unite_asrc_data_results(
             #                          'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_MixtureJM_K3_Results.txt'},
             # 'MM PrevWinner JM Rand': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
             #                          'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_MixtureJM_Rand_Results.txt'},
-            'MM PrevWinner JM K1': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+            'MM PrevWinner JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                     'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_MixtureJM_Results.txt'},
             'MM Prev2Winners JM': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                    'FileTemplate': '<DatasetName>_0<RoundNum>_Prev2Winners_MixtureJM_Results.txt'},
@@ -2186,7 +2186,13 @@ def unite_asrc_data_results(
                 big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
 
         for model in additional_models_to_include:
+            if dataset_name == 'united' and 'Prev2' in model:
+                continue
+
             filename = additional_models_to_include[model]['FileTemplate'].replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset_name).replace('<DatasetNameUpper>', dataset_name.upper())
+            if dataset_name == 'comp2020' and ('MM P' in model and 'JM' in model):
+                if 'MixtureJM' not in filename:
+                    filename = filename.replace('_Results.txt', '_MixtureJM_Results.txt')
             if leave_one_out_train == True and model not in ['BERT', 'Concat BERT Dec','Concat BERT Inc']:
                 filename = filename.replace('_Results.txt', '_LoO_Results.txt')
             if dataset_name == 'herd_control' and model == 'SNAPS':
