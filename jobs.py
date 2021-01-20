@@ -2186,7 +2186,7 @@ def unite_asrc_data_results(
                 big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
 
         for model in additional_models_to_include:
-            if dataset_name == 'united' and 'Prev2' in model:
+            if dataset_name == 'united' and 'MM P' in model:
                 continue
 
             filename = additional_models_to_include[model]['FileTemplate'].replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset_name).replace('<DatasetNameUpper>', dataset_name.upper())
