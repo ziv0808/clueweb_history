@@ -1854,13 +1854,13 @@ def create_base_features_for_asrc_with_ltr_features(
                          'TFNormMean','TFNormStd','VSM', 'SimClueWeb','StopwordsRatio','Stopwords','-Query-SW','BERTScore','BM25Score']
 
     mm_feature_list = [
-        # 'JMPrevWinnerK1','JMPrevBestImproveK1',
-        #                'DIRPrevWinnerK1','DIRPrevBestImproveK1',
-        #                'JMPrevWinnerK3', 'JMPrevBestImproveK3',
-        #                'DIRPrevWinnerK3', 'DIRPrevBestImproveK3',
-        #                'JMPrevWinnerRand', 'JMPrevBestImproveRand',
-        #                'DIRPrevWinnerRand', 'DIRPrevBestImproveRand',
-        #                'JMOnlyReservoir', 'DIROnlyReservoir'
+                       'JMPrevWinner','JMPrevBestImprove',
+                       'DIRPrevWinner','DIRPrevBestImprove',
+                       'JMPrev2Winners', 'JMPrev2BestImprove',
+                       'DIRPrev2Winners', 'DIRPrev2BestImprove',
+                       'JMPrev3Winners', 'JMPrev3BestImprove',
+                       'DIRPrev3Winners', 'DIRPrev3BestImprove',
+                       'JMOnlyReservoir', 'DIROnlyReservoir'
     ]
     base_feature_list.extend(mm_feature_list)
     col_list = ['NumSnapshots']
