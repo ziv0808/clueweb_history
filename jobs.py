@@ -2786,7 +2786,7 @@ def compare_rel_files_to_curr_comp():
     plt.xlabel('Relevance Score')
     plt.savefig('Dataset_Relevance_Compare.png', dpi=200)
 
-    info_list = [('ASRC', 'asrc_08'), ('UNITED', 'united_05'), ('COMP2020','comp2020_05')]
+    info_list = [('ASRC', 'asrc_08'), ('UNITED', 'united_05'), ('COMP2020','comp2020_03')]
     summary_sim_df = pd.DataFrame(columns=['Dataset', '%Not-Changed', 'Avg Cosine'])
     next_idx = 0
     for elem in info_list:
