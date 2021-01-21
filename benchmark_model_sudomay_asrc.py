@@ -99,7 +99,9 @@ class Benchmark:
 
         hashes1 = self.minhash(doc_1_text, num_shingels)
         hashes2 = self.minhash(doc_2_text, num_shingels)
-
+        print(doc_1_text)
+        print(doc_2_text)
+        print(len(hashes1))
         return len(hashes1 & hashes2) / float(len(hashes1))
 
 
