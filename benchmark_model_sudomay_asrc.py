@@ -99,11 +99,11 @@ class Benchmark:
 
         hashes1 = self.minhash(doc_1_text, num_shingels)
         hashes2 = self.minhash(doc_2_text, num_shingels)
-        min_hash_len = min(hashes2, hashes1)
+        min_hash_len = min(len(hashes2), len(hashes1))
         if min_hash_len == 0:
             return 0.0
 
-        return len(hashes1 & hashes2) / float(len(min_hash_len))
+        return len(hashes1 & hashes2) / float(min_hash_len)
 
 
     def process_doc_for_S_M_L_groups(
