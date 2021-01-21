@@ -351,6 +351,8 @@ if __name__=="__main__":
                 benchmark_obj.calc_shin_diff_prior(theta)
                 print("Prior calculated")
                 sys.stdout.flush()
+                big_df = benchmark_obj.score_queries(query_list=train_q_list,
+                                                     hyper_param_dict=hyper_param_dict)
                 res_dict = get_score_retrieval_score_for_df(
                     affix=affix,
                     big_df=big_df,
