@@ -979,3 +979,17 @@ def create_feature_list_shortcut_string(feat_list):
     for feat in feat_list:
         ret_str += '_' + feat_short_dict[feat]
     return ret_str
+
+
+def create_cc_dict_with_cw09(
+        dataset_name):
+
+    cc_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/All_Collection_Counts.tsv', sep='\t',
+                        index_col=False)
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/cc_per_interval_dict.json', 'r') as f:
+        cc_dict = ast.literal_eval(f.read())
+
+    for index, row in cc_df.iterrows():
+        cc_dict[row['Stem']] += row['CollectionCount']
+
+    return cc_dict

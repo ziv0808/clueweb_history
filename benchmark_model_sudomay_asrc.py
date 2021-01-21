@@ -5,6 +5,7 @@ import time
 import datetime
 import subprocess
 import pandas as pd
+import murmurhash
 
 from utils import *
 
@@ -21,9 +22,9 @@ class Benchmark:
             add_last=True)
 
         self.retrieval_model = retrieval_model
+        dataset_name = inner_fold.split('_')[0]
         # init usefull dfs and dicts
-        with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/asrc/cc_per_interval_dict.json', 'r') as f:
-            self.cc_dict = ast.literal_eval(f.read())
+        self.cc_dict = create_cc_dict_with_cw09(dataset_name)
         self.query_to_doc_mapping_df = create_query_to_doc_mapping_df(inner_fold=inner_fold)
         limited_q_list               = list(self.query_to_doc_mapping_df['QueryNum'].drop_duplicates())
         self.stemmed_queries_df      = create_stemmed_queries_df(sw_rmv=True, limited_q_list=limited_q_list)
@@ -86,21 +87,41 @@ class Benchmark:
         print("Docs Processed : " + str(doc_count))
         return all_docs_dict
 
+    def minhash(self, text, num_shingels, window=25):  # assume len(text) > 50
+        hashes = [murmurhash.hash(text[i:i + window]) for i in range(len(text) - window + 1)]
+        return set(sorted(hashes)[0:num_shingels])
+
+    def shingleprint_doc_similarity(
+            self,
+            doc_1_text,
+            doc_2_text,
+            num_shingels = 84):
+
+        hashes1 = self.minhash(doc_1_text, num_shingels)
+        hashes2 = self.minhash(doc_2_text, num_shingels)
+
+        return len(hashes1 & hashes2) / float(len(hashes1))
+
+
     def process_doc_for_S_M_L_groups(
             self,
             interval_list,
             doc_dict):
 
         working_snapshots_list = []
+        shing_score = 0.0
         for i in range(len(interval_list)):
             relevant_snapshot_dict = get_doc_snapshot_by_lookup_method(
                 doc_dict=doc_dict,
                 interval_list=interval_list,
                 interval_lookup_method='NoLookup',
                 curr_interval_idx=i)
-            if relevant_snapshot_dict is not None:
-                working_snapshots_list.append(relevant_snapshot_dict)
+            if i > 0:
+                shing_score += self.shingleprint_doc_similarity(relevant_snapshot_dict['Fulltext'], working_snapshots_list[i-1]['Fulltext'])
+            # if relevant_snapshot_dict is not None:
+            working_snapshots_list.append(relevant_snapshot_dict)
 
+        shing_score = shing_score / float(len(interval_list) - 1)
         stem_snapshot_count_dict = {}
         stem_total_count_dict = {}
         for snapshot_dict in working_snapshots_list:
@@ -137,6 +158,7 @@ class Benchmark:
         stem_total_count_dict['GROUP_S_LENGH'] = group_S_len
         stem_total_count_dict['GROUP_M_LENGH'] = group_M_len
         stem_total_count_dict['GROUP_L_LENGH'] = group_L_len
+        stem_total_count_dict['ShingDiffScore'] = 1.0 - shing_score
 
         return stem_total_count_dict
 
@@ -187,7 +209,8 @@ class Benchmark:
                 kl_score = kl_score * stem_d_proba
             else:
                 raise Exception('Unknown retrival Model')
-
+        if self.retrieval_model == 'LM':
+            kl_score = kl_score * (doc_dict['ShingDiffPrior'])
         return kl_score
 
     def get_scored_df_for_query(
@@ -236,6 +259,20 @@ class Benchmark:
                 big_df = big_df.append(res_query_df, ignore_index=True)
 
         return big_df
+
+    def calc_shin_diff_prior(
+            self,
+            theta):
+
+        prior_sum = 0.0
+        for docno in self.all_docs_dict:
+            shinscore = self.all_docs_dict[docno]['ShingDiffScore'] + 1.0
+            shinscore = shinscore ** theta
+            self.all_docs_dict[docno]['ShingDiffPrior'] = shinscore
+            prior_sum += shinscore
+
+        for docno in self.all_docs_dict:
+            self.all_docs_dict[docno]['ShingDiffPrior'] = self.all_docs_dict[docno]['ShingDiffPrior'] / float(prior_sum)
 
 
 def get_score_retrieval_score_for_df(
@@ -301,11 +338,33 @@ if __name__=="__main__":
         hyper_param_dict = {'S': {'Mue': 1500, 'Lambda': 0.45},
                             'M': {'Mue': 1500, 'Lambda': 0.45},
                             'L': {'Mue': 5, 'Lambda': 0.1}}
-        optional_mue_list = [10, 100, 500, 800, 1000, 1200, 1500, 1800]
-        optional_lambda_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        optional_mue_list = [5, 10, 50, 100, 200, 300, 500, 700, 800, 900, 1000, 1200, 1500]
+        optional_lambda_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        theta_option_list = [0.0, 0.1, 0.5, 0.9, 1.0, 1.1, 1.5, 1.6, 1.7, 2.0, 2.3, 2.5]
+
         max_ndcg = 0.0
         best_config = None
-        l_labmda = optional_lambda_list[0]
+
+        if retrieval_model == 'LM':
+            for theta in theta_option_list:
+                hyper_param_dict['Theta'] = theta
+                benchmark_obj.calc_shin_diff_prior(theta)
+                print("Prior calculated")
+                sys.stdout.flush()
+                res_dict = get_score_retrieval_score_for_df(
+                    affix=affix,
+                    big_df=big_df,
+                    qrel_filepath=qrel_filepath,
+                    save_folder=save_folder)
+                print(res_dict['all'])
+                sys.stdout.flush()
+                if res_dict['all']['NDCG@5'] > max_ndcg:
+                    max_ndcg = res_dict['all']['NDCG@5']
+                    best_config = hyper_param_dict
+
+            benchmark_obj.calc_shin_diff_prior(best_config['Theta'])
+
+        l_labmda = 0.1
         for s_mue in optional_mue_list:
             for m_mue in optional_mue_list:
                 for l_mue in optional_mue_list:
