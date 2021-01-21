@@ -77,7 +77,6 @@ class Benchmark:
                 with open(os.path.join(processed_docs_path, filename), 'r') as f:
                     doc_dict = ast.literal_eval(f.read())
                 docno = filename.replace('.json', '')
-                print(docno)
                 all_docs_dict[docno] = self.process_doc_for_S_M_L_groups(
                     interval_list=interval_list,
                     doc_dict=doc_dict)
@@ -100,8 +99,11 @@ class Benchmark:
 
         hashes1 = self.minhash(doc_1_text, num_shingels)
         hashes2 = self.minhash(doc_2_text, num_shingels)
+        min_hash_len = min(hashes2, hashes1)
+        if min_hash_len == 0:
+            return 0.0
 
-        return len(hashes1 & hashes2) / float(len(hashes1))
+        return len(hashes1 & hashes2) / float(len(min_hash_len))
 
 
     def process_doc_for_S_M_L_groups(
