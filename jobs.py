@@ -2946,6 +2946,31 @@ def add_lm_score_files(
                 with open(savepath + datset.lower() + '_0' + str(round_) + '_' + model + '.txt', 'w') as f:
                     f.write(convert_df_to_trec(big_df))
 
+def fix_ks_files_and_produce_stats():
+    ks_asrc_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/data/keyword_stuffed/asrc.ks')
+    ks_herd_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/data/keyword_stuffed/herd.ks')
+
+    ks_asrc_df['Docno'] = ks_asrc_df['Docno'].apply(lambda x: x.replace('ROUND', 'EPOCH'))
+    ks_herd_df['Docno'] = ks_herd_df['Docno'].apply(lambda x: x.replace('ROUND', 'EPOCH'))
+
+    ks_asrc_df['Round'] = ks_asrc_df['Docno'].apply(lambda x: int(x.split('-')[1]))
+    ks_herd_df['Round'] = ks_herd_df['Docno'].apply(lambda x: int(x.split('-')[1]))
+
+    ks_asrc_df['IsKS'] = ks_asrc_df['Relevance'].apply(lambda x: 1 if int(x) > 0 else 0)
+    ks_herd_df['IsKS'] = ks_herd_df['Relevance'].apply(lambda x: 1 if int(x) == 0 else 0)
+
+    ks_united_df = ks_asrc_df[ks_asrc_df['Round'] <= 5].append(ks_herd_df, ignore_index = True)
+    ks_list = list(set(list(ks_united_df[ks_united_df['IsKS'] == 1]['Docno'])  + list(ks_asrc_df[ks_asrc_df['IsKS'] == 1]['Docno'])))
+    print(ks_list)
+    df_list = [('ASRC', ks_asrc_df) , ('UNITED', ks_united_df)]
+    for dataset, df in df_list:
+        print(dataset)
+        df['num'] = 1
+        mdf = df[['Query', 'Round', 'IsKS', 'num']].groupby(['Query', 'Round']).sum()
+        mdf['%ks'] = mdf.apply(lambda row: row['IsKS'] / row['num'], axis = 1)
+        print("Mean % KS Per Round: " + str(mdf['%ks'].mean()))
+        print("% Rounds KS > 0 : " + str(len(mdf[mdf['%ks']>0])/ float(len(mdf))))
+
 
 if __name__ == '__main__':
     operation = sys.argv[1]
@@ -3178,6 +3203,9 @@ if __name__ == '__main__':
             round_limit,
             limited_snap_num,
             limited_features_list)
+
+    elif operation == 'FixKS':
+        fix_ks_files_and_produce_stats()
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
