@@ -311,7 +311,8 @@ def get_ranking_effectiveness_for_res_file_per_query(
         file_path,
         filename,
         qrel_filepath=QRELS_FILE_PATH,
-        calc_ndcg_mrr = False):
+        calc_ndcg_mrr = False,
+        remove_low_quality = False):
     bashCommand = TREC_EVAL_PATH + ' -q ' + qrel_filepath + ' ' + \
                   os.path.join(file_path, filename)
 
@@ -342,7 +343,8 @@ def get_ranking_effectiveness_for_res_file_per_query(
         ndcg_mrr_dict = calc_ndcg_mrr_for_file(
             filename=filename,
             filepath=file_path,
-            qrel_file=qrel_filepath)
+            qrel_file=qrel_filepath,
+            remove_low_quality=remove_low_quality)
         for key in ndcg_mrr_dict:
             for inner_key in ndcg_mrr_dict[key]:
                 res_dict[key][inner_key] = ndcg_mrr_dict[key][inner_key]
@@ -731,13 +733,51 @@ def get_relevant_docs_df_utils(
 
     return relevant_docs_df
 
+def remove_low_quality_docs_from_df(
+        df):
+    low_qulity_docs_list = ['EPOCH-05-069-PLB6ZI', 'EPOCH-02-004-02', 'EPOCH-03-195-3RXCQH', 'EPOCH-04-011-GUMSZY', 'EPOCH-02-098-UONKT7',
+                            'EPOCH-08-004-48', 'EPOCH-05-177-YA7EE4', 'EPOCH-02-029-15', 'EPOCH-05-011-U4XHBD', 'EPOCH-01-144-DX0IY8',
+                            'EPOCH-06-029-41', 'EPOCH-03-017-22', 'EPOCH-05-180-MEP5Y4', 'EPOCH-05-144-06', 'EPOCH-03-124-34PBG2',
+                            'EPOCH-02-048-RXK8H3', 'EPOCH-02-045-71QP3V', 'EPOCH-06-017-01', 'EPOCH-03-098-UONKT7', 'EPOCH-08-029-16',
+                            'EPOCH-02-017-22', 'EPOCH-05-013-SBHV4U', 'EPOCH-05-167-H4PVOF', 'EPOCH-05-010-9DWMMZ', 'EPOCH-02-011-GUMSZY',
+                            'EPOCH-02-182-01', 'EPOCH-01-011-GUMSZY', 'EPOCH-08-017-01', 'EPOCH-08-002-43', 'EPOCH-02-011-09', 'EPOCH-07-069-43',
+                            'EPOCH-01-124-34PBG2', 'EPOCH-02-004-BL2KLC', 'EPOCH-07-029-41', 'EPOCH-06-069-43', 'EPOCH-03-011-GUMSZY',
+                            'EPOCH-05-144-15', 'EPOCH-07-002-13', 'EPOCH-05-124-S4SDDG', 'EPOCH-04-124-34PBG2', 'EPOCH-08-144-06',
+                            'EPOCH-03-144-15', 'EPOCH-05-013-T7KWL2', 'EPOCH-01-180-37', 'EPOCH-08-048-27', 'EPOCH-06-193-01',
+                            'EPOCH-01-048-RXK8H3', 'EPOCH-03-069-41', 'EPOCH-03-124-S4SDDG', 'EPOCH-05-033-SA9WFV', 'EPOCH-02-059-14T9OZ',
+                            'EPOCH-01-034-6LWZ77', 'EPOCH-08-045-38', 'EPOCH-02-124-39', 'EPOCH-08-032-16', 'EPOCH-01-098-15', 'EPOCH-05-182-W129AB',
+                            'EPOCH-07-193-01', 'EPOCH-05-032-7XUGJ0', 'EPOCH-02-195-3RXCQH', 'EPOCH-05-048-RXK8H3', 'EPOCH-07-048-27', 'EPOCH-02-078-WVSJJH',
+                            'EPOCH-05-051-6QL968', 'EPOCH-05-033-KP5G43', 'EPOCH-01-034-20', 'EPOCH-06-018-03', 'EPOCH-02-144-T14SSS', 'EPOCH-02-124-S4SDDG',
+                            'EPOCH-04-018-609XQD', 'EPOCH-07-144-06', 'EPOCH-01-144-T14SSS', 'EPOCH-03-004-48', 'EPOCH-01-098-UONKT7', 'EPOCH-04-144-06',
+                            'EPOCH-08-069-45', 'EPOCH-08-069-43', 'EPOCH-08-144-24', 'EPOCH-05-161-FCT04D', 'EPOCH-03-048-RXK8H3', 'EPOCH-05-195-3RXCQH',
+                            'EPOCH-05-098-UONKT7', 'EPOCH-06-029-16', 'EPOCH-06-029-15', 'EPOCH-07-017-01', 'EPOCH-06-195-43', 'EPOCH-01-059-14T9OZ',
+                            'EPOCH-04-124-S4SDDG', 'EPOCH-01-011-U4XHBD', 'EPOCH-07-059-45', 'EPOCH-02-144-24', 'EPOCH-07-059-41', 'EPOCH-04-144-T14SSS',
+                            'EPOCH-04-032-7XUGJ0', 'EPOCH-04-098-UONKT7', 'EPOCH-07-002-43', 'EPOCH-06-166-03', 'EPOCH-04-048-RXK8H3', 'EPOCH-04-195-35',
+                            'EPOCH-02-144-15', 'EPOCH-03-029-15', 'EPOCH-04-069-41', 'EPOCH-01-033-KP5G43', 'EPOCH-03-098-SPSHA3', 'EPOCH-04-009-19',
+                            'EPOCH-08-002-13', 'EPOCH-03-144-52', 'EPOCH-03-144-T14SSS', 'EPOCH-05-018-9PFCP4', 'EPOCH-06-059-41', 'EPOCH-02-144-09',
+                            'EPOCH-06-144-06', 'EPOCH-01-017-VKBYGU', 'EPOCH-04-045-71QP3V', 'EPOCH-01-029-15', 'EPOCH-01-124-S4SDDG', 'EPOCH-03-180-19',
+                            'EPOCH-08-029-15', 'EPOCH-08-009-33', 'EPOCH-05-144-T14SSS', 'EPOCH-08-078-04', 'EPOCH-07-029-16', 'EPOCH-01-004-0YGZO0',
+                            'EPOCH-05-018-609XQD', 'EPOCH-06-009-02', 'EPOCH-03-011-U4XHBD', 'EPOCH-06-048-27', 'EPOCH-01-195-3RXCQH', 'EPOCH-03-018-609XQD',
+                            'EPOCH-02-078-14', 'EPOCH-04-195-3RXCQH', 'EPOCH-08-010-40', 'EPOCH-04-004-48', 'EPOCH-05-011-GUMSZY', 'EPOCH-03-144-24',
+                            'EPOCH-04-029-15', 'EPOCH-08-164-31', 'EPOCH-06-002-43', 'EPOCH-04-059-14T9OZ', 'EPOCH-03-017-32', 'EPOCH-05-048-V0HAX1',
+                            'EPOCH-04-144-24', 'EPOCH-07-029-25', 'EPOCH-03-078-WVSJJH']
+    idx_drop_list = []
+    for idx, row in df.iterrows():
+        if row['Docno'] in low_qulity_docs_list:
+            idx_drop_list.append(idx_drop_list)
+    df.drop(idx_drop_list, inplace=True)
+    return df
+
 def calc_ndcg_mrr_for_file(
         filepath,
         filename,
-        qrel_file):
+        qrel_file,
+        remove_low_quality= False):
     qrel_df = get_relevant_docs_df_utils(qrel_file)
     qrel_df['Relevance'] = qrel_df['Relevance'].apply(lambda x: int(x))
     res_df = convert_trec_results_file_to_pandas_df(os.path.join(filepath, filename))
+    if remove_low_quality == True:
+        res_df = remove_low_quality_docs_from_df(res_df)
     res_df.rename(columns = {'Query_ID' : 'Query'}, inplace = True)
     res_df = pd.merge(
         res_df,

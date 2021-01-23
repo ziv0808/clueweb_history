@@ -2155,35 +2155,42 @@ def unite_asrc_data_results(
         round_res_dict[round_] = {}
         num_rounds += 1
         for filename in os.listdir(inner_fold):
-            print(inner_fold + '/'+filename)
-            num_files += 1
-            sys.stdout.flush()
-            tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
-                file_path=inner_fold,
-                filename=filename,
-                qrel_filepath=qrel_filepath,
-                calc_ndcg_mrr=True)
-            print(tmp_res_dict.keys())
-            feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
-            # if 'RMG' in feat_group:
-            #     continue
-            if limited_snap_num != "None":
-                feat_group = feat_group.replace('+' + str(limited_snap_num) + 'ByMonths','')
-                feat_group = feat_group.replace('+' + str(limited_snap_num),'')
-            round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
-            print(feat_group)
-            # if (dataset_name == 'herd_control') and (59 in tmp_res_dict):
-            #     del tmp_res_dict[59]
-            if feat_group.replace('_', '+') in big_res_dict:
-                print(num_files)
+            for remove_low_quality in [False , True]:
+                print(inner_fold + '/'+filename)
+                num_files += 1
                 sys.stdout.flush()
-                for q in tmp_res_dict:
-                    for measure in tmp_res_dict[q]:
-                        big_res_dict[feat_group.replace('_', '+')][q][measure] = (float(big_res_dict[feat_group][q][measure])*(num_rounds - 1) + tmp_res_dict[q][measure])/float(num_rounds)
-            else:
-                print ("here!")
-                sys.stdout.flush()
-                big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                    file_path=inner_fold,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True,
+                    remove_low_quality=remove_low_quality)
+                print(tmp_res_dict.keys())
+                feat_group = filename.replace(inner_fold.split('/')[-1] + '_MinMax_', '').replace('.txt', '').replace('_AllByMonths', '').replace('_', '+')
+                # if 'RMG' in feat_group:
+                #     continue
+                if limited_snap_num != "None":
+                    feat_group = feat_group.replace('+' + str(limited_snap_num) + 'ByMonths','')
+                    feat_group = feat_group.replace('+' + str(limited_snap_num),'')
+
+                if remove_low_quality == True:
+                    feat_group += " RMV LQ"
+                    
+                round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
+
+                print(feat_group)
+                # if (dataset_name == 'herd_control') and (59 in tmp_res_dict):
+                #     del tmp_res_dict[59]
+                if feat_group.replace('_', '+') in big_res_dict:
+                    print(num_files)
+                    sys.stdout.flush()
+                    for q in tmp_res_dict:
+                        for measure in tmp_res_dict[q]:
+                            big_res_dict[feat_group.replace('_', '+')][q][measure] = (float(big_res_dict[feat_group][q][measure])*(num_rounds - 1) + tmp_res_dict[q][measure])/float(num_rounds)
+                else:
+                    print ("here!")
+                    sys.stdout.flush()
+                    big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
 
         for model in additional_models_to_include:
             if dataset_name == 'united' and 'MM P' in model:
@@ -2199,33 +2206,37 @@ def unite_asrc_data_results(
                 filename = filename.replace('_All_features', '')
             path = additional_models_to_include[model]['Folder'].replace('<InnerFold>', inner_fold_sep).replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset_name)
             print(filename)
-            feat_group = model
-            tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
-                file_path=path,
-                filename=filename,
-                qrel_filepath=qrel_filepath,
-                calc_ndcg_mrr=True)
-            print (tmp_res_dict.keys())
-            # if dataset_name == 'herd_control':
-            #     del tmp_res_dict[59]
-            if round_ in [6,7] and model != 'SNAPS':
-                del tmp_res_dict[193]
-                if round_ == 7:
-                    del tmp_res_dict[195]
-            round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
-            print(feat_group)
-            if feat_group.replace('_', '+') in big_res_dict:
-                print(num_files)
-                sys.stdout.flush()
-                for q in tmp_res_dict:
-                    for measure in tmp_res_dict[q]:
-                        big_res_dict[feat_group.replace('_', '+')][q][measure] = (float(
-                            big_res_dict[feat_group][q][measure]) * (num_rounds - 1) + tmp_res_dict[q][measure]) / float(
-                            num_rounds)
-            else:
-                print("here!")
-                sys.stdout.flush()
-                big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
+            for remove_low_quality in [False, True]:
+                feat_group = model
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                    file_path=path,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True,
+                    remove_low_quality=remove_low_quality)
+                if remove_low_quality == True:
+                    feat_group += " RMV LQ"
+                print (tmp_res_dict.keys())
+                # if dataset_name == 'herd_control':
+                #     del tmp_res_dict[59]
+                if round_ in [6,7] and model != 'SNAPS':
+                    del tmp_res_dict[193]
+                    if round_ == 7:
+                        del tmp_res_dict[195]
+                round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
+                print(feat_group)
+                if feat_group.replace('_', '+') in big_res_dict:
+                    print(num_files)
+                    sys.stdout.flush()
+                    for q in tmp_res_dict:
+                        for measure in tmp_res_dict[q]:
+                            big_res_dict[feat_group.replace('_', '+')][q][measure] = (float(
+                                big_res_dict[feat_group][q][measure]) * (num_rounds - 1) + tmp_res_dict[q][measure]) / float(
+                                num_rounds)
+                else:
+                    print("here!")
+                    sys.stdout.flush()
+                    big_res_dict[feat_group.replace('_', '+')] = tmp_res_dict
 
         measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR', 'nMRR']
         round_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
