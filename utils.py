@@ -764,7 +764,7 @@ def remove_low_quality_docs_from_df(
     idx_drop_list = []
     for idx, row in df.iterrows():
         if row['Docno'] in low_qulity_docs_list:
-            idx_drop_list.append(idx_drop_list)
+            idx_drop_list.append(idx)
     df.drop(idx_drop_list, inplace=True)
     return df
 
