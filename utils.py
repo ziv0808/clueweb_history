@@ -777,7 +777,11 @@ def calc_ndcg_mrr_for_file(
     qrel_df['Relevance'] = qrel_df['Relevance'].apply(lambda x: int(x))
     res_df = convert_trec_results_file_to_pandas_df(os.path.join(filepath, filename))
     if remove_low_quality == True:
+        print("Got Here")
+        sys.stdout.flush()
         res_df = remove_low_quality_docs_from_df(res_df)
+        print("Got Out")
+        sys.stdout.flush()
     res_df.rename(columns = {'Query_ID' : 'Query'}, inplace = True)
     res_df = pd.merge(
         res_df,
