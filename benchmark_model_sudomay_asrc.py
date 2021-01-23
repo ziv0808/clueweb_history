@@ -44,17 +44,18 @@ class Benchmark:
 
         self.all_words_current_cc = {}
         total_count = 0
+        self.all_words_current_cc['TOTAL_COUNT_S'] = 0
+        self.all_words_current_cc['TOTAL_COUNT_M'] = 0
+        self.all_words_current_cc['TOTAL_COUNT_L'] = 0
         for docno in self.all_docs_dict:
             for stem in self.all_docs_dict[docno]:
                 if stem in ['GROUP_S_LENGH','GROUP_M_LENGH','GROUP_L_LENGH', 'ShingDiffScore','ShingDiffPrior']:
                     continue
-                if stem not in self.all_words_current_cc:
-                    self.all_words_current_cc[stem] = self.all_docs_dict[docno][stem]['TF']
+                if stem + '_' + self.all_docs_dict[docno][stem]['Group'] not in self.all_words_current_cc:
+                    self.all_words_current_cc[stem + '_' + self.all_docs_dict[docno][stem]['Group']] = self.all_docs_dict[docno][stem]['TF']
                 else:
-                    self.all_words_current_cc[stem] += self.all_docs_dict[docno][stem]['TF']
-                total_count += self.all_docs_dict[docno][stem]['TF']
-
-        self.all_words_current_cc['TOTAL_COUNT'] = total_count
+                    self.all_words_current_cc[stem + '_' + self.all_docs_dict[docno][stem]['Group']] += self.all_docs_dict[docno][stem]['TF']
+                self.all_words_current_cc['TOTAL_COUNT_' + self.all_docs_dict[docno][stem]['Group']] += self.all_docs_dict[docno][stem]['TF']
 
         self.run_log = ""
 
@@ -187,19 +188,24 @@ class Benchmark:
 
             stem_d_proba = 0.0
             for curr_group in ['S','M','L']:
+                if stem + '_' + curr_group in self.all_words_current_cc:
+                    curr_group_stem_cc_count = self.all_words_current_cc[stem + '_' + curr_group]
+                else:
+                    curr_group_stem_cc_count = 0.0
+                curr_group_cc_count = self.all_words_current_cc['TOTAL_COUNT_' + curr_group]
                 if curr_group == doc_dict[stem]['Group']:
                     stem_d_group_proba = get_word_diriclet_smoothed_probability(
                             tf_in_doc=doc_dict[stem]['TF'],
                             doc_len=doc_dict['GROUP_' + curr_group + '_LENGH'],
-                            collection_count_for_word=cc_dict[stem],
-                            collection_len=cc_dict['ALL_TERMS_COUNT'],
+                            collection_count_for_word=cc_dict[stem] + curr_group_stem_cc_count,
+                            collection_len=cc_dict['ALL_TERMS_COUNT'] + curr_group_cc_count,
                             mue=hyper_param_dict[curr_group]['Mue'])
                 else:
                     stem_d_group_proba = get_word_diriclet_smoothed_probability(
                             tf_in_doc=0.0,
                             doc_len=doc_dict['GROUP_' + curr_group + '_LENGH'],
-                            collection_count_for_word=cc_dict[stem],
-                            collection_len=cc_dict['ALL_TERMS_COUNT'],
+                            collection_count_for_word=cc_dict[stem] + curr_group_stem_cc_count,
+                            collection_len=cc_dict['ALL_TERMS_COUNT'] + curr_group_cc_count,
                             mue=hyper_param_dict[curr_group]['Mue'])
                 stem_d_proba += (hyper_param_dict[curr_group]['Lambda']) * stem_d_group_proba
 
@@ -341,7 +347,7 @@ if __name__=="__main__":
         hyper_param_dict = {'S': {'Mue': 1500, 'Lambda': 0.45},
                             'M': {'Mue': 1500, 'Lambda': 0.45},
                             'L': {'Mue': 5, 'Lambda': 0.1}}
-        optional_mue_list = [5, 10, 50, 100, 200, 300, 500, 700, 800, 900, 1000, 1200, 1500]
+        optional_mue_list = [5, 50, 100, 200, 300, 500, 800, 1000, 1200, 1500]
         optional_lambda_list = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         theta_option_list = [0.0, 0.1, 0.5, 0.9, 1.0, 1.1, 1.5, 1.6, 1.7, 2.0, 2.3, 2.5]
 
@@ -410,7 +416,7 @@ if __name__=="__main__":
                 max_ndcg = res_dict['all']['NDCG@5']
                 best_config = hyper_param_dict
 
-        print("Best Config: " + str(best_config) + " NDCG@5 : " + str(max_ndcg))
+        print(affix + " Best Config: " + str(best_config) + " NDCG@5 : " + str(max_ndcg))
         sys.stdout.flush()
         big_df = benchmark_obj.score_queries(query_list=test_q_list,
                                              hyper_param_dict=best_config)
