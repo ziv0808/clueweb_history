@@ -2548,7 +2548,8 @@ def orginize_mm_features_data_compare(
                          'DIRPrev2Winners', 'DIRPrev2BestImprove',
                          'JMPrev3Winners', 'JMPrev3BestImprove',
                          'DIRPrev3Winners', 'DIRPrev3BestImprove',
-                         'JMOnlyReservoir', 'DIROnlyReservoir']
+                         'JMOnlyReservoir', 'DIROnlyReservoir',
+                         'ED_KL', 'ED_LM', 'RHS_BM25', 'RHS_LM']
 
     for mm_feture in mm_feature_list:
         feature_inner_fold_list.append((mm_feture, addition_to_inner_fold + create_feature_list_shortcut_string([mm_feture])))
@@ -2567,28 +2568,32 @@ def orginize_mm_features_data_compare(
                     method = 'S+MSMM+MG'
                 else:
                     continue
-                print(inner_fold + '/' + filename)
-                num_files += 1
-                sys.stdout.flush()
-                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
-                    file_path=inner_fold,
-                    filename=filename,
-                    qrel_filepath=qrel_filepath,
-                    calc_ndcg_mrr=True)
-                print(tmp_res_dict.keys())
-                feat_name = mm_feture + '_' + method
-                print(feat_name)
-                if feat_name in big_res_dict:
-                    print(num_files)
+                for remove_low_quality in [False, True]:
+                    print(inner_fold + '/' + filename)
+                    num_files += 1
                     sys.stdout.flush()
-                    for q in tmp_res_dict:
-                        for measure in tmp_res_dict[q]:
-                            big_res_dict[feat_name][q][measure] = (float(big_res_dict[feat_name][q][measure]) * (
-                            num_rounds - 1) + tmp_res_dict[q][measure]) / float(num_rounds)
-                else:
-                    print("here!")
-                    sys.stdout.flush()
-                    big_res_dict[feat_name] = tmp_res_dict
+                    tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                        file_path=inner_fold,
+                        filename=filename,
+                        qrel_filepath=qrel_filepath,
+                        calc_ndcg_mrr=True,
+                        remove_low_quality=remove_low_quality)
+                    print(tmp_res_dict.keys())
+                    feat_name = mm_feture + '_' + method
+                    print(feat_name)
+                    if remove_low_quality == True:
+                        feat_name += " RMV LQ"
+                    if feat_name in big_res_dict:
+                        print(num_files)
+                        sys.stdout.flush()
+                        for q in tmp_res_dict:
+                            for measure in tmp_res_dict[q]:
+                                big_res_dict[feat_name][q][measure] = (float(big_res_dict[feat_name][q][measure]) * (
+                                num_rounds - 1) + tmp_res_dict[q][measure]) / float(num_rounds)
+                    else:
+                        print("here!")
+                        sys.stdout.flush()
+                        big_res_dict[feat_name] = tmp_res_dict
 
     measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR', 'nMRR']
     big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
