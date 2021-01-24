@@ -1905,7 +1905,7 @@ def create_base_features_for_asrc_with_ltr_features(
                        'JMPrev3Winners', 'JMPrev3BestImprove',
                        'DIRPrev3Winners', 'DIRPrev3BestImprove',
                        'JMOnlyReservoir', 'DIROnlyReservoir',
-                        'ED_KL', 'ED_LM', 'RHS_BM25', 'RHS_LM'
+                         'ED_LM', 'RHS_BM25', 'RHS_LM', 'ED_KL'
     ]
     base_feature_list.extend(mm_feature_list)
     col_list = ['NumSnapshots']
@@ -1957,6 +1957,8 @@ def create_base_features_for_asrc_with_ltr_features(
                             feature_ref_dict[query_num][curr_docno][mm_feat] = feature_ref_dict[query_num][curr_docno]['LMIR.DIR']
                         elif 'JM' in mm_feat :
                             feature_ref_dict[query_num][curr_docno][mm_feat] = feature_ref_dict[query_num][curr_docno]['LMIR.JM']
+                        else:
+                            feature_ref_dict[query_num][curr_docno][mm_feat] = pd.np.nan
                     else:
                         feature_ref_dict[query_num][curr_docno][mm_feat] = mm_feature_ref[int(query_num)][curr_docno][mm_feat]
                 insert_row =[]
