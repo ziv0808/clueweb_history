@@ -1019,6 +1019,10 @@ def create_feature_list_shortcut_string(feat_list):
         'JMPrevBestImproveK3': 'MJmBiK3',
         'DIRPrevBestImproveRand': 'MDrBiRd',
         'JMPrevBestImproveRand': 'MJmBiRd',
+        'ED_KL' : 'EDKl',
+        'ED_LM': 'EDLm',
+        'RHS_BM25': 'RhsBm25',
+        'RHS_LM': 'RhsLm',
     }
     for feat in feat_list:
         ret_str += '_' + feat_short_dict[feat]

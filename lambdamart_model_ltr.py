@@ -364,7 +364,8 @@ def run_cv_for_config(
                        'DIRPrevWinnerK3', 'DIRPrevBestImproveK3',
                        'JMPrevWinnerRand', 'JMPrevBestImproveRand',
                        'DIRPrevWinnerRand', 'DIRPrevBestImproveRand',
-                       'JMOnlyReservoir', 'DIROnlyReservoir']
+                       'JMOnlyReservoir', 'DIROnlyReservoir',
+                        'ED_KL', 'ED_LM', 'RHS_BM25', 'RHS_LM']
     mm_features = []
     if limited_features_list is not None:
         base_feature_list = limited_features_list

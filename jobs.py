@@ -1795,6 +1795,48 @@ def create_mixture_models_feature_dict(
     return mm_features_dict
 
 
+def create_domais_rhs_feature_dict(
+        dataset_name,
+        model_features_dict):
+    sudomay_model_res_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark_sudomay/final_res/'
+
+    for filename in os.listdir(sudomay_model_res_path):
+        if filename.startswith(dataset_name.lower()) and not filename.endswith('_Params.txt'):
+            broken_name = filename.split('_')
+            round = broken_name[1]
+            model = broken_name[2]
+            if '_KL_' in filename:
+                model = 'ED_KL'
+            elif '_LM_' in filename:
+                model = 'ED_LM'
+            else:
+                raise Exception("create_domais_rhs_feature_dict: Unknown model")
+
+            curr_df = convert_trec_results_file_to_pandas_df(os.path.join(sudomay_model_res_path, filename))
+            for index, row in curr_df.iterrows():
+                model_features_dict[int(row['Query_ID'])][row['Docno']][model] = float(row['Score'])
+
+    aji_model_res_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rhs_model_asrc/final_res/'
+
+    for filename in os.listdir(aji_model_res_path):
+        if filename.startswith(dataset_name.lower()) and not filename.endswith('_Params.txt'):
+            broken_name = filename.split('_')
+            round = broken_name[1]
+            model = broken_name[2]
+            if '_BM25_' in filename:
+                model = 'RHS_BM25'
+            elif '_LM_' in filename:
+                model = 'RHS_LM'
+            else:
+                raise Exception("create_domais_rhs_feature_dict: Unknown model 2")
+
+            curr_df = convert_trec_results_file_to_pandas_df(os.path.join(aji_model_res_path, filename))
+            for index, row in curr_df.iterrows():
+                model_features_dict[int(row['Query_ID'])][row['Docno']][model] = float(row['Score'])
+
+    return model_features_dict
+
+
 def create_ltr_feature_dict(
         feature_folder):
     res_dict = {}
@@ -1860,7 +1902,8 @@ def create_base_features_for_asrc_with_ltr_features(
                        'DIRPrev2Winners', 'DIRPrev2BestImprove',
                        'JMPrev3Winners', 'JMPrev3BestImprove',
                        'DIRPrev3Winners', 'DIRPrev3BestImprove',
-                       'JMOnlyReservoir', 'DIROnlyReservoir'
+                       'JMOnlyReservoir', 'DIROnlyReservoir',
+                        'ED_KL', 'ED_LM', 'RHS_BM25', 'RHS_LM'
     ]
     base_feature_list.extend(mm_feature_list)
     col_list = ['NumSnapshots']
@@ -1877,6 +1920,7 @@ def create_base_features_for_asrc_with_ltr_features(
 
     feature_ref_dict = create_ltr_feature_dict(os.path.join(os.path.join(os.path.join(meta_data_base_fold,'datsets'),inner_fold),'feat_dir'))
     mm_feature_ref = create_mixture_models_feature_dict(inner_fold)
+    mm_feature_ref = create_domais_rhs_feature_dict(inner_fold, mm_feature_ref)
     for query_user_str in big_doc_index:
         all_rounds = list(big_doc_index[query_user_str].keys())
         query_num = query_user_str.split('-')[0]
@@ -2175,7 +2219,7 @@ def unite_asrc_data_results(
 
                 if remove_low_quality == True:
                     feat_group += " RMV LQ"
-                    
+
                 round_res_dict[round_][feat_group.replace('_', '+')] = tmp_res_dict
 
                 print(feat_group)
