@@ -666,9 +666,9 @@ if __name__=="__main__":
     mergedIndex = mergeIndices(asrIndex, baseDir)
     print('Index Merged!')
     sys.stdout.flush()
-    curr_static_model = 'static_model_lambdamart_round_3'
-    curr_s_msmm_mg_model = 'static_msmm_mg_model_lambdamart_round_3'
-    prev_rounds_list = ['2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428']
+    curr_static_model = 'static_model_lambdamart_round_4'
+    curr_s_msmm_mg_model = 'static_msmm_mg_model_lambdamart_round_4'
+    prev_rounds_list = ['2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622']
     ## mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
     ## workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-14-22-37-00-218428'
     ## currentTime = '2021-01-14-22-37-00-218428'
