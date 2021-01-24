@@ -1801,7 +1801,8 @@ def create_domais_rhs_feature_dict(
     sudomay_model_res_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/benchmark_sudomay/final_res/'
 
     for filename in os.listdir(sudomay_model_res_path):
-        if filename.startswith(dataset_name.lower()) and not filename.endswith('_Params.txt'):
+        if filename.startswith(dataset_name.lower()) and not filename.endswith('_Params.txt') and 'LoO' in filename:
+            print(filename)
             broken_name = filename.split('_')
             round = broken_name[1]
             model = broken_name[2]
@@ -1819,7 +1820,8 @@ def create_domais_rhs_feature_dict(
     aji_model_res_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rhs_model_asrc/final_res/'
 
     for filename in os.listdir(aji_model_res_path):
-        if filename.startswith(dataset_name.lower()) and not filename.endswith('_Params.txt'):
+        if filename.startswith(dataset_name.lower()) and not filename.endswith('_Params.txt') and 'LoO' in filename:
+            print(filename)
             broken_name = filename.split('_')
             round = broken_name[1]
             model = broken_name[2]
