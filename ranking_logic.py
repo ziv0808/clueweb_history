@@ -652,26 +652,26 @@ def backupDocuments(currentTime,baseDir):
 
 if __name__=="__main__":
     baseDir = '/lv_local/home/zivvasilisky/ASR20/epoch_run/'
-    if not os.path.exists(baseDir):
-        os.makedirs(baseDir)
-    changeStatus()
-    print('Status Changed!')
-    sys.stdout.flush()
-    trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
-    print('Files created!')
-    sys.stdout.flush()
-    asrIndex = buildIndex(trecFileName, currentTime, baseDir)
-    print('Index Built!')
-    sys.stdout.flush()
-    mergedIndex = mergeIndices(asrIndex, baseDir)
-    print('Index Merged!')
-    sys.stdout.flush()
+    # if not os.path.exists(baseDir):
+    #     os.makedirs(baseDir)
+    # changeStatus()
+    # print('Status Changed!')
+    # sys.stdout.flush()
+    # trecFileName, workingSetFilename, currentTime = createTrecTextForCurrentDocuments(baseDir)
+    # print('Files created!')
+    # sys.stdout.flush()
+    # asrIndex = buildIndex(trecFileName, currentTime, baseDir)
+    # print('Index Built!')
+    # sys.stdout.flush()
+    # mergedIndex = mergeIndices(asrIndex, baseDir)
+    # print('Index Merged!')
+    # sys.stdout.flush()
     curr_static_model = 'static_model_lambdamart_round_4'
     curr_s_msmm_mg_model = 'static_msmm_mg_model_lambdamart_round_4'
     prev_rounds_list = ['2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622']
-    ## mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
-    ## workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-14-22-37-00-218428'
-    ## currentTime = '2021-01-14-22-37-00-218428'
+    mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
+    workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-24-22-40-57-628006'
+    currentTime = '2021-01-24-22-40-57-628006'
     rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir, curr_static_model, curr_s_msmm_mg_model, prev_rounds_list)
     print('Ranked docs!')
     rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
