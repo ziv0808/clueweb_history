@@ -374,34 +374,36 @@ def create_model_ready_feature_df(
 
         df_column_list = ['QueryNum', 'Docno'] + feature_list
         feature_df = pd.DataFrame(columns=df_column_list)
-        historical_feature_dict = {}
-        parsed_curr_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + currentTime)
-        for historical_snap in prev_rounds_list:
-            with open('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/FeatureIdx/' + historical_snap + '_BERT.json','r') as f:
-                curr_snap_bert_dict = ast.literal_eval(f.read())
-            curr_snap_all_feature_dict = create_ltr_feature_dict('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/Features/' + historical_snap + '/')
-            parsed_curr_snap_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + historical_snap)
+        # historical_feature_dict = {}
+        # parsed_curr_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + currentTime)
+        # for historical_snap in prev_rounds_list:
+        #     with open('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/FeatureIdx/' + historical_snap + '_BERT.json','r') as f:
+        #         curr_snap_bert_dict = ast.literal_eval(f.read())
+        #     curr_snap_all_feature_dict = create_ltr_feature_dict('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/Features/' + historical_snap + '/')
+        #     parsed_curr_snap_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + historical_snap)
+        #
+        #     for query in curr_snap_all_feature_dict:
+        #         if query.split('_')[1] != '0':
+        #             if query not in historical_feature_dict:
+        #                 historical_feature_dict[query] = {}
+        #             for docno in curr_snap_all_feature_dict[query]:
+        #                 if docno not in historical_feature_dict[query]:
+        #                     historical_feature_dict[query][docno] = {}
+        #                 for feature in base_feature_list:
+        #                     if feature not in historical_feature_dict[query][docno]:
+        #                         historical_feature_dict[query][docno][feature] = []
+        #                     if feature == 'SimClueWeb':
+        #                         curr_sim = calc_cosine(parsed_curr_file_dict[query][docno.split('-')[1]]['TfIdf'], parsed_curr_snap_file_dict[query][docno.split('-')[1]]['TfIdf'])
+        #                         historical_feature_dict[query][docno][feature].append(curr_sim)
+        #                     elif feature == 'BERTScore':
+        #                         historical_feature_dict[query][docno][feature].append(curr_snap_bert_dict[query][docno.split('-')[1]]['BERTScore'])
+        #                     else:
+        #                         historical_feature_dict[query][docno][feature].append(curr_snap_all_feature_dict[query][docno][feature])
 
-            for query in curr_snap_all_feature_dict:
-                if query.split('_')[1] != '0':
-                    if query not in historical_feature_dict:
-                        historical_feature_dict[query] = {}
-                    for docno in curr_snap_all_feature_dict[query]:
-                        if docno not in historical_feature_dict[query]:
-                            historical_feature_dict[query][docno] = {}
-                        for feature in base_feature_list:
-                            if feature not in historical_feature_dict[query][docno]:
-                                historical_feature_dict[query][docno][feature] = []
-                            if feature == 'SimClueWeb':
-                                curr_sim = calc_cosine(parsed_curr_file_dict[query][docno.split('-')[1]]['TfIdf'], parsed_curr_snap_file_dict[query][docno.split('-')[1]]['TfIdf'])
-                                historical_feature_dict[query][docno][feature].append(curr_sim)
-                            elif feature == 'BERTScore':
-                                historical_feature_dict[query][docno][feature].append(curr_snap_bert_dict[query][docno.split('-')[1]]['BERTScore'])
-                            else:
-                                historical_feature_dict[query][docno][feature].append(curr_snap_all_feature_dict[query][docno][feature])
-
-        with open("historical_feature_dict.txt", 'w') as f:
-            f.write(str(historical_feature_dict))
+        # with open("historical_feature_dict.txt", 'w') as f:
+        #     f.write(str(historical_feature_dict))
+        with open("historical_feature_dict.txt", 'r') as f:
+            historical_feature_dict = ast.literal_eval(f.read())
         print("here")
         next_idx = 0
         for query in all_feature_dict:
