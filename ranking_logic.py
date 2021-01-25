@@ -372,6 +372,8 @@ def create_model_ready_feature_df(
             for base_feat in base_feature_list:
                 feature_list.append(base_feat + '_MaxXXSnaps')
 
+        df_column_list = ['QueryNum', 'Docno'] + feature_list
+        feature_df = pd.DataFrame(columns=df_column_list)
         historical_feature_dict = {}
         parsed_curr_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + currentTime)
         for historical_snap in prev_rounds_list:
@@ -397,9 +399,7 @@ def create_model_ready_feature_df(
                                 historical_feature_dict[query][docno][feature].append(curr_snap_bert_dict[query][docno.split('-')[1]]['BERTScore'])
                             else:
                                 historical_feature_dict[query][docno][feature].append(curr_snap_all_feature_dict[query][docno][feature])
-        print(feature_list)
-        df_column_list = ['QueryNum', 'Docno'] + feature_list
-        feature_df = pd.DataFrame(columns=df_column_list)
+
         print("here")
         next_idx = 0
         for query in all_feature_dict:
