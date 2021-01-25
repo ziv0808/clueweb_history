@@ -398,7 +398,7 @@ def create_model_ready_feature_df(
                             else:
                                 historical_feature_dict[query][docno][feature].append(curr_snap_all_feature_dict[query][docno][feature])
         print(feature_list)
-        feature_df = pd.DataFrame(columns=['QueryNum', 'Docno'] + feature_list)
+        feature_df = pd.DataFrame(columns=['QueryNum', 'Docno'] + feature_list, sep=r'\s*,\s*')
         next_idx = 0
         for query in all_feature_dict:
             if query.split('_')[1] != '0':
