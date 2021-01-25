@@ -506,32 +506,32 @@ def runRankingModels(mergedIndex, workingSet, currentTime, baseDir, curr_static_
     FEATURES_DIR = pathToFolder + 'Features/' +  currentTime
     if not os.path.exists(FEATURES_DIR):
         os.makedirs(FEATURES_DIR)
-    CONTROL_FEATURES_FILE = 'features_0'
-    command = scriptDir+'LTRFeatures ' + QUERIES_FILE + ' -stream=doc -index=' + INDEX + ' -repository='+ INDEX +' -useWorkingSet=true -workingSetFile='+ WORKING_SET_FILE + ' -workingSetFormat=trec'
-    print(command)
-    out = run_bash_command(command)
-    print(out)
-    run_command('mv doc*_* ' + FEATURES_DIR)
-    run_bert_model(currentTime)
-    create_model_ready_feature_df(currentTime, static=True)
-    FEATURES_FILE = CONTROL_FEATURES_FILE
-    command = 'java -jar '+scriptDir+'RankLib.jar -load ' + STATIC_MODEL_FILE + ' -rank '+FEATURES_FILE+' -score predictions.tmp'
-    print(command)
-    out=run_bash_command(command)
-    print(out)
-    command = 'cut -f3 predictions.tmp > predictions'
-    print(command)
-    out=run_bash_command(command)
-    print(out)
-    run_bash_command('rm predictions.tmp')
+    # CONTROL_FEATURES_FILE = 'features_0'
+    # command = scriptDir+'LTRFeatures ' + QUERIES_FILE + ' -stream=doc -index=' + INDEX + ' -repository='+ INDEX +' -useWorkingSet=true -workingSetFile='+ WORKING_SET_FILE + ' -workingSetFormat=trec'
+    # print(command)
+    # out = run_bash_command(command)
+    # print(out)
+    # run_command('mv doc*_* ' + FEATURES_DIR)
+    # run_bert_model(currentTime)
+    # create_model_ready_feature_df(currentTime, static=True)
+    # FEATURES_FILE = CONTROL_FEATURES_FILE
+    # command = 'java -jar '+scriptDir+'RankLib.jar -load ' + STATIC_MODEL_FILE + ' -rank '+FEATURES_FILE+' -score predictions.tmp'
+    # print(command)
+    # out=run_bash_command(command)
+    # print(out)
+    # command = 'cut -f3 predictions.tmp > predictions'
+    # print(command)
+    # out=run_bash_command(command)
+    # print(out)
+    # run_bash_command('rm predictions.tmp')
     RANKED_LIST_DIR = pathToFolder+'RankedLists/'
     if not os.path.exists(RANKED_LIST_DIR):
         os.makedirs(RANKED_LIST_DIR)
-    PREDICTIONS_FILE = 'predictions'
-    command='perl '+scriptDir+'order.pl ' + RANKED_LIST_DIR+ 'LambdaMART_0_' + currentTime + ' ' +FEATURES_FILE + ' ' + PREDICTIONS_FILE
-    print(command)
-    out=run_bash_command(command)
-    print(out)
+    # PREDICTIONS_FILE = 'predictions'
+    # command='perl '+scriptDir+'order.pl ' + RANKED_LIST_DIR+ 'LambdaMART_0_' + currentTime + ' ' +FEATURES_FILE + ' ' + PREDICTIONS_FILE
+    # print(command)
+    # out=run_bash_command(command)
+    # print(out)
 
     create_model_ready_feature_df(currentTime, static=False,prev_rounds_list=prev_rounds_list,baseDir=baseDir)
     TEST_FEATURES_FILE = 'features_1'
