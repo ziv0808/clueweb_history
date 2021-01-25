@@ -400,6 +400,8 @@ def create_model_ready_feature_df(
                             else:
                                 historical_feature_dict[query][docno][feature].append(curr_snap_all_feature_dict[query][docno][feature])
 
+        with open("historical_feature_dict.txt", 'w') as f:
+            f.write(str(historical_feature_dict))
         print("here")
         next_idx = 0
         for query in all_feature_dict:
