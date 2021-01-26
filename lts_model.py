@@ -49,7 +49,7 @@ def create_rmse_scores_per_term(
                 for i in range(len(y_series)):
                     curr_score += (y_pred[0][i] - y_series[i]) ** 2
             elif method == 'ARMA':
-                model = ARIMA(stem_time_series, order=(1, 0, 1))
+                model = ARIMA(stem_time_series, order=(1, 0, 0))
                 model_fit = model.fit()
                 curr_score += np.sum(np.square(model_fit.resid[1:]))
             curr_score = np.sqrt(curr_score / float(len(stem_time_series) - 2))
