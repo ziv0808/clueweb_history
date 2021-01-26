@@ -19,6 +19,8 @@ def create_rmse_scores_per_term(
         ):
     stem_time_series_wieghts_dict = {}
     for stem in all_global_params_dict:
+        if stem == 'NumWords':
+            continue
         print(stem)
         stem_time_series = np.array(all_global_params_dict[stem].sum(axis=0))
         stem_time_series = stem_time_series + cc_dict[stem]
@@ -98,10 +100,10 @@ if __name__=='__main__':
         filter_params=filter_params,
         amount_of_snapshot_limit=None
     )
-
+    cw_cc_dict = get_cw09_cc_dict(dataset_name=inner_fold.split('_')[0])
     stem_time_series_wieghts_dict = create_rmse_scores_per_term(
                                         all_global_params_dict=all_global_params_dict,
-                                        cc_dict=get_cw09_cc_dict(dataset_name=inner_fold.split('_')[0]))
+                                        cc_dict=cw_cc_dict)
     for fold in fold_list:
         start_test_q = int(fold[0])
         end_test_q = int(fold[1])
