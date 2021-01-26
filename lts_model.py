@@ -44,6 +44,8 @@ def create_rmse_scores_per_term(
                 y_series = stem_time_series[1:]
                 regr.fit(x_series.reshape(-1,1), y_series.reshape(-1,1))
                 y_pred = regr.predict(x_series.reshape(-1,1)).reshape(1,-1)
+                print(y_series)
+                print(y_pred)
                 for i in range(len(y_series)):
                     curr_score += (y_pred[i] - y_series[i]) ** 2
             elif method == 'ARMA':
