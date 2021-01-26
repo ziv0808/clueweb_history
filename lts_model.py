@@ -1,7 +1,62 @@
 from utils import *
 
+from sklearn import linear_model
 from avg_doc_model import create_cached_docs_data
+from statsmodels.tsa.arima.model import ARIMA
 
+def get_cw09_cc_dict(
+        dataset_name):
+    cc_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/All_Collection_Counts.tsv', sep='\t', index_col=False)
+    cc_dict = {}
+    for index, row in cc_df.iterrows():
+        cc_dict[row['Stem']] += row['CollectionCount']
+
+    return cc_dict
+
+def create_rmse_scores_per_term(
+        all_global_params_dict,
+        cc_dict
+        ):
+    stem_time_series_wieghts_dict = {}
+    for stem in all_global_params_dict:
+        print(stem)
+        stem_time_series = np.array(all_global_params_dict[stem].sum(axis=0))
+        stem_time_series = stem_time_series + cc_dict[stem]
+        print(stem_time_series)
+        # normalize
+        normalize_factor = np.sqrt(np.sum(np.square(stem_time_series)))
+        stem_time_series = stem_time_series / normalize_factor
+        # diff series
+        print(stem_time_series)
+        new_stem_ts = []
+        for i in range(1, len(stem_time_series)):
+            new_stem_ts.append(stem_time_series[i] - stem_time_series[i - 1])
+        stem_time_series = np.array(new_stem_ts)
+        print(stem_time_series)
+        for method in ['MA', 'LR', 'ARMA']:
+            curr_score = 0.0
+            if method == 'MA':
+                for i in (2, len(stem_time_series)):
+                    curr_score += ((0.5 * stem_time_series[i - 2] + 0.5 * stem_time_series[i - 1]) - stem_time_series[
+                        i]) ** 2
+            elif method == 'LR':
+                regr = linear_model.LinearRegression()
+                x_series = stem_time_series[:-1]
+                y_series = stem_time_series[1:]
+                regr.fit(x_series, y_series)
+                y_pred = regr.predict(x_series)
+                for i in range(len(y_series)):
+                    curr_score += (y_pred[i] - y_series[i]) ** 2
+            elif method == 'ARMA':
+                model = ARIMA(stem_time_series, order=(1, 0, 1))
+                model_fit = model.fit()
+                curr_score += np.sum(np.square(model_fit.resid[1:]))
+            curr_score = np.sqrt(curr_score / float(len(stem_time_series) - 2))
+            if stem not in stem_time_series_wieghts_dict:
+                stem_time_series_wieghts_dict[stem] = {}
+            stem_time_series_wieghts_dict[stem][method] = curr_score
+    print(stem_time_series_wieghts_dict)
+    return stem_time_series_wieghts_dict
 
 if __name__=='__main__':
     inner_fold = sys.argv[1]
@@ -44,23 +99,10 @@ if __name__=='__main__':
         filter_params=filter_params,
         amount_of_snapshot_limit=None
     )
-    stem_time_series_dict = {}
-    for stem in all_global_params_dict:
-        print(stem)
-        stem_time_series_dict[stem] = np.array(all_global_params_dict[stem].sum(axis = 0))
-        print(stem_time_series_dict[stem])
-        # normalize
-        normalize_factor = np.sqrt(np.sum(np.square(stem_time_series_dict[stem])))
-        stem_time_series_dict[stem] = stem_time_series_dict[stem] / normalize_factor
-        # diff series
-        print(stem_time_series_dict[stem])
-        new_stem_ts = []
-        for i in range(1, len(stem_time_series_dict[stem])):
-            new_stem_ts.append(stem_time_series_dict[stem][i] - stem_time_series_dict[stem][i-1])
-        stem_time_series_dict[stem] = np.array(new_stem_ts)
-        print(stem_time_series_dict[stem])
 
-
+    stem_time_series_wieghts_dict = create_rmse_scores_per_term(
+                                        all_global_params_dict=all_global_params_dict,
+                                        cc_dict=get_cw09_cc_dict(dataset_name=inner_fold.split('_')[0]))
     for fold in fold_list:
         start_test_q = int(fold[0])
         end_test_q = int(fold[1])
@@ -69,10 +111,6 @@ if __name__=='__main__':
         if retrival_model == 'BM25':
             params = {'K1': 1, 'b': 0.5}
             affix += "BM25_"
-
-        elif retrival_model == 'LM':
-            params = {'Mue': 1000.0}
-            affix += ""
         else:
             raise Exception("Unknown model")
 
