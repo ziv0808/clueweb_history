@@ -220,10 +220,10 @@ if __name__=='__main__':
         test_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 1].copy()
         stemmed_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 0]
 
-        k1_option_list = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
-        b_option_list = [0.45,0.5,0.55,0.6,0.75]
-        k3_option_list = [1,2,3,4,5,6,7]
-        q_option_list = [0.45,0.5,0.55,0.6,0.75]
+        k1_option_list = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
+        b_option_list = [0.3,0.45,0.5,0.55,0.6,0.75,0.9]
+        k3_option_list = [1,2,3,4,5,6,7,8,9,10]
+        q_option_list = [0.3,0.45,0.5,0.55,0.6,0.75,0.9]
 
         best_ndcg_dict = {}
         best_config_dict = {}
@@ -231,32 +231,56 @@ if __name__=='__main__':
             best_ndcg_dict[ts_model_type] = 0.0
         for k1 in k1_option_list:
             for b in b_option_list:
-                for k3 in k3_option_list:
-                    for q in q_option_list:
-                        params = {'K1' : k1,
-                                  'b'  : b,
-                                  'K3' : k3_option_list[0],
-                                  'q'  : q_option_list[0]}
+                params = {'K1' : k1,
+                          'b'  : b,
+                          'K3' : 7,
+                          'q'  : 0.5}
 
-                        for ts_model_type in ['MA', 'LR', 'ARMA']:
-                            big_df = test_queries(
-                                stemmed_queries_df=stemmed_queries_df,
-                                query_to_doc_mapping_df=query_to_doc_mapping_df,
-                                df_dict=df_dict,
-                                all_docs_tf_dict=all_docs_tf_dict,
-                                stem_time_series_wieghts_dict=stem_time_series_wieghts_dict,
-                                params=params,
-                                ts_model_type=ts_model_type)
+                for ts_model_type in ['MA', 'LR', 'ARMA']:
+                    big_df = test_queries(
+                        stemmed_queries_df=stemmed_queries_df,
+                        query_to_doc_mapping_df=query_to_doc_mapping_df,
+                        df_dict=df_dict,
+                        all_docs_tf_dict=all_docs_tf_dict,
+                        stem_time_series_wieghts_dict=stem_time_series_wieghts_dict,
+                        params=params,
+                        ts_model_type=ts_model_type)
 
-                            res_dict = get_score_retrieval_score_for_df(
-                                affix=affix,
-                                big_df=big_df,
-                                qrel_filepath=qrel_filepath,
-                                save_folder=save_folder)
+                    res_dict = get_score_retrieval_score_for_df(
+                        affix=affix,
+                        big_df=big_df,
+                        qrel_filepath=qrel_filepath,
+                        save_folder=save_folder)
 
-                            if res_dict['all']['NDCG@5'] > best_ndcg_dict[ts_model_type]:
-                                best_ndcg_dict[ts_model_type] = res_dict['all']['NDCG@5']
-                                best_config_dict[ts_model_type] = params
+                    if res_dict['all']['NDCG@5'] > best_ndcg_dict[ts_model_type]:
+                        best_ndcg_dict[ts_model_type] = res_dict['all']['NDCG@5']
+                        best_config_dict[ts_model_type] = params
+
+        for k3 in k3_option_list:
+            for q in q_option_list:
+                for ts_model_type in ['MA', 'LR', 'ARMA']:
+                    params = {'K1': best_config_dict[ts_model_type]['K1'],
+                              'b': best_config_dict[ts_model_type]['b'],
+                              'K3': k3,
+                              'q': q}
+                    big_df = test_queries(
+                        stemmed_queries_df=stemmed_queries_df,
+                        query_to_doc_mapping_df=query_to_doc_mapping_df,
+                        df_dict=df_dict,
+                        all_docs_tf_dict=all_docs_tf_dict,
+                        stem_time_series_wieghts_dict=stem_time_series_wieghts_dict,
+                        params=params,
+                        ts_model_type=ts_model_type)
+
+                    res_dict = get_score_retrieval_score_for_df(
+                        affix=affix,
+                        big_df=big_df,
+                        qrel_filepath=qrel_filepath,
+                        save_folder=save_folder)
+
+                    if res_dict['all']['NDCG@5'] > best_ndcg_dict[ts_model_type]:
+                        best_ndcg_dict[ts_model_type] = res_dict['all']['NDCG@5']
+                        best_config_dict[ts_model_type] = params
 
         for ts_model_type in ['MA', 'LR', 'ARMA']:
             big_df = test_queries(
