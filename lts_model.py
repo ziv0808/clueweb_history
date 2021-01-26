@@ -1,8 +1,6 @@
 from utils import *
 
-from sklearn import linear_model
 from avg_doc_model import create_cached_docs_data
-from statsmodels.tsa.arima_model import ARIMA
 
 def get_cw09_cc_dict(
         dataset_name):
@@ -12,52 +10,6 @@ def get_cw09_cc_dict(
         cc_dict[row['Stem']] = int(row['CollectionCount'])
 
     return cc_dict
-
-def create_rmse_scores_per_term(
-        all_global_params_dict,
-        cc_dict
-        ):
-    stem_time_series_wieghts_dict = {}
-    for stem in all_global_params_dict:
-        if stem == 'NumWords':
-            continue
-        print(stem)
-        stem_time_series = np.array(all_global_params_dict[stem].sum(axis=0))
-        stem_time_series = stem_time_series + cc_dict[stem]
-        print(stem_time_series)
-        # normalize
-        normalize_factor = np.sqrt(np.sum(np.square(stem_time_series)))
-        stem_time_series = stem_time_series / normalize_factor
-        # diff series
-        print(stem_time_series)
-        new_stem_ts = []
-        for i in range(1, len(stem_time_series)):
-            new_stem_ts.append(stem_time_series[i] - stem_time_series[i - 1])
-        stem_time_series = np.array(new_stem_ts)
-        print(stem_time_series)
-        for method in ['MA', 'LR', 'ARMA']:
-            curr_score = 0.0
-            if method == 'MA':
-                for i in range(2, len(stem_time_series)):
-                    curr_score += ((0.5 * stem_time_series[i - 2] + 0.5 * stem_time_series[i - 1]) - stem_time_series[i]) ** 2
-            elif method == 'LR':
-                regr = linear_model.LinearRegression()
-                x_series = stem_time_series[:-1]
-                y_series = stem_time_series[1:]
-                regr.fit(x_series.reshape(-1,1), y_series.reshape(-1,1))
-                y_pred = regr.predict(x_series.reshape(-1,1)).reshape(1,-1)
-                for i in range(len(y_series)):
-                    curr_score += (y_pred[0][i] - y_series[i]) ** 2
-            elif method == 'ARMA':
-                model = ARIMA(stem_time_series, order=(1, 0, 0))
-                model_fit = model.fit()
-                curr_score += np.sum(np.square(model_fit.resid[1:]))
-            curr_score = np.sqrt(curr_score / float(len(stem_time_series) - 2))
-            if stem not in stem_time_series_wieghts_dict:
-                stem_time_series_wieghts_dict[stem] = {}
-            stem_time_series_wieghts_dict[stem][method] = curr_score
-    print(stem_time_series_wieghts_dict)
-    return stem_time_series_wieghts_dict
 
 
 def score_doc_for_query_bm25(
@@ -234,9 +186,16 @@ if __name__=='__main__':
         amount_of_snapshot_limit=None
     )
     cw_cc_dict = get_cw09_cc_dict(dataset_name=inner_fold.split('_')[0])
-    stem_time_series_wieghts_dict = create_rmse_scores_per_term(
-                                        all_global_params_dict=all_global_params_dict,
-                                        cc_dict=cw_cc_dict)
+    bash_command = "python3 lts_pre_process.py " + inner_fold
+    p = subprocess.Popen(bash_command,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT, shell=True)
+    out, err = p.communicate()
+    with open(save_folder + 'preprocessed_dicts/' + inner_fold + '_preprocessed_dict.json', 'r') as f:
+        stem_time_series_wieghts_dict = ast.literal_eval(f.read())
+    # stem_time_series_wieghts_dict = create_rmse_scores_per_term(
+    #                                     all_global_params_dict=all_global_params_dict,
+    #                                     cc_dict=cw_cc_dict)
     all_docs_tf_dict = create_all_docs_tf_dict(
                             processed_docs_path=processed_docs_folder,
                             query_to_doc_mapping_df=query_to_doc_mapping_df)
