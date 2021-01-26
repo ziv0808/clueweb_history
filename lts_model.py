@@ -254,8 +254,8 @@ if __name__=='__main__':
                                 qrel_filepath=qrel_filepath,
                                 save_folder=save_folder)
 
-                            if res_dict['all']['NDCG@5'] > best_ndcg_dict[ts_model_type]['BestNDCG']:
-                                best_ndcg_dict[ts_model_type]['BestNDCG'] = res_dict['all']['NDCG@5']
+                            if res_dict['all']['NDCG@5'] > best_ndcg_dict[ts_model_type]:
+                                best_ndcg_dict[ts_model_type] = res_dict['all']['NDCG@5']
                                 best_config_dict[ts_model_type] = params
 
         for ts_model_type in ['MA', 'LR', 'ARMA']:
