@@ -42,8 +42,8 @@ def create_rmse_scores_per_term(
                 regr = linear_model.LinearRegression()
                 x_series = stem_time_series[:-1]
                 y_series = stem_time_series[1:]
-                regr.fit(x_series, y_series)
-                y_pred = regr.predict(x_series)
+                regr.fit(x_series.reshape(-1,1), y_series.reshape(-1,1))
+                y_pred = regr.predict(x_series.reshape(-1,1)).reshape(1,-1)
                 for i in range(len(y_series)):
                     curr_score += (y_pred[i] - y_series[i]) ** 2
             elif method == 'ARMA':
