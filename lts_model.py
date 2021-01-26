@@ -191,6 +191,8 @@ if __name__=='__main__':
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT, shell=True)
     out, err = p.communicate()
+    print(out)
+    sys.stdout.flush()
     with open(save_folder + 'preprocessed_dicts/' + inner_fold + '_preprocessed_dict.json', 'r') as f:
         stem_time_series_wieghts_dict = ast.literal_eval(f.read())
     # stem_time_series_wieghts_dict = create_rmse_scores_per_term(
