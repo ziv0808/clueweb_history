@@ -346,7 +346,8 @@ def get_score_retrieval_score_for_df(
         affix,
         big_df,
         save_folder,
-        qrel_filepath):
+        qrel_filepath,
+        remove_low_quality= False):
 
 
     curr_file_name = affix + "_Results.txt"
@@ -357,7 +358,8 @@ def get_score_retrieval_score_for_df(
         file_path=save_folder + 'inner_res/',
         filename=curr_file_name,
         qrel_filepath=qrel_filepath,
-        calc_ndcg_mrr=True)
+        calc_ndcg_mrr=True,
+        remove_low_quality=remove_low_quality)
 
     return res_dict
 
@@ -395,6 +397,7 @@ if __name__=='__main__':
     if 'Mixture' in model_to_run:
         adverserial_method = sys.argv[4]
         only_reservoir_lambda = ast.literal_eval(sys.argv[5])
+        remove_low_quality = ast.literal_eval(sys.argv[6])
 
         save_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/'
         if 'JM' in model_to_run:
@@ -408,6 +411,8 @@ if __name__=='__main__':
         if only_reservoir_lambda == True:
             lambda1_option_list = [0.0]
             addition_to_filename = "_OnlyReservoir"
+        if remove_low_quality == True:
+            addition_to_filename += "_RMVLQ"
 
         adverserial_dict = make_adverserial_dict_by_method(
             dataset_name=datset_name,
@@ -451,7 +456,8 @@ if __name__=='__main__':
                     affix=affix,
                     big_df=big_df,
                     qrel_filepath=qrel_filepath,
-                    save_folder=save_folder)
+                    save_folder=save_folder,
+                    remove_low_quality=remove_low_quality)
 
                 if res_dict['all']['NDCG@5'] > best_ndcg:
                     print(affix + " " + "SCORE : " + str(res_dict['all']))
@@ -485,7 +491,8 @@ if __name__=='__main__':
                         affix=affix,
                         big_df=big_df,
                         qrel_filepath=qrel_filepath,
-                        save_folder=save_folder)
+                        save_folder=save_folder,
+                        remove_low_quality=remove_low_quality)
 
                     if res_dict['all']['NDCG@5'] > best_ndcg:
                         print(affix + " " + "SCORE : " + str(res_dict['all']))
