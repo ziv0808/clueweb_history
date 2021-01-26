@@ -76,7 +76,10 @@ def score_doc_for_query_bm25(
     work_stem_list = list(query_stem_dict.keys())
 
     for stem in work_stem_list:
-        doc_stem_tf = float(doc_dict[stem])
+        if stem in doc_dict:
+            doc_stem_tf = float(doc_dict[stem])
+        else:
+            doc_stem_tf = 0.0
         doc_len = float(doc_dict['NumWords'])
 
         stem_df = stem_time_series_wieghts_dict[stem][ts_model_type]
