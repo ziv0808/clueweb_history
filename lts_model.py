@@ -36,9 +36,8 @@ def create_rmse_scores_per_term(
         for method in ['MA', 'LR', 'ARMA']:
             curr_score = 0.0
             if method == 'MA':
-                for i in (2, len(stem_time_series)):
-                    curr_score += ((0.5 * stem_time_series[i - 2] + 0.5 * stem_time_series[i - 1]) - stem_time_series[
-                        i]) ** 2
+                for i in range(2, len(stem_time_series)):
+                    curr_score += ((0.5 * stem_time_series[i - 2] + 0.5 * stem_time_series[i - 1]) - stem_time_series[i]) ** 2
             elif method == 'LR':
                 regr = linear_model.LinearRegression()
                 x_series = stem_time_series[:-1]
