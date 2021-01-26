@@ -2,7 +2,7 @@ from utils import *
 
 from sklearn import linear_model
 from avg_doc_model import create_cached_docs_data
-from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.arima_model import ARIMA
 
 def get_cw09_cc_dict(
         dataset_name):
