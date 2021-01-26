@@ -9,7 +9,7 @@ def get_cw09_cc_dict(
     cc_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/All_Collection_Counts.tsv', sep='\t', index_col=False)
     cc_dict = {}
     for index, row in cc_df.iterrows():
-        cc_dict[row['Stem']] += row['CollectionCount']
+        cc_dict[row['Stem']] = int(row['CollectionCount'])
 
     return cc_dict
 
