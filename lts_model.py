@@ -218,7 +218,7 @@ if __name__=='__main__':
         test_set_q = list(range(start_test_q, end_test_q + 1))
         stemmed_queries_df['IsTest'] = stemmed_queries_df['QueryNum'].apply(lambda x: 1 if x in test_set_q else 0)
         test_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 1].copy()
-        stemmed_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 0]
+        train_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 0].copy()
 
         k1_option_list = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
         b_option_list = [0.3,0.45,0.5,0.55,0.6,0.75,0.9]
@@ -238,7 +238,7 @@ if __name__=='__main__':
 
                 for ts_model_type in ['MA', 'LR', 'ARMA']:
                     big_df = test_queries(
-                        stemmed_queries_df=stemmed_queries_df,
+                        stemmed_queries_df=train_queries_df,
                         query_to_doc_mapping_df=query_to_doc_mapping_df,
                         df_dict=df_dict,
                         all_docs_tf_dict=all_docs_tf_dict,
@@ -264,7 +264,7 @@ if __name__=='__main__':
                               'K3': k3,
                               'q': q}
                     big_df = test_queries(
-                        stemmed_queries_df=stemmed_queries_df,
+                        stemmed_queries_df=train_queries_df,
                         query_to_doc_mapping_df=query_to_doc_mapping_df,
                         df_dict=df_dict,
                         all_docs_tf_dict=all_docs_tf_dict,
