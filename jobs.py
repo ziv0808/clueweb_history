@@ -2147,10 +2147,17 @@ def unite_asrc_data_results(
                              'FileTemplate': '<DatasetName>_0<RoundNum>_LMIR.JM.txt'},
             'LM DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/basic_lm/',
                       'FileTemplate': '<DatasetName>_0<RoundNum>_LMIR.DIR.txt'},
+            'LTS MA': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ts_model/final_res/',
+                       'FileTemplate': '<DatasetName>_0<RoundNum>_MA_LTS__Results.txt'},
+            'LTS LR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ts_model/final_res/',
+                       'FileTemplate': '<DatasetName>_0<RoundNum>_LR_LTS__Results.txt'},
+            'LTS ARMA': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ts_model/final_res/',
+                       'FileTemplate': '<DatasetName>_0<RoundNum>_ARMA_LTS__Results.txt'},
             # 'SNAPS': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/per_snap_lambdamart_res/ret_res/<InnerFold>/',
             #            'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_MinMax_Historical.txt'},
 
-        }):
+        },
+        first_round_default = 2):
     from rank_svm_model import create_sinificance_df
     base_folder = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/"
     if dataset_name == 'asrc':
@@ -2194,7 +2201,7 @@ def unite_asrc_data_results(
     if limited_features_list is not None:
         addition_to_inner_fold += create_feature_list_shortcut_string(limited_features_list)
 
-    for round_ in range(2, round_limit + 1):
+    for round_ in range(first_round_default, round_limit + 1):
         if dataset_name == 'herd_control':
             inner_fold_sep = dataset_name.upper() + '_LTR_Round0'+str(round_)+'_with_meta.tsvSNL'+str(snap_limit)+'_'+ret_model+'_ByMonths' + addition_to_inner_fold
         else:
@@ -2243,7 +2250,8 @@ def unite_asrc_data_results(
         for model in additional_models_to_include:
             if dataset_name == 'united' and 'MM P' in model:
                 continue
-
+            if model.startswith('LTS') and first_round_default < 4:
+                continue
             filename = additional_models_to_include[model]['FileTemplate'].replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset_name).replace('<DatasetNameUpper>', dataset_name.upper())
             if dataset_name == 'comp2020' and ('MM P' in model and 'JM' in model):
                 if 'MixtureJM' not in filename:
@@ -2311,7 +2319,8 @@ def unite_asrc_data_results(
             round_summary_df.to_csv(dataset_name.upper()+ '_round_' + str(round_) + '_'+significance_type+ addition_to_inner_fold+'_LambdaMART_Summary.tsv', sep = '\t', index = False)
         else:
             round_summary_df.to_csv(dataset_name.upper() + '_round_' + str(round_) + '_'+significance_type+ addition_to_inner_fold+'_Summary.tsv', sep='\t', index=False)
-
+    if first_round_default == 4:
+        addition_to_inner_fold += "_LTS_Files"
     measure_list = ['Map', 'P@5', 'P@10', 'NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR', 'nMRR']
     big_summary_df = pd.DataFrame(columns=['FeatureGroup'] + measure_list)
     next_idx = 0
@@ -3211,6 +3220,35 @@ if __name__ == '__main__':
             limited_snap_num=limited_snap_num,
             with_bert_as_feature=with_bert_as_feature,
             limited_features_list=limited_features_list)
+
+    elif operation == 'LTSASRCFileUnite':
+        big_model = sys.argv[2]
+        snap_limit = int(1)
+        ret_model = 'BM25'
+        dataset_name = sys.argv[3]
+        round_limit = int(sys.argv[4])
+        significance_type = 'TTest'
+        leave_one_out_train = True
+        backward_elimination = False
+        snap_num_as_hyper_param = False
+        limited_snap_num = 'All'
+        with_bert_as_feature = False
+        limited_features_list = ast.literal_eval(sys.argv[5])
+
+        unite_asrc_data_results(
+            big_model=big_model,
+            snap_limit=snap_limit,
+            ret_model=ret_model,
+            dataset_name=dataset_name,
+            round_limit=round_limit,
+            significance_type=significance_type,
+            leave_one_out_train=leave_one_out_train,
+            backward_elimination=backward_elimination,
+            snap_num_as_hyper_param=snap_num_as_hyper_param,
+            limited_snap_num=limited_snap_num,
+            with_bert_as_feature=with_bert_as_feature,
+            limited_features_list=limited_features_list,
+            first_round_default=4)
 
     elif operation == 'ASRCSVMWeights':
         dataset_name = sys.argv[2]
