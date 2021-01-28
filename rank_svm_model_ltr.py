@@ -326,7 +326,8 @@ def create_all_x_snap_aggregations(
                          'JMPrev3Winners', 'JMPrev3BestImprove',
                          'DIRPrev3Winners', 'DIRPrev3BestImprove',
                          'JMOnlyReservoir', 'DIROnlyReservoir',
-                         'ED_KL', 'ED_LM', 'RHS_BM25', 'RHS_LM'
+                         'ED_KL', 'ED_LM', 'RHS_BM25', 'RHS_LM',
+                         'LTS_MA', 'LTS_LR', 'LTS_ARMA'
                          ]
 
     work_df = pd.read_csv(os.path.join(base_file_folder, base_feature_filename), sep = '\t', index_col = False)

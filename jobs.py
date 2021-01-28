@@ -1839,6 +1839,28 @@ def create_domais_rhs_feature_dict(
     return model_features_dict
 
 
+def create_lts_feature_dict(
+        dataset_name,
+        model_features_dict):
+    model_res_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ts_model/final_res/'
+
+    for filename in os.listdir(model_res_path):
+        if filename.startswith(dataset_name.lower()) and not filename.endswith('_Params.txt') and 'LoO' in filename:
+            print(filename)
+            broken_name = filename.split('_')
+            round = broken_name[1]
+            model = broken_name[2]
+
+            if  model in ['MA', 'LR', 'ARMA']:
+                model = 'LTS_' + model
+            else:
+                raise Exception("create_lts_feature_dict: Unknown model")
+
+            curr_df = convert_trec_results_file_to_pandas_df(os.path.join(model_res_path, filename))
+            for index, row in curr_df.iterrows():
+                model_features_dict[int(row['Query_ID'])][row['Docno']][model] = float(row['Score'])
+    return model_features_dict
+
 def create_ltr_feature_dict(
         feature_folder):
     res_dict = {}
@@ -1905,7 +1927,8 @@ def create_base_features_for_asrc_with_ltr_features(
                        'JMPrev3Winners', 'JMPrev3BestImprove',
                        'DIRPrev3Winners', 'DIRPrev3BestImprove',
                        'JMOnlyReservoir', 'DIROnlyReservoir',
-                         'ED_LM', 'RHS_BM25', 'RHS_LM', 'ED_KL'
+                         'ED_LM', 'RHS_BM25', 'RHS_LM', 'ED_KL',
+                        'LTS_MA', 'LTS_LR', 'LTS_ARMA'
     ]
     base_feature_list.extend(mm_feature_list)
     col_list = ['NumSnapshots']
@@ -1923,6 +1946,7 @@ def create_base_features_for_asrc_with_ltr_features(
     feature_ref_dict = create_ltr_feature_dict(os.path.join(os.path.join(os.path.join(meta_data_base_fold,'datsets'),inner_fold),'feat_dir'))
     mm_feature_ref = create_mixture_models_feature_dict(inner_fold)
     mm_feature_ref = create_domais_rhs_feature_dict(inner_fold, mm_feature_ref)
+    mm_feature_ref = create_lts_feature_dict(inner_fold, mm_feature_ref)
     for query_user_str in big_doc_index:
         all_rounds = list(big_doc_index[query_user_str].keys())
         query_num = query_user_str.split('-')[0]
@@ -1960,7 +1984,10 @@ def create_base_features_for_asrc_with_ltr_features(
                         else:
                             feature_ref_dict[query_num][curr_docno][mm_feat] = pd.np.nan
                     else:
-                        feature_ref_dict[query_num][curr_docno][mm_feat] = mm_feature_ref[int(query_num)][curr_docno][mm_feat]
+                        if mm_feat.startswith('LTS') and int(curr_docno.split('-')[1]) < 4:
+                            feature_ref_dict[query_num][curr_docno][mm_feat] = pd.np.nan
+                        else:
+                            feature_ref_dict[query_num][curr_docno][mm_feat] = mm_feature_ref[int(query_num)][curr_docno][mm_feat]
                 insert_row =[]
                 for feature_name in base_feature_list:
                     insert_row.append(feature_ref_dict[query_num][curr_docno][feature_name])
@@ -2347,7 +2374,7 @@ def unite_asrc_data_results(
 
     for measure in ['NDCG@1', 'NDCG@3', 'MRR']:
         measure_df = pd.DataFrame({})
-        for round_ in range(2, round_limit + 1):
+        for round_ in range(first_round_default, round_limit + 1):
             round_df = round_res_dict[str(round_) + '_Sum'].rename(columns = {measure : str(round_)})
             round_df[str(round_)] = round_df[str(round_)].apply(lambda x: round(x, 3))
             if measure_df.empty == True:
@@ -3308,6 +3335,8 @@ if __name__ == '__main__':
 
     elif operation == 'FixKS':
         fix_ks_files_and_produce_stats()
+
+
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
