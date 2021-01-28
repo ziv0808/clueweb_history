@@ -1023,6 +1023,10 @@ def create_feature_list_shortcut_string(feat_list):
         'ED_LM': 'EDLm',
         'RHS_BM25': 'RhsBm25',
         'RHS_LM': 'RhsLm',
+        'LTS_MA': 'TsMa',
+        'LTS_LR': 'TsLr',
+        'LTS_ARMA': 'TsArma',
+
     }
     for feat in feat_list:
         ret_str += '_' + feat_short_dict[feat]
