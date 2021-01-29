@@ -612,8 +612,8 @@ seed(9001)
 # queries = list(data.keys())
 # user_q_curr_map = get_curr_user_query_mapping()
 interval_list = ['2021-01-03-23-05-55-344126', '2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622','2021-01-24-22-40-57-628006']
-create_large_idx_files_for_bonus_calc(interval_list=interval_list)
-# calc_bonus_files(interval_list=interval_list)
+# create_large_idx_files_for_bonus_calc(interval_list=interval_list)
+calc_bonus_files(interval_list=interval_list)
 
 # expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
 # while True:
