@@ -611,8 +611,8 @@ seed(9001)
 # queries = list(data.keys())
 # user_q_curr_map = get_curr_user_query_mapping()
 
-create_large_idx_files_for_bonus_calc()
-# calc_bonus_files()
+# create_large_idx_files_for_bonus_calc()
+calc_bonus_files()
 
 # expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
 # while True:
