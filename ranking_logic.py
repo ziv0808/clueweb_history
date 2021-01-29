@@ -246,7 +246,7 @@ def turn_df_to_feature_str_for_model(
 
     return feature_str
 
-def read_current_doc_file(doc_filepath):
+def read_current_doc_file(doc_filepath, is_init = False):
     stats = {}
     with open(doc_filepath, 'r') as f:
         soup = BeautifulSoup(f.read())
@@ -257,6 +257,10 @@ def read_current_doc_file(doc_filepath):
         fulltext = doc_.find('text').text
         query = docno.split('-')[0]
         user =docno.split('-')[1]
+        if is_init == True:
+            query = docno.split('-')[2]
+            user = docno.split('-')[3]
+
         if query not in stats:
             stats[query] = {}
 
@@ -265,8 +269,8 @@ def read_current_doc_file(doc_filepath):
 
     return stats
 
-def create_tdfidf_dicts_per_doc_for_file(doc_filepath):
-    fulltext_dict = read_current_doc_file(doc_filepath)
+def create_tdfidf_dicts_per_doc_for_file(doc_filepath, is_init = False):
+    fulltext_dict = read_current_doc_file(doc_filepath, is_init)
     df_dict = {}
     stemmer = krovetzstemmer.Stemmer()
     for query in fulltext_dict:
@@ -374,34 +378,34 @@ def create_model_ready_feature_df(
 
         df_column_list = ['QueryNum', 'Docno'] + feature_list
         feature_df = pd.DataFrame(columns=df_column_list)
-        # historical_feature_dict = {}
-        # parsed_curr_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + currentTime)
-        # for historical_snap in prev_rounds_list:
-        #     with open('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/FeatureIdx/' + historical_snap + '_BERT.json','r') as f:
-        #         curr_snap_bert_dict = ast.literal_eval(f.read())
-        #     curr_snap_all_feature_dict = create_ltr_feature_dict('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/Features/' + historical_snap + '/')
-        #     parsed_curr_snap_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + historical_snap)
-        #
-        #     for query in curr_snap_all_feature_dict:
-        #         if query.split('_')[1] != '0':
-        #             if query not in historical_feature_dict:
-        #                 historical_feature_dict[query] = {}
-        #             for docno in curr_snap_all_feature_dict[query]:
-        #                 if docno not in historical_feature_dict[query]:
-        #                     historical_feature_dict[query][docno] = {}
-        #                 for feature in base_feature_list:
-        #                     if feature not in historical_feature_dict[query][docno]:
-        #                         historical_feature_dict[query][docno][feature] = []
-        #                     if feature == 'SimClueWeb':
-        #                         curr_sim = calc_cosine(parsed_curr_file_dict[query][docno.split('-')[1]]['TfIdf'], parsed_curr_snap_file_dict[query][docno.split('-')[1]]['TfIdf'])
-        #                         historical_feature_dict[query][docno][feature].append(curr_sim)
-        #                     elif feature == 'BERTScore':
-        #                         historical_feature_dict[query][docno][feature].append(curr_snap_bert_dict[query][docno.split('-')[1]]['BERTScore'])
-        #                     else:
-        #                         historical_feature_dict[query][docno][feature].append(curr_snap_all_feature_dict[query][docno][feature])
+        historical_feature_dict = {}
+        parsed_curr_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + currentTime)
+        for historical_snap in prev_rounds_list:
+            with open('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/FeatureIdx/' + historical_snap + '_BERT.json','r') as f:
+                curr_snap_bert_dict = ast.literal_eval(f.read())
+            curr_snap_all_feature_dict = create_ltr_feature_dict('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/Features/' + historical_snap + '/')
+            parsed_curr_snap_file_dict = create_tdfidf_dicts_per_doc_for_file(baseDir + 'Collections/TrecText/' + historical_snap)
 
-        # with open("historical_feature_dict.txt", 'w') as f:
-        #     f.write(str(historical_feature_dict))
+            for query in curr_snap_all_feature_dict:
+                if query.split('_')[1] != '0':
+                    if query not in historical_feature_dict:
+                        historical_feature_dict[query] = {}
+                    for docno in curr_snap_all_feature_dict[query]:
+                        if docno not in historical_feature_dict[query]:
+                            historical_feature_dict[query][docno] = {}
+                        for feature in base_feature_list:
+                            if feature not in historical_feature_dict[query][docno]:
+                                historical_feature_dict[query][docno][feature] = []
+                            if feature == 'SimClueWeb':
+                                curr_sim = calc_cosine(parsed_curr_file_dict[query][docno.split('-')[1]]['TfIdf'], parsed_curr_snap_file_dict[query][docno.split('-')[1]]['TfIdf'])
+                                historical_feature_dict[query][docno][feature].append(curr_sim)
+                            elif feature == 'BERTScore':
+                                historical_feature_dict[query][docno][feature].append(curr_snap_bert_dict[query][docno.split('-')[1]]['BERTScore'])
+                            else:
+                                historical_feature_dict[query][docno][feature].append(curr_snap_all_feature_dict[query][docno][feature])
+
+        with open("historical_feature_dict.txt", 'w') as f:
+            f.write(str(historical_feature_dict))
         with open("historical_feature_dict.txt", 'r') as f:
             historical_feature_dict = ast.literal_eval(f.read())
         print("here")
@@ -672,18 +676,18 @@ if __name__=="__main__":
     # mergedIndex = mergeIndices(asrIndex, baseDir)
     # print('Index Merged!')
     # sys.stdout.flush()
-    curr_static_model = 'static_model_lambdamart_round_4'
-    curr_s_msmm_mg_model = 'static_msmm_mg_model_lambdamart_round_4'
-    prev_rounds_list = ['2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622']
-    mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
-    workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-24-22-40-57-628006'
-    currentTime = '2021-01-24-22-40-57-628006'
-    rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir, curr_static_model, curr_s_msmm_mg_model, prev_rounds_list)
-    print('Ranked docs!')
-    rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
-    sys.stdout.flush()
-    updateScores((rankedLists,))
-    print('Updated docs!')
-    sys.stdout.flush()
-    backupDocuments(currentTime,baseDir)
-    changeStatus()
+    # curr_static_model = 'static_model_lambdamart_round_4'
+    # curr_s_msmm_mg_model = 'static_msmm_mg_model_lambdamart_round_4'
+    # prev_rounds_list = ['2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622']
+    # mergedIndex = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/mergedindex'
+    # workingSetFilename = '/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/WorkingSets/2021-01-24-22-40-57-628006'
+    # currentTime = '2021-01-24-22-40-57-628006'
+    # rankedLists = runRankingModels(mergedIndex,workingSetFilename,currentTime,baseDir, curr_static_model, curr_s_msmm_mg_model, prev_rounds_list)
+    # print('Ranked docs!')
+    # rankedLists = baseDir + 'Results/RankedLists/LambdaMART' + currentTime
+    # sys.stdout.flush()
+    # updateScores((rankedLists,))
+    # print('Updated docs!')
+    # sys.stdout.flush()
+    # backupDocuments(currentTime,baseDir)
+    # changeStatus()
