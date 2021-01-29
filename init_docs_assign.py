@@ -494,23 +494,24 @@ def create_large_idx_files_for_bonus_calc(
 
     big_idx_dict = {}
     initial_data = create_tdfidf_dicts_per_doc_for_file('documents.trectext')
+    big_idx_dict[0] = initial_data
     for i in range(1, len(interval_list)):
         curr_dict = create_tdfidf_dicts_per_doc_for_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/' + interval_list[i-1])
-        ranks_df = convert_trec_results_file_to_pandas_df(results_file_path='/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART' + interval_list[i-1])
-        for index, row in ranks_df.iterrows():
-            curr_dict[row['Query_ID']][row['Docno'].split('-')[1]]['Rank'] = int(row['Rank'])
-
-        if i > 1:
-            for query in curr_dict:
-                for user in big_idx_dict[i-1][query]:
-                    if big_idx_dict[i-1][query][user]['Rank'] == 1:
-                        q_winner = user
-                        q_winner_dict = big_idx_dict[i-1][query][user]
-                        break
-                for user in curr_dict[query]:
-                    if user != q_winner:
-                        curr_dict[query][user]['SimPrevWinner'] = calc_cosine(curr_dict[query][user]['TfIdf'], q_winner_dict['TfIdf'])
-                        curr_dict[query][user]['SimInit'] = calc_cosine(curr_dict[query][user]['TfIdf'], initial_data[query.split('_')[0]][user]['TfIdf'])
+        # ranks_df = convert_trec_results_file_to_pandas_df(results_file_path='/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART' + interval_list[i-1])
+        # for index, row in ranks_df.iterrows():
+        #     curr_dict[row['Query_ID']][row['Docno'].split('-')[1]]['Rank'] = int(row['Rank'])
+        #
+        # if i > 1:
+        #     for query in curr_dict:
+        #         for user in big_idx_dict[i-1][query]:
+        #             if big_idx_dict[i-1][query][user]['Rank'] == 1:
+        #                 q_winner = user
+        #                 q_winner_dict = big_idx_dict[i-1][query][user]
+        #                 break
+        #         for user in curr_dict[query]:
+        #             if user != q_winner:
+        #                 curr_dict[query][user]['SimPrevWinner'] = calc_cosine(curr_dict[query][user]['TfIdf'], q_winner_dict['TfIdf'])
+        #                 curr_dict[query][user]['SimInit'] = calc_cosine(curr_dict[query][user]['TfIdf'], initial_data[query.split('_')[0]][user]['TfIdf'])
 
         big_idx_dict[i] = curr_dict
 
