@@ -520,13 +520,99 @@ def create_large_idx_files_for_bonus_calc(
         f.write(str(big_idx_dict))
 
 
+def calc_bonus_files(
+        interval_list=['2020-11-09-23-55-23-857656', '2020-11-17-10-30-21-396460', '2020-11-23-23-12-59-474081',
+                       '2020-12-02-22-02-13-998936',
+                       '2020-12-09-22-44-03-416874', '2020-12-21-09-38-10-759298', '2020-12-27-22-23-38-806453'],
+):
+
+    from utils import convert_trec_results_file_to_pandas_df, calc_cosine
+
+    with open("/lv_local/home/zivvasilisky/ASR20/Bonus/Idndex_dict.json", 'r') as f:
+        big_idx_dict = ast.literal_eval(f.read())
+    initial_data = big_idx_dict[0]
+    big_idx_dict[0] = initial_data
+    user_penalty_idx = {}
+    for i in range(1, len(interval_list)):
+        curr_dict = big_idx_dict[i]
+        ranks_df = convert_trec_results_file_to_pandas_df(results_file_path='/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART' + interval_list[i-1])
+        for index, row in ranks_df.iterrows():
+            curr_dict[row['Query_ID']][row['Docno'].split('-')[1]]['Rank'] = int(row['Rank'])
+
+        if i > 1:
+            for query in curr_dict:
+                for user in big_idx_dict[i-1][query]:
+                    if big_idx_dict[i-1][query][user]['Rank'] == 1:
+                        q_winner = user
+                        q_winner_dict = big_idx_dict[i-1][query][user]
+                        break
+                for user in curr_dict[query]:
+                    if user != q_winner:
+                        curr_dict[query][user]['SimPrevWinner'] = calc_cosine(curr_dict[query][user]['TfIdf'], q_winner_dict['TfIdf'])
+                        curr_dict[query][user]['SimInit'] = calc_cosine(curr_dict[query][user]['TfIdf'], initial_data[query.split('_')[0]][user]['TfIdf'])
+                    if curr_dict[query][user]['Rank'] == 1:
+                        if curr_dict[query][user]['SimPrevWinner'] > 0.98 and curr_dict[query][user]['SimInit'] < 0.9:
+                            if user not in user_penalty_idx:
+                                user_penalty_idx[user] = []
+                            user_penalty_idx[user].append((query, i))
+                            print(user_penalty_idx)
+                            user_count = 0
+                            for other_user in curr_dict[query]:
+                                curr_dict[query][other_user]['Rank'] -= 1
+                                user_count += 1
+                            curr_dict[query][user]['Rank'] = user_count + 1
+        big_idx_dict[i] = curr_dict
+    user_bonus_count = {}
+    for i in range(1, len(interval_list)):
+        for query in big_idx_dict[i]:
+            for user in big_idx_dict[i][query]:
+                bonus = 0
+                if big_idx_dict[i][query][user]['Rank'] == 1:
+                    bonus = 1
+                elif big_idx_dict[i][query][user]['Rank'] == 2:
+                    bonus = 1
+                elif big_idx_dict[i][query][user]['Rank'] == 3:
+                    bonus = 1 / float(3)
+                elif big_idx_dict[i][query][user]['Rank'] == 4:
+                    bonus = 0.25
+                else:
+                    if i > 1:
+                        if (big_idx_dict[i][query][user]['Rank'] - big_idx_dict[i-1][query][user]['Rank']) < 0:
+                            bonus = 1 / float(8)
+                if i == 4:
+                    if bonus >= 0.25:
+                        bonus += 1 / float(3)
+                    elif bonus > 0:
+                        bonus += 1 / float(8)
+                if user not in user_bonus_count:
+                    user_bonus_count[user] = 0
+                user_bonus_count[user] += bonus
+    import pandas as pd
+    df = pd.DataFrame(columns = ['User', 'Bonus', 'Penalty'])
+    next_idx = 0
+    for user in user_bonus_count:
+        insert_row = [user, user_bonus_count[user]]
+        if user in user_penalty_idx:
+            insert_row.append(len(user_penalty_idx[user]))
+        else:
+            insert_row.append(0)
+        df.loc[next_idx] = insert_row
+        next_idx += 1
+    df.to_csv('/lv_local/home/zivvasilisky/ASR20/Bonus/B_Df.csv', index = False)
+
+
+
+
+
+
 seed(9001)
 # users = retrieve_users()
 # data = read_initial_data("documents.trectext", "topics.full.xml")
 # queries = list(data.keys())
 # user_q_curr_map = get_curr_user_query_mapping()
 
-create_large_idx_files_for_bonus_calc()
+# create_large_idx_files_for_bonus_calc()
+calc_bonus_files()
 
 # expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
 # while True:
