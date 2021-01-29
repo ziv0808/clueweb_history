@@ -2540,7 +2540,8 @@ def orginize_mm_features_data_compare(
         dataset_name,
         round_limit,
         limited_snap_num,
-        limited_features_list):
+        limited_features_list,
+        first_round_default=2):
 
 
     from rank_svm_model import create_sinificance_df
@@ -2585,15 +2586,18 @@ def orginize_mm_features_data_compare(
                          'JMPrev3Winners', 'JMPrev3BestImprove',
                          'DIRPrev3Winners', 'DIRPrev3BestImprove',
                          'JMOnlyReservoir', 'DIROnlyReservoir',
-                         'ED_KL', 'ED_LM', 'RHS_BM25', 'RHS_LM']
+                         'ED_KL', 'ED_LM', 'RHS_BM25', 'RHS_LM',
+                        'LTS_MA', 'LTS_LR','LTS_ARMA']
 
     for mm_feture in mm_feature_list:
         feature_inner_fold_list.append((mm_feture, addition_to_inner_fold + create_feature_list_shortcut_string([mm_feture])))
 
-    for round_ in range(2, round_limit + 1):
+    for round_ in range(first_round_default, round_limit + 1):
         num_rounds += 1
         for mm_fetue_config in feature_inner_fold_list:
             mm_feture = mm_fetue_config[0]
+            if mm_feture.startswith('LTS') and first_round_default < 4:
+                continue
             addition_to_inner_fold = mm_fetue_config[1]
             inner_fold_sep = dataset_name.upper() + '_LTR_All_features_Round0' + str(round_) + '_with_meta.tsvSNL1_BM25_ByMonths' + addition_to_inner_fold
             inner_fold = os.path.join(base_2_folder, inner_fold_sep)
@@ -2651,6 +2655,9 @@ def orginize_mm_features_data_compare(
         significance_df,
         on=['FeatureGroup'],
         how='inner')
+
+    if first_round_default == 4:
+        addition_to_inner_fold += "_LTS_Files"
 
     big_summary_df.to_csv('MM_Features_Summary_' + dataset_name.upper() + addition_to_inner_fold + '.tsv', sep='\t',
                           index=False)
@@ -3332,6 +3339,18 @@ if __name__ == '__main__':
             round_limit,
             limited_snap_num,
             limited_features_list)
+    elif operation == 'LTSMMFeatureCompare':
+        dataset_name = sys.argv[2]
+        round_limit = int(sys.argv[3])
+        limited_snap_num = sys.argv[4]
+        limited_features_list = ast.literal_eval(sys.argv[5])
+        first_round_default = 4
+        orginize_mm_features_data_compare(
+            dataset_name,
+            round_limit,
+            limited_snap_num,
+            limited_features_list,
+            first_round_default=first_round_default)
 
     elif operation == 'FixKS':
         fix_ks_files_and_produce_stats()
