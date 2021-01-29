@@ -493,7 +493,7 @@ def create_large_idx_files_for_bonus_calc(
     from utils import convert_trec_results_file_to_pandas_df, calc_cosine
 
     big_idx_dict = {}
-    initial_data = create_tdfidf_dicts_per_doc_for_file('documents.trectext')
+    initial_data = create_tdfidf_dicts_per_doc_for_file('documents.trectext', is_init = True)
     big_idx_dict[0] = initial_data
     for i in range(1, len(interval_list)):
         curr_dict = create_tdfidf_dicts_per_doc_for_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/' + interval_list[i-1])
@@ -611,8 +611,8 @@ seed(9001)
 # queries = list(data.keys())
 # user_q_curr_map = get_curr_user_query_mapping()
 
-# create_large_idx_files_for_bonus_calc()
-calc_bonus_files()
+create_large_idx_files_for_bonus_calc()
+# calc_bonus_files()
 
 # expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
 # while True:
