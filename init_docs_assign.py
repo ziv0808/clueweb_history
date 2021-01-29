@@ -574,17 +574,17 @@ def calc_bonus_files(
                     bonus = 1
                 elif big_idx_dict[i][query][user]['Rank'] == 3:
                     bonus = 1 / float(3)
-                elif big_idx_dict[i][query][user]['Rank'] == 4:
-                    bonus = 0.25
-                else:
-                    if i > 1:
-                        if (big_idx_dict[i][query][user]['Rank'] - big_idx_dict[i-1][query][user]['Rank']) < 0:
-                            bonus = 1 / float(8)
-                if i == 4:
-                    if bonus >= 0.25:
-                        bonus += 1 / float(3)
-                    elif bonus > 0:
-                        bonus += 1 / float(8)
+                # elif big_idx_dict[i][query][user]['Rank'] == 4:
+                #     bonus = 0.25
+                # else:
+                #     if i > 1:
+                #         if (big_idx_dict[i][query][user]['Rank'] - big_idx_dict[i-1][query][user]['Rank']) < 0:
+                #             bonus = 1 / float(8)
+                # if i == 4:
+                #     if bonus >= 0.25:
+                #         bonus += 1 / float(3)
+                #     elif bonus > 0:
+                #         bonus += 1 / float(8)
                 if user not in user_bonus_count:
                     user_bonus_count[user] = 0
                 user_bonus_count[user] += bonus
@@ -611,9 +611,9 @@ seed(9001)
 # data = read_initial_data("documents.trectext", "topics.full.xml")
 # queries = list(data.keys())
 # user_q_curr_map = get_curr_user_query_mapping()
-
-# create_large_idx_files_for_bonus_calc()
-calc_bonus_files()
+interval_list = ['2021-01-03-23-05-55-344126', '2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622','2021-01-24-22-40-57-628006']
+create_large_idx_files_for_bonus_calc(interval_list=interval_list)
+# calc_bonus_files(interval_list=interval_list)
 
 # expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
 # while True:
