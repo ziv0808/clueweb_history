@@ -484,15 +484,48 @@ def resolve_last_q(mapping, query_user_map, queries, prev_user_assined_queries):
     return True, mapping, query_user_map
 
 
+def create_large_idx_files_for_bonus_calc(
+        interval_list=['2020-11-09-23-55-23-857656', '2020-11-17-10-30-21-396460', '2020-11-23-23-12-59-474081',
+                       '2020-12-02-22-02-13-998936',
+                       '2020-12-09-22-44-03-416874', '2020-12-21-09-38-10-759298', '2020-12-27-22-23-38-806453'],
+    ):
+    from ranking_logic import create_tdfidf_dicts_per_doc_for_file
+    from utils import convert_trec_results_file_to_pandas_df, calc_cosine
+
+    big_idx_dict = {}
+    initial_data = create_tdfidf_dicts_per_doc_for_file('documents.trectext')
+    for i in range(1, len(interval_list)):
+        curr_dict = create_tdfidf_dicts_per_doc_for_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/' + interval_list[i-1])
+        ranks_df = convert_trec_results_file_to_pandas_df(results_file_path='/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART' + interval_list[i-1])
+        for index, row in ranks_df.iterrows():
+            curr_dict[row['Query_ID']][row['Docno'].split('-')[1]]['Rank'] = int(row['Rank'])
+
+        if i > 1:
+            for query in curr_dict:
+                for user in big_idx_dict[i-1][query]:
+                    if big_idx_dict[i-1][query][user]['Rank'] == 1:
+                        q_winner = user
+                        q_winner_dict = big_idx_dict[i-1][query][user]
+                        break
+                for user in curr_dict[query]:
+                    if user != q_winner:
+                        curr_dict[query][user]['SimPrevWinner'] = calc_cosine(curr_dict[query][user]['TfIdf'], q_winner_dict['TfIdf'])
+                        curr_dict[query][user]['SimInit'] = calc_cosine(curr_dict[query][user]['TfIdf'], initial_data[query.split('_')[0]][user]['TfIdf'])
+
+        big_idx_dict[i] = curr_dict
 
 
+    with open("/lv_local/home/zivvasilisky/ASR20/Bonus/Idndex_dict.json", 'w') as f:
+        f.write(str(big_idx_dict))
 
 
 seed(9001)
-users = retrieve_users()
-data = read_initial_data("documents.trectext", "topics.full.xml")
-queries = list(data.keys())
-user_q_curr_map = get_curr_user_query_mapping()
+# users = retrieve_users()
+# data = read_initial_data("documents.trectext", "topics.full.xml")
+# queries = list(data.keys())
+# user_q_curr_map = get_curr_user_query_mapping()
+
+create_large_idx_files_for_bonus_calc()
 
 # expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
 # while True:
@@ -584,9 +617,9 @@ user_q_curr_map = get_curr_user_query_mapping()
 
 
 
-data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2021-01-03-23-05-55-344126')
-print("Step 2 -> First Round VS Zero:")
-compare_doc_files(data_round_1, data, is_first=True)
+# data_round_1 = read_current_doc_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/2021-01-03-23-05-55-344126')
+# print("Step 2 -> First Round VS Zero:")
+# compare_doc_files(data_round_1, data, is_first=True)
 
 
 
