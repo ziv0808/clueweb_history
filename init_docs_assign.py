@@ -551,11 +551,12 @@ def calc_bonus_files(
                         curr_dict[query][user]['SimPrevWinner'] = calc_cosine(curr_dict[query][user]['TfIdf'], q_winner_dict['TfIdf'])
                         curr_dict[query][user]['SimInit'] = calc_cosine(curr_dict[query][user]['TfIdf'], initial_data[query.split('_')[0]]['00']['TfIdf'])
                     if curr_dict[query][user]['Rank'] == 1 and user != q_winner:
-                        if curr_dict[query][user]['SimPrevWinner'] > 0.98 and curr_dict[query][user]['SimInit'] < 0.9:
+                        if curr_dict[query][user]['SimPrevWinner'] > 0.97 and curr_dict[query][user]['SimInit'] < 0.9:
                             if user not in user_penalty_idx:
                                 user_penalty_idx[user] = []
                             user_penalty_idx[user].append((query, i))
                             print(user_penalty_idx)
+                            print("Sim Prev: " +str(curr_dict[query][user]['SimPrevWinner']) + ' Sim Init ' + str(curr_dict[query][user]['SimInit']) )
                             user_count = 0
                             for other_user in curr_dict[query]:
                                 curr_dict[query][other_user]['Rank'] -= 1
