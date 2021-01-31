@@ -2867,6 +2867,8 @@ def compare_rel_files_to_curr_comp():
         print(dataset)
         df['Relevance'] = df['Relevance'].apply(lambda x: float(x))
         df['IsRel'] = df['Relevance'].apply(lambda x: 0 if x==0 else 1.0)
+        print("Num Docs :" +str(len(df)))
+        print("Num rel :" + str(len(df[df['IsRel'] == 1])))
         mdf = df[['Query', 'Round', 'Relevance', 'IsRel']].groupby(['Query', 'Round']).mean()
         print('Mean Query Round relevance: ' + str(mdf['Relevance'].mean()))
         print('Mean Query Round relevant doc %: ' + str(mdf['IsRel'].mean()))
