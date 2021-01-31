@@ -71,9 +71,12 @@ class WeightedListRanker():
             sys.stdout.flush()
             if curr_df.empty == True:
                 raise Exception("Fuck!")
-            curr_df = curr_df[['QueryNum','Docno',  retrieval_model + 'Score']].rename(
-                                                        columns = {'QueryNum'                 : 'Query_ID',
-                                                                    retrieval_model + 'Score' : 'Score'})
+            ret_model_column = retrieval_model + 'Score'
+            if retrieval_model == 'LM':
+                ret_model_column = 'LMIR.DIR'
+            curr_df = curr_df[['QueryNum','Docno',  ret_model_column]].rename(
+                                                        columns = {'QueryNum'       : 'Query_ID',
+                                                                   ret_model_column : 'Score'})
             if rank_or_score == 'Rank':
                 rank_df = pd.DataFrame({})
                 for query in list(curr_df['Query_ID'].drop_duplicates()):
@@ -161,7 +164,7 @@ class WeightedListRanker():
                 else:
                     k += 1
 
-        return  wieght_list
+        return wieght_list
 
     def create_uniform_wieghts(
             self,
