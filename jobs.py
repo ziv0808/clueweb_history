@@ -3077,6 +3077,7 @@ def fix_ks_files_and_produce_stats():
         df['num'] = 1
         mdf = df[['Query', 'Round', 'IsKS', 'num']].groupby(['Query', 'Round']).sum()
         mdf['%ks'] = mdf.apply(lambda row: row['IsKS'] / float(row['num']), axis = 1)
+        print("Num KS: " + str(len(df[df['IsKS'] == 1])))
         print("Mean % KS Per Round: " + str(mdf['%ks'].mean()))
         print("% Rounds KS > 0 : " + str(len(mdf[mdf['%ks']>0])/ float(len(mdf))))
 
