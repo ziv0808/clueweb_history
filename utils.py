@@ -1045,3 +1045,17 @@ def create_cc_dict_with_cw09(
         cc_dict[row['Stem']] += row['CollectionCount']
 
     return cc_dict
+
+
+def create_df_dict_with_cw09(
+        dataset_name):
+
+    cc_df = pd.read_csv('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/All_Document_Counts.tsv', sep='\t',
+                        index_col=False)
+    with open('/mnt/bi-strg3/v/zivvasilisky/ziv/data/' + dataset_name + '/df_per_interval_dict.json', 'r') as f:
+        cc_dict = ast.literal_eval(f.read())
+
+    for index, row in cc_df.iterrows():
+        cc_dict[row['Stem']] += row['DocCount']
+
+    return cc_dict
