@@ -34,7 +34,7 @@ def create_reults_dataframe_for_models(
             if is_svm_rank == True:
                 file_path = file_path.replace('lambdamart_res', 'rank_svm_res')
             filename = model_files_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
-            print(filename)
+            print(model, filename)
             sys.stdout.flush()
             tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
                 file_path=file_path,
@@ -80,7 +80,7 @@ def create_reults_dataframe_for_models(
                 file_path = file_path.replace('lambdamart_res', 'rank_svm_res')
             filename = basline_model_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace(
                 '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
-            print(filename)
+            print(model, filename)
             sys.stdout.flush()
             tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
                 file_path=file_path,
