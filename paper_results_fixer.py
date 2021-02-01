@@ -74,11 +74,11 @@ def create_reults_dataframe_for_models(
                         big_res_dict[model_rmv_lq][key].extend(orginized_res_dict[key])
 
         for model in basline_model_dict:
-            file_path = model_files_dict[model]['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>',
+            file_path = basline_model_dict[model]['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>',
                                                                                                           str(round_))
             if is_svm_rank == True:
                 file_path = file_path.replace('lambdamart_res', 'rank_svm_res')
-            filename = model_files_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace(
+            filename = basline_model_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace(
                 '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
             print(filename)
             sys.stdout.flush()
@@ -98,7 +98,7 @@ def create_reults_dataframe_for_models(
             for key in orginized_res_dict:
                 big_res_dict[model][key].extend(orginized_res_dict[key])
 
-            if 'AlsoLQRmv' in model_files_dict[model]:
+            if 'AlsoLQRmv' in basline_model_dict[model]:
                 tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
                     file_path=file_path,
                     filename=filename,
