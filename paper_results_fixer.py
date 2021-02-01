@@ -69,9 +69,9 @@ def create_reults_dataframe_for_models(
                                            'NDCG@3': [],
                                            'NDCG@5': [],
                                            'MRR': []}
-                    orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict, q_ordered_list=q_ordered_list)
-                    for key in orginized_res_dict:
-                        big_res_dict[model_rmv_lq][key].extend(orginized_res_dict[key])
+                orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict, q_ordered_list=q_ordered_list)
+                for key in orginized_res_dict:
+                    big_res_dict[model_rmv_lq][key].extend(orginized_res_dict[key])
 
         for model in basline_model_dict:
             file_path = basline_model_dict[model]['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset)
