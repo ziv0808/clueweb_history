@@ -74,6 +74,8 @@ def create_reults_dataframe_for_models(
                     big_res_dict[model_rmv_lq][key].extend(orginized_res_dict[key])
 
         for model in basline_model_dict:
+            if dataset == 'united' and model.startswith('MM '):
+                continue
             file_path = basline_model_dict[model]['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>',str(round_)).replace('<DatasetName>', dataset)
             if is_svm_rank == True:
                 file_path = file_path.replace('lambdamart_res', 'rank_svm_res')
