@@ -53,7 +53,7 @@ def create_reults_dataframe_for_models(
                                        'NDCG@5' : [],
                                        'MRR'    : []}
             orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict,q_ordered_list=q_ordered_list)
-            for key in orginized_res_dict[model] :
+            for key in orginized_res_dict :
                 big_res_dict[model][key].extend(orginized_res_dict[key])
 
             if 'AlsoLQRmv' in model_files_dict[model]:
@@ -70,7 +70,7 @@ def create_reults_dataframe_for_models(
                                            'NDCG@5': [],
                                            'MRR': []}
                     orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict, q_ordered_list=q_ordered_list)
-                    for key in orginized_res_dict[model_rmv_lq]:
+                    for key in orginized_res_dict:
                         big_res_dict[model_rmv_lq][key].extend(orginized_res_dict[key])
 
         for model in basline_model_dict:
@@ -95,7 +95,7 @@ def create_reults_dataframe_for_models(
                                        'NDCG@5': [],
                                        'MRR'   : []}
             orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict, q_ordered_list=q_ordered_list)
-            for key in orginized_res_dict[model]:
+            for key in orginized_res_dict:
                 big_res_dict[model][key].extend(orginized_res_dict[key])
 
             if 'AlsoLQRmv' in model_files_dict[model]:
@@ -113,7 +113,7 @@ def create_reults_dataframe_for_models(
                                                   'MRR'   : []}
                 orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict,
                                                                   q_ordered_list=q_ordered_list)
-                for key in orginized_res_dict[model_rmv_lq]:
+                for key in orginized_res_dict:
                     big_res_dict[model_rmv_lq][key].extend(orginized_res_dict[key])
 
     model_pval_dict = {}
