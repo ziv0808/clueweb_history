@@ -8,8 +8,7 @@ def orginize_res_dict_by_q_order(
     res_dict = {
         'NDCG@1' : [],
         'NDCG@3' : [],
-        'NDCG@5' : [],
-        'MRR'    : []}
+        'NDCG@5' : []}
     for q in q_ordered_list:
         for key in res_dict:
             res_dict[key].append(tmp_res_dict[q][key])
@@ -50,8 +49,7 @@ def create_reults_dataframe_for_models(
             if model not in big_res_dict:
                 big_res_dict[model] = {'NDCG@1' : [],
                                        'NDCG@3' : [],
-                                       'NDCG@5' : [],
-                                       'MRR'    : []}
+                                       'NDCG@5' : []}
             orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict,q_ordered_list=q_ordered_list)
             for key in orginized_res_dict :
                 big_res_dict[model][key].extend(orginized_res_dict[key])
@@ -66,9 +64,8 @@ def create_reults_dataframe_for_models(
                 model_rmv_lq = model + ' RMV LQ'
                 if model_rmv_lq not in big_res_dict:
                     big_res_dict[model_rmv_lq] = {'NDCG@1': [],
-                                           'NDCG@3': [],
-                                           'NDCG@5': [],
-                                           'MRR': []}
+                                                   'NDCG@3': [],
+                                                   'NDCG@5': []}
                 orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict, q_ordered_list=q_ordered_list)
                 for key in orginized_res_dict:
                     big_res_dict[model_rmv_lq][key].extend(orginized_res_dict[key])
@@ -92,8 +89,7 @@ def create_reults_dataframe_for_models(
             if model not in big_res_dict:
                 big_res_dict[model] = {'NDCG@1': [],
                                        'NDCG@3': [],
-                                       'NDCG@5': [],
-                                       'MRR'   : []}
+                                       'NDCG@5': []}
             orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict, q_ordered_list=q_ordered_list)
             for key in orginized_res_dict:
                 big_res_dict[model][key].extend(orginized_res_dict[key])
@@ -109,8 +105,7 @@ def create_reults_dataframe_for_models(
                 if model_rmv_lq not in big_res_dict:
                     big_res_dict[model_rmv_lq] = {'NDCG@1': [],
                                                   'NDCG@3': [],
-                                                  'NDCG@5': [],
-                                                  'MRR'   : []}
+                                                  'NDCG@5': []}
                 orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict,
                                                                   q_ordered_list=q_ordered_list)
                 for key in orginized_res_dict:
@@ -118,7 +113,7 @@ def create_reults_dataframe_for_models(
 
     model_pval_dict = {}
     all_models = list(big_res_dict.keys())
-    measures = ['NDCG@1', 'NDCG@3', 'NDCG@5', 'MRR']
+    measures = ['NDCG@1', 'NDCG@3', 'NDCG@5']
     model_pval_col_list = []
     for model in all_models:
         for measure in measures:
@@ -166,6 +161,9 @@ if __name__=='__main__':
         'S+MSMM+MG': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'},
+        'S+MSMM': {
+            'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
+            'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_AllByMonths.txt'},
         'S+MG': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_MG_AllByMonths.txt'},
     }
@@ -212,10 +210,6 @@ if __name__=='__main__':
         'BM25': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/bm25_model_res/final_res/',
                  'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_LoO_Results.txt',
                  'AlsoLQRmv': True},
-        'Old BM25': {
-            'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
-            'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_BM25.txt',
-            'AlsoLQRmv': True},
     }
 
     init_round = 2
