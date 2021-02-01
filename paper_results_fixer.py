@@ -131,7 +131,7 @@ def create_reults_dataframe_for_models(
             insert_row.append(np.mean(big_res_dict[test_model][measure]))
         for model in all_models:
             for measure in measures:
-                models_set = set([model, test_model])
+                models_set = tuple(sorted([model, test_model]))
                 if model == test_model:
                     insert_row.append(np.nan)
                 elif (models_set in model_pval_dict) and (measure in model_pval_dict[models_set]):
