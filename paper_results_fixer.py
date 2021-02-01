@@ -124,7 +124,7 @@ def create_reults_dataframe_for_models(
     res_df = pd.DataFrame(columns = ['Model'] + measures + model_pval_col_list)
     next_idx = 0
     for test_model in big_res_dict:
-        print(model)
+        print(test_model)
         sys.stdout.flush()
         insert_row = [test_model]
         for measure in measures:
@@ -132,6 +132,10 @@ def create_reults_dataframe_for_models(
         for model in all_models:
             for measure in measures:
                 models_set = tuple(sorted([model, test_model]))
+                if len(big_res_dict[model][measure]) != len(big_res_dict[test_model][measure]):
+                    print(models_set)
+                    print("Prob!")
+                    sys.stdout.flush()
                 if model == test_model:
                     insert_row.append(np.nan)
                 elif (models_set in model_pval_dict) and (measure in model_pval_dict[models_set]):
