@@ -30,10 +30,10 @@ def create_reults_dataframe_for_models(
     for round_ in range(init_round, round_limit + 1):
         first = True
         for model in model_files_dict:
-            file_path = model_files_dict['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>', str(round_))
+            file_path = model_files_dict[model]['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>', str(round_))
             if is_svm_rank == True:
                 file_path = file_path.replace('lambdamart_res', 'rank_svm_res')
-            filename = model_files_dict['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
+            filename = model_files_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
             print(filename)
             sys.stdout.flush()
             tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
@@ -74,11 +74,11 @@ def create_reults_dataframe_for_models(
                         big_res_dict[model_rmv_lq][key].extend(orginized_res_dict[key])
 
         for model in basline_model_dict:
-            file_path = model_files_dict['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>',
+            file_path = model_files_dict[model]['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>',
                                                                                                           str(round_))
             if is_svm_rank == True:
                 file_path = file_path.replace('lambdamart_res', 'rank_svm_res')
-            filename = model_files_dict['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace(
+            filename = model_files_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace(
                 '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
             print(filename)
             sys.stdout.flush()
