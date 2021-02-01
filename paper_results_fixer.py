@@ -133,7 +133,7 @@ def create_reults_dataframe_for_models(
             for measure in measures:
                 models_set = tuple(sorted([model, test_model]))
                 if len(big_res_dict[model][measure]) != len(big_res_dict[test_model][measure]):
-                    print(models_set)
+                    print(models_set,measure )
                     print("Prob!")
                     sys.stdout.flush()
                 if model == test_model:
