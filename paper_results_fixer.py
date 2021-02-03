@@ -259,6 +259,12 @@ if __name__=='__main__':
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_BM25.txt',
                 'AlsoLQRmv': True},
+            'F3 BM25 DW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+                           'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Rank_RDecaying_LoO_Results.txt',
+                           'AlsoLQRmv': True},
+            'F3 LM DW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+                         'FileTemplate': '<DatasetName>_0<RoundNum>_LM_Rank_RDecaying_LoO_Results.txt',
+                         'AlsoLQRmv': True},
         }
         init_round = 4
 
