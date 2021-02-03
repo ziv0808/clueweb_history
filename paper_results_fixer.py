@@ -411,5 +411,7 @@ if __name__=='__main__':
         save_filename = save_filename.replace('_LambdaMART_', '_SVMRank_')
     if static_feat_compare == True:
         save_filename = save_filename.replace('Results', 'S_Features_Results')
+    if ablation == True:
+        save_filename = save_filename.replace('_Results','_Ablation_Results')
     res_df.to_csv(save_filename, sep = '\t', index = False)
 
