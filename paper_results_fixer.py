@@ -154,6 +154,7 @@ if __name__=='__main__':
     is_lts = ast.literal_eval(sys.argv[2])
     is_svm_rank = ast.literal_eval(sys.argv[3])
     static_feat_compare = ast.literal_eval(sys.argv[4])
+    ablation = ast.literal_eval(sys.argv[5])
 
     model_files_dict = {
         'S'  : {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
@@ -350,6 +351,35 @@ if __name__=='__main__':
                     'AlsoLQRmv': True},
                 }
             init_round = 4
+    if ablation == True:
+        model_files_dict = {
+            'S+MSMM+MG': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'}
+            }
+        abla_feat_list = ['BERTScore', 'BERTScore_MaxXXSnaps','BERTScore_MGXXSnaps','BERTScore_MinXXSnaps','BERTScore_MXXSnaps','BERTScore_STDXXSnaps',
+                          'BM25Score','BM25Score_MaxXXSnaps','BM25Score_MGXXSnaps','BM25Score_MinXXSnaps','BM25Score_MXXSnaps','BM25Score_STDXXSnaps',
+                          'Ent', 'Ent_MaxXXSnaps', 'Ent_MGXXSnaps', 'Ent_MinXXSnaps','Ent_MXXSnaps', 'Ent_STDXXSnaps',
+                          'FracStops', 'FracStops_MaxXXSnaps', 'FracStops_MGXXSnaps', 'FracStops_MinXXSnaps','FracStops_MXXSnaps', 'FracStops_STDXXSnaps',
+                          'IDF', 'IDF_MaxXXSnaps', 'IDF_MGXXSnaps', 'IDF_MinXXSnaps','IDF_MXXSnaps', 'IDF_STDXXSnaps',
+                          'Len', 'Len_MaxXXSnaps', 'Len_MGXXSnaps', 'Len_MinXXSnaps','Len_MXXSnaps', 'Len_STDXXSnaps',
+                          'LMIR.DIR', 'LMIR.DIR_MaxXXSnaps', 'LMIR.DIR_MGXXSnaps', 'LMIR.DIR_MinXXSnaps','LMIR.DIR_MXXSnaps', 'LMIR.DIR_STDXXSnaps',
+                          'SimClueWeb_MaxXXSnaps', 'SimClueWeb_MGXXSnaps', 'SimClueWeb_MinXXSnaps','SimClueWeb_MXXSnaps', 'SimClueWeb_STDXXSnaps',
+                          'StopCover', 'StopCover_MaxXXSnaps', 'StopCover_MGXXSnaps', 'StopCover_MinXXSnaps', 'StopCover_MXXSnaps', 'StopCover_STDXXSnaps',
+                          'TFNormSum', 'TFNormSum_MaxXXSnaps', 'TFNormSum_MGXXSnaps', 'TFNormSum_MinXXSnaps', 'TFNormSum_MXXSnaps', 'TFNormSum_STDXXSnaps',
+                          'TFSum', 'TFSum_MaxXXSnaps', 'TFSum_MGXXSnaps', 'TFSum_MinXXSnaps', 'TFSum_MXXSnaps', 'TFSum_STDXXSnaps',
+           ]
+
+        basline_model_dict_examp = {
+            'Sample': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Ablation_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Abla_<AblaFeat>_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'},
+            }
+
+        basline_model_dict = {}
+        for abla_feat in abla_feat_list:
+            basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')] = basline_model_dict_examp['Sample']
+            basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')]['FileTemplate'] = basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')]['FileTemplate'].replace('<AblaFeat>', abla_feat)
 
     if dataset == 'asrc':
         round_limit = 8
