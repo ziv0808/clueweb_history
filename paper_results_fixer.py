@@ -155,6 +155,7 @@ if __name__=='__main__':
     is_svm_rank = ast.literal_eval(sys.argv[3])
     static_feat_compare = ast.literal_eval(sys.argv[4])
     ablation = ast.literal_eval(sys.argv[5])
+    svm_compare = ast.literal_eval(sys.argv[6])
 
     model_files_dict = {
         'S'  : {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
@@ -380,6 +381,28 @@ if __name__=='__main__':
         for abla_feat in abla_feat_list:
             basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')] = basline_model_dict_examp['Sample']
             basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')]['FileTemplate'] = basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')]['FileTemplate'].replace('<AblaFeat>', abla_feat)
+
+    if svm_compare == True:
+        model_files_dict = {
+            'S': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_All.txt',
+                },
+            'S+MSMM+MG': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
+                    }
+            }
+        basline_model_dict = {
+            'SVM S': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_All.txt',
+            },
+            'SVM S+MSMM+MG': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/rank_svm_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
+            }
+        }
 
     if dataset == 'asrc':
         round_limit = 8
