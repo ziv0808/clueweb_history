@@ -192,7 +192,7 @@ class WeightedListRanker():
         test_wieght_mul_df = self.wieght_multiplier_df[self.wieght_multiplier_df['IsTest'] == True][self.interval_list].copy()
 
         if self.rank_or_score == 'Rank':
-            k_list = [10]
+            k_list = [10, 20]
         else:
             k_list = [None]
         for K in k_list:
