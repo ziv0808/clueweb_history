@@ -3174,7 +3174,7 @@ def low_quality_satats():
     ks_asrc_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/data/keyword_stuffed/asrc.ks')
 
     ks_asrc_df['KS_Score'] = ks_asrc_df['Relevance'].apply(lambda x: float(x))
-
+    ks_asrc_df['Docno'] = ks_asrc_df['Docno'].apply(lambda x: x.replace('ROUND','EPOCH'))
     ks_asrc_df = pd.merge(
         ks_asrc_df[['Docno','KS_Score']],
         rel_asrc_df,
@@ -3182,7 +3182,7 @@ def low_quality_satats():
         how = 'inner')
     ks_asrc_df['Relevance'] = ks_asrc_df['Relevance'].apply(lambda x: float(x))
     ks_asrc_df = ks_asrc_df[['Docno', 'Relevance', 'KS_Score']].groupby(['Relevance', 'KS_Score']).count()
-    print(ks_asrc_df)
+    print(ks_asrc_df.reset_index())
 
     rel_asrc_df['IsKS'] = rel_asrc_df['Docno'].apply(lambda x: 1 if x in low_qulity_docs_list else 0)
     rel_united_df['IsKS'] = rel_united_df['Docno'].apply(lambda x: 1 if x in low_qulity_docs_list else 0)
