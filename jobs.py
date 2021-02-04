@@ -3178,6 +3178,7 @@ def low_quality_satats():
     rel_asrc_df['Q-R'] = rel_asrc_df['Docno'].apply(lambda x: x.split('-')[1] + '-'+ x.split('-')[2])
     rel_united_df['Q-R'] = rel_united_df['Docno'].apply(lambda x: x.split('-')[1] + '-' + x.split('-')[2])
 
+    l = []
     for datset, df in [('ASRC', rel_asrc_df), ('UNITED', rel_united_df)]:
         print(datset)
         df['Relevance'] = df['Relevance'].apply(lambda x: float(x))
@@ -3195,6 +3196,10 @@ def low_quality_satats():
         print("Num LQ and Relevant = 1: " + str(len(df[df['Relevance'] == 1])))
         print("Num LQ and Relevant = 2: " + str(len(df[df['Relevance'] == 2])))
         print("Num LQ and Relevant = 3: " + str(len(df[df['Relevance'] == 3])))
+
+        l.extend(list(df[df['Relevance'] <= 1]['Docno']))
+
+    print(list(set(l)))
 
 
 
