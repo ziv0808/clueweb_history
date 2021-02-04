@@ -1861,6 +1861,36 @@ def create_lts_feature_dict(
                 model_features_dict[int(row['Query_ID'])][row['Docno']][model] = float(row['Score'])
     return model_features_dict
 
+
+def create_fusion_feature_dict(
+        dataset_name,
+        model_features_dict):
+    model_res_path = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/'
+
+
+    for filename in os.listdir(model_res_path):
+        if filename.startswith(dataset_name.lower()) and not filename.endswith('_Params.txt') and 'LoO' in filename:
+            print(filename)
+            broken_name = filename.split('_')
+            round = broken_name[1]
+
+            model = broken_name[2]
+            method = broken_name[3]
+            w_method = broken_name[4]
+
+            if method != 'Rank' and w_method != 'RDecaying':
+                continue
+
+            if model in ['LM', 'BM25', 'BERT']:
+                model = 'Fuse_' + model
+            else:
+                raise Exception("create_lts_feature_dict: Unknown model")
+
+            curr_df = convert_trec_results_file_to_pandas_df(os.path.join(model_res_path, filename))
+            for index, row in curr_df.iterrows():
+                model_features_dict[int(row['Query_ID'])][row['Docno']][model] = float(row['Score'])
+    return model_features_dict
+
 def create_ltr_feature_dict(
         feature_folder):
     res_dict = {}
@@ -1928,7 +1958,7 @@ def create_base_features_for_asrc_with_ltr_features(
                        'DIRPrev3Winners', 'DIRPrev3BestImprove',
                        'JMOnlyReservoir', 'DIROnlyReservoir',
                          'ED_LM', 'RHS_BM25', 'RHS_LM', 'ED_KL',
-                        'LTS_MA', 'LTS_LR', 'LTS_ARMA'
+                        'Fuse_LM', 'Fuse_BM25'
     ]
     base_feature_list.extend(mm_feature_list)
     col_list = ['NumSnapshots']
@@ -1946,7 +1976,8 @@ def create_base_features_for_asrc_with_ltr_features(
     feature_ref_dict = create_ltr_feature_dict(os.path.join(os.path.join(os.path.join(meta_data_base_fold,'datsets'),inner_fold),'feat_dir'))
     mm_feature_ref = create_mixture_models_feature_dict(inner_fold)
     mm_feature_ref = create_domais_rhs_feature_dict(inner_fold, mm_feature_ref)
-    mm_feature_ref = create_lts_feature_dict(inner_fold, mm_feature_ref)
+    # mm_feature_ref = create_lts_feature_dict(inner_fold, mm_feature_ref)
+    mm_feature_ref = create_fusion_feature_dict(inner_fold, mm_feature_ref)
     for query_user_str in big_doc_index:
         all_rounds = list(big_doc_index[query_user_str].keys())
         query_num = query_user_str.split('-')[0]
