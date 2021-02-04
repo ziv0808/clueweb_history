@@ -3181,13 +3181,20 @@ def low_quality_satats():
     for datset, df in [('ASRC', rel_asrc_df), ('UNITED', rel_united_df)]:
         print(datset)
         df['Relevance'] = df['Relevance'].apply(lambda x: float(x))
-        print("Mean KS Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].mean()))
-        print("Min KS Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].min()))
-        print("Max KS Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].max()))
-        print("Num KS Relevance : " + str(len(df[df['IsKS'] == 1])))
-        print("SUM KS Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].sum()))
+        print("Mean LQ Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].mean()))
+        print("Min LQ Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].min()))
+        print("Max LQ Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].max()))
+        print("Num LQ Relevance : " + str(len(df[df['IsKS'] == 1])))
+        print("SUM LQ Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].sum()))
 
-        print("Max KS In Q-R : " + str(rel_united_df[['Q-R','IsKS']].groupby(['Q-R']).sum()['IsKS'].max()))
+        print("Max LQ In Q-R : " + str(rel_united_df[['Q-R','IsKS']].groupby(['Q-R']).sum()['IsKS'].max()))
+        # print("Max KS In Q-R : " + str(rel_united_df[['Q-R', 'IsKS']].groupby(['Q-R']).sum()['IsKS'].max()))
+        df = df[df['IsKS'] == 1]
+        print("Num LQ and Relevant: " + str(len(df[df['Relevance'] >= 1])))
+        print("Num LQ and Relevant = 1: " + str(len(df[df['Relevance'] == 1])))
+        print("Num LQ and Relevant = 2: " + str(len(df[df['Relevance'] == 2])))
+        print("Num LQ and Relevant = 3: " + str(len(df[df['Relevance'] == 3])))
+
 
 
 
