@@ -3182,7 +3182,7 @@ def low_quality_satats():
         how = 'inner')
     ks_asrc_df['Relevance'] = ks_asrc_df['Relevance'].apply(lambda x: float(x))
     ks_asrc_df = ks_asrc_df[['Docno', 'Relevance', 'KS_Score']].groupby(['Relevance', 'KS_Score']).count()
-    print(ks_asrc_df.reset_index())
+    print(ks_asrc_df.reset_index().pivot(index= 'Relevance', columns= 'KS_Score', values='Docno'))
 
     rel_asrc_df['IsKS'] = rel_asrc_df['Docno'].apply(lambda x: 1 if x in low_qulity_docs_list else 0)
     rel_united_df['IsKS'] = rel_united_df['Docno'].apply(lambda x: 1 if x in low_qulity_docs_list else 0)
