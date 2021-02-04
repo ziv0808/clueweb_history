@@ -3191,6 +3191,7 @@ def low_quality_satats():
         # print("Max KS In Q-R : " + str(rel_united_df[['Q-R', 'IsKS']].groupby(['Q-R']).sum()['IsKS'].max()))
         df = df[df['IsKS'] == 1]
         print("Num LQ and Relevant: " + str(len(df[df['Relevance'] >= 1])))
+        print("Num LQ and Relevant = 0: " + str(len(df[df['Relevance'] == 0])))
         print("Num LQ and Relevant = 1: " + str(len(df[df['Relevance'] == 1])))
         print("Num LQ and Relevant = 2: " + str(len(df[df['Relevance'] == 2])))
         print("Num LQ and Relevant = 3: " + str(len(df[df['Relevance'] == 3])))
