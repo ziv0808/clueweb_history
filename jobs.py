@@ -3100,7 +3100,7 @@ def fix_ks_files_and_produce_stats():
     ks_asrc_df['Round'] = ks_asrc_df['Docno'].apply(lambda x: int(x.split('-')[1]))
     ks_herd_df['Round'] = ks_herd_df['Docno'].apply(lambda x: int(x.split('-')[1]))
 
-    ks_asrc_df['IsKS'] = ks_asrc_df['Relevance'].apply(lambda x: 1 if int(x) > 0 else 0)
+    ks_asrc_df['IsKS'] = ks_asrc_df['Relevance'].apply(lambda x: 1 if int(x) > 1 else 0)
     ks_herd_df['IsKS'] = ks_herd_df['Relevance'].apply(lambda x: 1 if int(x) == 0 else 0)
 
     ks_united_df = ks_asrc_df[ks_asrc_df['Round'] <= 5].append(ks_herd_df, ignore_index = True)
