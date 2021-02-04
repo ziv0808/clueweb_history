@@ -236,39 +236,39 @@ if __name__=='__main__':
     }
 
     init_round = 2
-    if is_lts == True:
-        basline_model_dict = {
-            'LTS MA': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ts_model/final_res/',
-                      'FileTemplate': '<DatasetName>_0<RoundNum>_MA_LTS__LoO_Results.txt',
-                   'AlsoLQRmv': True},
-            'LTS LR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ts_model/final_res/',
-                       'FileTemplate': '<DatasetName>_0<RoundNum>_LR_LTS__LoO_Results.txt',
-                       'AlsoLQRmv': True},
-           'LTS ARMA': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ts_model/final_res/',
-                        'FileTemplate': '<DatasetName>_0<RoundNum>_ARMA_LTS__LoO_Results.txt',
-                   'AlsoLQRmv': True},
-            'MM Prev3Winners DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
-                                    'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3Winners_MixtureDIR_LoO_Results.txt',
-                   'AlsoLQRmv': True},
-            'MM Prev3BestImprove DIR': {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
-                'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3BestImprove_MixtureDIR_LoO_Results.txt',
-                   'AlsoLQRmv': True},
-            'MM OnlyReservoir DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
-                                     'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_MixtureDIR_OnlyReservoir_LoO_Results.txt',
-                   'AlsoLQRmv': True},
-            'BM25': {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_BM25.txt',
-                'AlsoLQRmv': True},
-            'F3 BM25 DW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
-                           'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Rank_RDecaying_LoO_Results.txt',
-                           'AlsoLQRmv': True},
-            'F3 LM DW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
-                         'FileTemplate': '<DatasetName>_0<RoundNum>_LM_Rank_RDecaying_LoO_Results.txt',
-                         'AlsoLQRmv': True},
-        }
-        init_round = 4
+    # if is_lts == True:
+    #     basline_model_dict = {
+    #         'LTS MA': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ts_model/final_res/',
+    #                   'FileTemplate': '<DatasetName>_0<RoundNum>_MA_LTS__LoO_Results.txt',
+    #                'AlsoLQRmv': True},
+    #         'LTS LR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ts_model/final_res/',
+    #                    'FileTemplate': '<DatasetName>_0<RoundNum>_LR_LTS__LoO_Results.txt',
+    #                    'AlsoLQRmv': True},
+    #        'LTS ARMA': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/ts_model/final_res/',
+    #                     'FileTemplate': '<DatasetName>_0<RoundNum>_ARMA_LTS__LoO_Results.txt',
+    #                'AlsoLQRmv': True},
+    #         'MM Prev3Winners DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+    #                                 'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3Winners_MixtureDIR_LoO_Results.txt',
+    #                'AlsoLQRmv': True},
+    #         'MM Prev3BestImprove DIR': {
+    #             'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+    #             'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3BestImprove_MixtureDIR_LoO_Results.txt',
+    #                'AlsoLQRmv': True},
+    #         'MM OnlyReservoir DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+    #                                  'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_MixtureDIR_OnlyReservoir_LoO_Results.txt',
+    #                'AlsoLQRmv': True},
+    #         'BM25': {
+    #             'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
+    #             'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_BM25.txt',
+    #             'AlsoLQRmv': True},
+    #         'F3 BM25 DW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+    #                        'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_Rank_RDecaying_LoO_Results.txt',
+    #                        'AlsoLQRmv': True},
+    #         'F3 LM DW': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/wieghted_list_res/final_res/',
+    #                      'FileTemplate': '<DatasetName>_0<RoundNum>_LM_Rank_RDecaying_LoO_Results.txt',
+    #                      'AlsoLQRmv': True},
+    #     }
+    #     init_round = 4
 
     if static_feat_compare == True:
         model_files_dict = {
@@ -305,6 +305,14 @@ if __name__=='__main__':
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_EDLm/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_EDLm_MinMax_Static_All.txt',
                 'AlsoLQRmv': True},
+            'S+F3 LM DW': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_FuLM/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_FuLM_MinMax_Static_All.txt',
+                'AlsoLQRmv': True},
+            'S+F3 BM25 DW': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_FuBm25/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_FuBm25_MinMax_Static_All.txt',
+                'AlsoLQRmv': True},
             'S+RHS BM25': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_RhsBm25/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_RhsBm25_MinMax_Static_All.txt',
@@ -324,34 +332,34 @@ if __name__=='__main__':
 
         }
 
-        if is_lts == True:
-            basline_model_dict = {
-                'S+DIRPrev3Winners': {
-                    'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrP3w/',
-                    'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrP3w_MinMax_Static_All.txt',
-                    'AlsoLQRmv': True},
-                'S+DIRPrev3BestImprove': {
-                    'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrB3i/',
-                    'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrB3i_MinMax_Static_All.txt',
-                    'AlsoLQRmv': True},
-                'S+DIROnlyReservoir': {
-                    'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrOr/',
-                    'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrOr_MinMax_Static_All.txt',
-                    'AlsoLQRmv': True},
-                'S+LTS MA': {
-                    'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsMa/',
-                    'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsMa_MinMax_Static_All.txt',
-                    'AlsoLQRmv': True},
-                'S+LTS LR': {
-                    'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsLr/',
-                    'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsLr_MinMax_Static_All.txt',
-                    'AlsoLQRmv': True},
-                'S+LTS ARMA': {
-                    'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsArma/',
-                    'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsArma_MinMax_Static_All.txt',
-                    'AlsoLQRmv': True},
-                }
-            init_round = 4
+        # if is_lts == True:
+        #     basline_model_dict = {
+        #         'S+DIRPrev3Winners': {
+        #             'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrP3w/',
+        #             'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrP3w_MinMax_Static_All.txt',
+        #             'AlsoLQRmv': True},
+        #         'S+DIRPrev3BestImprove': {
+        #             'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrB3i/',
+        #             'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrB3i_MinMax_Static_All.txt',
+        #             'AlsoLQRmv': True},
+        #         'S+DIROnlyReservoir': {
+        #             'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrOr/',
+        #             'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrOr_MinMax_Static_All.txt',
+        #             'AlsoLQRmv': True},
+        #         'S+LTS MA': {
+        #             'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsMa/',
+        #             'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsMa_MinMax_Static_All.txt',
+        #             'AlsoLQRmv': True},
+        #         'S+LTS LR': {
+        #             'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsLr/',
+        #             'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsLr_MinMax_Static_All.txt',
+        #             'AlsoLQRmv': True},
+        #         'S+LTS ARMA': {
+        #             'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsArma/',
+        #             'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_TsArma_MinMax_Static_All.txt',
+        #             'AlsoLQRmv': True},
+        #         }
+        #     init_round = 4
     if ablation == True:
         model_files_dict = {
             'S+MSMM+MG': {
