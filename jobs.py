@@ -3183,7 +3183,8 @@ def low_quality_satats():
         print("Mean KS Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].mean()))
         print("Min KS Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].min()))
         print("Max KS Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].max()))
-        print("Max KS Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].std()))
+        print("Num KS Relevance : " + str(len(df[df['IsKS'] == 1])))
+        print("SUM KS Relevance : " + str(df[df['IsKS'] == 1]['Relevance'].sum()))
 
         print("Max KS In Q-R : " + str(rel_united_df[['Q-R','IsKS']].groupby(['Q-R']).sum()['IsKS'].max()))
 
