@@ -3171,6 +3171,18 @@ def low_quality_satats():
                             'EPOCH-04-144-24', 'EPOCH-07-029-25', 'EPOCH-03-078-WVSJJH']
     rel_asrc_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel')
     rel_united_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel')
+    ks_asrc_df = get_relevant_docs_df('/mnt/bi-strg3/v/zivvasilisky/ziv/data/keyword_stuffed/asrc.ks')
+
+    ks_asrc_df['KS_Score'] = ks_asrc_df['Relevance'].apply(lambda x: float(x))
+
+    ks_asrc_df = pd.merge(
+        ks_asrc_df[['Docno','KS_Score']],
+        rel_asrc_df,
+        on = ['Docno'],
+        how = 'inner')
+    ks_asrc_df['Relevance'] = ks_asrc_df['Relevance'].apply(lambda x: float(x))
+    ks_asrc_df = ks_asrc_df[['Docno', 'Relevance', 'KS_Score']].groupby(['Relevance', 'KS_Score']).count()
+    print(ks_asrc_df)
 
     rel_asrc_df['IsKS'] = rel_asrc_df['Docno'].apply(lambda x: 1 if x in low_qulity_docs_list else 0)
     rel_united_df['IsKS'] = rel_united_df['Docno'].apply(lambda x: 1 if x in low_qulity_docs_list else 0)
@@ -3196,6 +3208,8 @@ def low_quality_satats():
         print("Num LQ and Relevant = 1: " + str(len(df[df['Relevance'] == 1])))
         print("Num LQ and Relevant = 2: " + str(len(df[df['Relevance'] == 2])))
         print("Num LQ and Relevant = 3: " + str(len(df[df['Relevance'] == 3])))
+
+        mdf = df
 
         l.extend(list(df[df['Relevance'] <= 1]['Docno']))
 
