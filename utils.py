@@ -1026,6 +1026,8 @@ def create_feature_list_shortcut_string(feat_list):
         'LTS_MA': 'TsMa',
         'LTS_LR': 'TsLr',
         'LTS_ARMA': 'TsArma',
+        'Fuse_BM25': 'FuBm25',
+        'Fuse_LM': 'FuLM',
 
     }
     for feat in feat_list:
