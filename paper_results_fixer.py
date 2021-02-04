@@ -389,7 +389,7 @@ if __name__=='__main__':
         for abla_feat in abla_feat_list:
             basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')] = basline_model_dict_examp['Sample']
             basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')]['FileTemplate'] = basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')]['FileTemplate'].replace('<AblaFeat>', abla_feat)
-
+        print(basline_model_dict)
     if svm_compare == True:
         model_files_dict = {
             'S': {
