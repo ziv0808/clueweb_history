@@ -387,8 +387,10 @@ if __name__=='__main__':
 
         basline_model_dict = {}
         for abla_feat in abla_feat_list:
-            basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')] = basline_model_dict_examp['Sample']
-            basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')]['FileTemplate'] = basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')]['FileTemplate'].replace('<AblaFeat>', abla_feat)
+            basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')] ={
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Ablation_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Abla_' + abla_feat+ '_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'},
+            
         print(basline_model_dict)
     if svm_compare == True:
         model_files_dict = {
