@@ -159,7 +159,7 @@ class WeightedListRanker():
                 wieght_list[i] = (1.0 - k*(decaying_factor/float(p)))
                 if (reverse == True):
                     wieght_list[i] = (1.0 + k * (decaying_factor / float(p)))
-                k += 1
+                k -= 1
 
         return wieght_list
 
@@ -192,7 +192,7 @@ class WeightedListRanker():
         test_wieght_mul_df = self.wieght_multiplier_df[self.wieght_multiplier_df['IsTest'] == True][self.interval_list].copy()
 
         if self.rank_or_score == 'Rank':
-            k_list = [10,20,30,40,50,60,70,80,90,100]
+            k_list = [10]
         else:
             k_list = [None]
         for K in k_list:
