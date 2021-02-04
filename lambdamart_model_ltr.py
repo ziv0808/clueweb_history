@@ -366,7 +366,9 @@ def run_cv_for_config(
                        'DIRPrevWinnerRand', 'DIRPrevBestImproveRand',
                        'JMOnlyReservoir', 'DIROnlyReservoir',
                         'ED_KL', 'ED_LM', 'RHS_BM25', 'RHS_LM',
-                        'LTS_MA', 'LTS_LR', 'LTS_ARMA']
+                        'LTS_MA', 'LTS_LR', 'LTS_ARMA',
+                     'Fuse_LM', 'Fuse_BM25'
+    ]
     mm_features = []
     if limited_features_list is not None:
         base_feature_list = limited_features_list
