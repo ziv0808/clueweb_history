@@ -735,32 +735,12 @@ def get_relevant_docs_df_utils(
 
 def remove_low_quality_docs_from_df(
         df):
-    low_qulity_docs_list = ['EPOCH-05-069-PLB6ZI', 'EPOCH-03-195-3RXCQH', 'EPOCH-04-011-GUMSZY', 'EPOCH-02-098-UONKT7',
-                            'EPOCH-08-004-48', 'EPOCH-05-177-YA7EE4', 'EPOCH-02-029-15', 'EPOCH-05-011-U4XHBD',
-                            'EPOCH-01-144-DX0IY8', 'EPOCH-03-017-22', 'EPOCH-07-002-43', 'EPOCH-03-124-34PBG2',
-                            'EPOCH-02-048-RXK8H3', 'EPOCH-02-045-71QP3V', 'EPOCH-03-098-UONKT7', 'EPOCH-02-017-22',
-                            'EPOCH-01-034-6LWZ77', 'EPOCH-05-167-H4PVOF', 'EPOCH-05-010-9DWMMZ', 'EPOCH-02-011-GUMSZY',
-                            'EPOCH-06-029-41', 'EPOCH-01-011-GUMSZY', 'EPOCH-08-002-43', 'EPOCH-07-069-43',
-                            'EPOCH-01-124-34PBG2', 'EPOCH-02-004-BL2KLC', 'EPOCH-07-029-41', 'EPOCH-06-069-43',
-                            'EPOCH-03-011-GUMSZY', 'EPOCH-05-144-15', 'EPOCH-05-124-S4SDDG', 'EPOCH-04-124-34PBG2',
-                            'EPOCH-03-144-15', 'EPOCH-05-013-T7KWL2', 'EPOCH-06-059-41', 'EPOCH-01-048-RXK8H3',
-                            'EPOCH-03-124-S4SDDG', 'EPOCH-05-033-SA9WFV', 'EPOCH-02-059-14T9OZ', 'EPOCH-05-013-SBHV4U',
-                            'EPOCH-02-124-39', 'EPOCH-05-182-W129AB', 'EPOCH-05-032-7XUGJ0', 'EPOCH-02-195-3RXCQH',
-                            'EPOCH-05-048-RXK8H3', 'EPOCH-02-078-WVSJJH', 'EPOCH-05-051-6QL968', 'EPOCH-05-033-KP5G43',
-                            'EPOCH-02-144-T14SSS', 'EPOCH-02-124-S4SDDG', 'EPOCH-04-018-609XQD', 'EPOCH-01-144-T14SSS',
-                            'EPOCH-05-048-V0HAX1', 'EPOCH-01-098-UONKT7', 'EPOCH-04-144-06', 'EPOCH-08-069-45',
-                            'EPOCH-08-069-43', 'EPOCH-08-144-24', 'EPOCH-05-161-FCT04D', 'EPOCH-03-048-RXK8H3',
-                            'EPOCH-05-195-3RXCQH', 'EPOCH-05-098-UONKT7', 'EPOCH-06-029-16', 'EPOCH-06-195-43',
-                            'EPOCH-01-059-14T9OZ', 'EPOCH-04-124-S4SDDG', 'EPOCH-01-011-U4XHBD', 'EPOCH-07-059-45',
-                            'EPOCH-07-059-41', 'EPOCH-04-144-T14SSS', 'EPOCH-04-032-7XUGJ0', 'EPOCH-04-098-UONKT7',
-                            'EPOCH-04-048-RXK8H3', 'EPOCH-04-195-35', 'EPOCH-02-144-15', 'EPOCH-01-033-KP5G43',
-                            'EPOCH-03-098-SPSHA3', 'EPOCH-03-144-52', 'EPOCH-03-144-T14SSS', 'EPOCH-05-018-9PFCP4',
-                            'EPOCH-04-004-48', 'EPOCH-01-017-VKBYGU', 'EPOCH-04-045-71QP3V', 'EPOCH-01-124-S4SDDG',
-                            'EPOCH-05-180-MEP5Y4', 'EPOCH-05-144-T14SSS', 'EPOCH-07-029-16', 'EPOCH-01-004-0YGZO0',
-                            'EPOCH-05-018-609XQD', 'EPOCH-03-011-U4XHBD', 'EPOCH-01-195-3RXCQH', 'EPOCH-03-018-609XQD',
-                            'EPOCH-02-078-14', 'EPOCH-04-195-3RXCQH', 'EPOCH-05-011-GUMSZY', 'EPOCH-04-029-15',
-                            'EPOCH-08-164-31', 'EPOCH-06-002-43', 'EPOCH-04-059-14T9OZ', 'EPOCH-03-017-32', 'EPOCH-03-004-48',
-                            'EPOCH-04-144-24', 'EPOCH-03-078-WVSJJH']
+    low_qulity_docs_list = ['EPOCH-08-017-01', 'EPOCH-04-004-48', 'EPOCH-07-193-01', 'EPOCH-02-078-WVSJJH',
+                            'EPOCH-04-195-35', 'EPOCH-08-004-48', 'EPOCH-03-078-WVSJJH', 'EPOCH-05-161-FCT04D',
+                            'EPOCH-02-004-02', 'EPOCH-02-004-BL2KLC', 'EPOCH-03-017-22', 'EPOCH-05-180-MEP5Y4',
+                            'EPOCH-06-017-01', 'EPOCH-02-059-14T9OZ', 'EPOCH-07-017-01', 'EPOCH-05-013-SBHV4U',
+                            'EPOCH-05-144-15', 'EPOCH-03-011-U4XHBD', 'EPOCH-01-004-0YGZO0', 'EPOCH-03-004-48',
+                            'EPOCH-06-193-01']
     idx_drop_list = []
     for idx, row in df.iterrows():
         if row['Docno'] in low_qulity_docs_list:
