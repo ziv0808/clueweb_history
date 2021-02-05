@@ -551,7 +551,7 @@ def calc_bonus_files(
                         curr_dict[query][user]['SimPrevWinner'] = calc_cosine(curr_dict[query][user]['TfIdf'], q_winner_dict['TfIdf'])
                         curr_dict[query][user]['SimInit'] = calc_cosine(curr_dict[query][user]['TfIdf'], initial_data[query.split('_')[0]]['00']['TfIdf'])
                     if curr_dict[query][user]['Rank'] == 1 and user != q_winner:
-                        if (len(interval_list) == 5 and (curr_dict[query][user]['SimPrevWinner'] > 0.97 and curr_dict[query][user]['SimInit'] < 0.85 and curr_dict[query][user]['SimInit'] > 0.75)) \
+                        if (len(interval_list) == 5 and (curr_dict[query][user]['SimPrevWinner'] > 0.97 and curr_dict[query][user]['SimInit'] < 0.88 and curr_dict[query][user]['SimInit'] > 0.75)) \
                                 or (len(interval_list) == 7 and curr_dict[query][user]['SimPrevWinner'] > 0.97 and curr_dict[query][user]['SimInit'] < 0.9):
                             if user not in user_penalty_idx:
                                 user_penalty_idx[user] = []
@@ -618,11 +618,11 @@ seed(9001)
 # data = read_initial_data("documents.trectext", "topics.full.xml")
 # queries = list(data.keys())
 # user_q_curr_map = get_curr_user_query_mapping()
-# interval_list = ['2021-01-03-23-05-55-344126', '2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622','2021-01-24-22-40-57-628006']
-interval_list = ['2020-11-09-23-55-23-857656', '2020-11-17-10-30-21-396460', '2020-11-23-23-12-59-474081','2020-12-02-22-02-13-998936',
-                       '2020-12-09-22-44-03-416874', '2020-12-21-09-38-10-759298', '2020-12-27-22-23-38-806453']
-# create_large_idx_files_for_bonus_calc(interval_list=interval_list)
-calc_bonus_files(interval_list=interval_list)
+interval_list = ['2021-01-03-23-05-55-344126', '2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622','2021-01-24-22-40-57-628006']
+# interval_list = ['2020-11-09-23-55-23-857656', '2020-11-17-10-30-21-396460', '2020-11-23-23-12-59-474081','2020-12-02-22-02-13-998936',
+#                        '2020-12-09-22-44-03-416874', '2020-12-21-09-38-10-759298', '2020-12-27-22-23-38-806453']
+create_large_idx_files_for_bonus_calc(interval_list=interval_list)
+# calc_bonus_files(interval_list=interval_list)
 
 # expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
 # while True:
