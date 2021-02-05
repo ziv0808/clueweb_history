@@ -620,8 +620,8 @@ seed(9001)
 # interval_list = ['2021-01-03-23-05-55-344126', '2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622','2021-01-24-22-40-57-628006']
 interval_list = ['2020-11-09-23-55-23-857656', '2020-11-17-10-30-21-396460', '2020-11-23-23-12-59-474081','2020-12-02-22-02-13-998936',
                        '2020-12-09-22-44-03-416874', '2020-12-21-09-38-10-759298', '2020-12-27-22-23-38-806453']
-create_large_idx_files_for_bonus_calc(interval_list=interval_list)
-# calc_bonus_files(interval_list=interval_list)
+# create_large_idx_files_for_bonus_calc(interval_list=interval_list)
+calc_bonus_files(interval_list=interval_list)
 
 # expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
 # while True:
