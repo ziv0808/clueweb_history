@@ -495,7 +495,7 @@ def create_large_idx_files_for_bonus_calc(
     big_idx_dict = {}
     initial_data = create_tdfidf_dicts_per_doc_for_file('documents.trectext', is_init = True)
     big_idx_dict[0] = initial_data
-    for i in range(1, len(interval_list)):
+    for i in range(1, len(interval_list) + 1):
         curr_dict = create_tdfidf_dicts_per_doc_for_file('/lv_local/home/zivvasilisky/ASR20/epoch_run/Collections/TrecText/' + interval_list[i-1])
         # ranks_df = convert_trec_results_file_to_pandas_df(results_file_path='/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART' + interval_list[i-1])
         # for index, row in ranks_df.iterrows():
@@ -533,7 +533,7 @@ def calc_bonus_files(
     initial_data = big_idx_dict[0]
     big_idx_dict[0] = initial_data
     user_penalty_idx = {}
-    for i in range(1, len(interval_list)):
+    for i in range(1, len(interval_list)+ 1):
         curr_dict = big_idx_dict[i]
         ranks_df = convert_trec_results_file_to_pandas_df(results_file_path='/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART' + interval_list[i-1])
         for index, row in ranks_df.iterrows():
@@ -558,13 +558,19 @@ def calc_bonus_files(
                             print(user_penalty_idx)
                             print("Sim Prev: " +str(curr_dict[query][user]['SimPrevWinner']) + ' Sim Init ' + str(curr_dict[query][user]['SimInit']) )
                             user_count = 0
+                            for print_user in curr_dict[query]:
+                                print(print_user, curr_dict[query][print_user]['Rank'])
                             for other_user in curr_dict[query]:
                                 curr_dict[query][other_user]['Rank'] -= 1
                                 user_count += 1
                             curr_dict[query][user]['Rank'] = user_count + 1
+                            print("####")
+                            for print_user in curr_dict[query]:
+                                print(print_user, curr_dict[query][print_user]['Rank'])
+
         big_idx_dict[i] = curr_dict
     user_bonus_count = {}
-    for i in range(1, len(interval_list)):
+    for i in range(1, len(interval_list) + 1):
         for query in big_idx_dict[i]:
             for user in big_idx_dict[i][query]:
                 bonus = 0
@@ -574,17 +580,17 @@ def calc_bonus_files(
                     bonus = 1
                 elif big_idx_dict[i][query][user]['Rank'] == 3:
                     bonus = 1 / float(3)
-                # elif big_idx_dict[i][query][user]['Rank'] == 4:
-                #     bonus = 0.25
-                # else:
-                #     if i > 1:
-                #         if (big_idx_dict[i][query][user]['Rank'] - big_idx_dict[i-1][query][user]['Rank']) < 0:
-                #             bonus = 1 / float(8)
-                # if i == 4:
-                #     if bonus >= 0.25:
-                #         bonus += 1 / float(3)
-                #     elif bonus > 0:
-                #         bonus += 1 / float(8)
+                elif big_idx_dict[i][query][user]['Rank'] == 4 and len(interval_list) == 7:
+                    bonus = 0.25
+                elif len(interval_list) == 7:
+                    if i > 1:
+                        if (big_idx_dict[i][query][user]['Rank'] - big_idx_dict[i-1][query][user]['Rank']) < 0:
+                            bonus = 1 / float(8)
+                if i == 4 and len(interval_list) == 7:
+                    if bonus >= 0.25:
+                        bonus += 1 / float(3)
+                    elif bonus > 0:
+                        bonus += 1 / float(8)
                 if user not in user_bonus_count:
                     user_bonus_count[user] = 0
                 user_bonus_count[user] += bonus
@@ -611,9 +617,11 @@ seed(9001)
 # data = read_initial_data("documents.trectext", "topics.full.xml")
 # queries = list(data.keys())
 # user_q_curr_map = get_curr_user_query_mapping()
-interval_list = ['2021-01-03-23-05-55-344126', '2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622','2021-01-24-22-40-57-628006']
-# create_large_idx_files_for_bonus_calc(interval_list=interval_list)
-calc_bonus_files(interval_list=interval_list)
+# interval_list = ['2021-01-03-23-05-55-344126', '2021-01-10-22-42-25-566245','2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622','2021-01-24-22-40-57-628006']
+interval_list = ['2020-11-09-23-55-23-857656', '2020-11-17-10-30-21-396460', '2020-11-23-23-12-59-474081','2020-12-02-22-02-13-998936',
+                       '2020-12-09-22-44-03-416874', '2020-12-21-09-38-10-759298', '2020-12-27-22-23-38-806453']
+create_large_idx_files_for_bonus_calc(interval_list=interval_list)
+# calc_bonus_files(interval_list=interval_list)
 
 # expanded_queries = expand_working_qeuries(queries=queries,number_of_groups=2)
 # while True:
