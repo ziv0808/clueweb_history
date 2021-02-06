@@ -636,7 +636,7 @@ def craete_all_features_idx_file(
         ranks_df = convert_trec_results_file_to_pandas_df(
             results_file_path='/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART' +
                               interval_ts)
-        ranks_df['Rank'] = ranks_df['Rank'].aplly(lambda x: int(x))
+        ranks_df['Rank'] = ranks_df['Rank'].apply(lambda x: int(x))
         feature_idx_dict = create_ltr_feature_dict('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/Features/' + interval_ts)
         curr_idx = big_idx_dict[i]
         for query in curr_idx:
