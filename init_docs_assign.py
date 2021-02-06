@@ -658,7 +658,7 @@ def craete_all_features_idx_file(
                 feature_idx_dict[query][query + '-' + user]['SimToPrevWinner'] = sim_to_prev_w
         big_feature_idx[i] = feature_idx_dict
     import pandas as pd
-    features = ['TFSum','TFNormSum', 'FracStops', 'Len','SimToPrev', 'SimToPrevWinner']
+    features = ['TFSum','TFNormSum', 'FracStops', 'Ent','Len','SimToPrev', 'SimToPrevWinner']
     big_df = pd.DataFrame(columns= ['Query', 'Docno', 'DocnoSlim','Round', 'Group'] + features)
     next_idx = 0
 
