@@ -609,7 +609,7 @@ def calc_bonus_files(
     df.to_csv('/lv_local/home/zivvasilisky/ASR20/Bonus/B_Df.csv', index = False)
 
 
-def create_large_idx_files_for_bonus_calc(
+def create_large_idx_files(
         interval_list):
     from ranking_logic import create_tdfidf_dicts_per_doc_for_file
 
@@ -622,12 +622,94 @@ def create_large_idx_files_for_bonus_calc(
         big_idx_dict[i] = curr_dict
     with open("/lv_local/home/zivvasilisky/ASR20/analysis/per_interval_tf_idf_json.json", 'w') as f:
         f.write(str(big_idx_dict))
-        
+
+def craete_all_features_idx_file(
+        interval_list):
+
+    from utils import convert_trec_results_file_to_pandas_df, calc_cosine,calc_releational_measure
+    from ranking_logic import create_ltr_feature_dict
+    with open("/lv_local/home/zivvasilisky/ASR20/analysis/per_interval_tf_idf_json.json", 'r') as f:
+        big_idx_dict = ast.literal_eval(f.read())
+    big_feature_idx = {}
+    for i in range(1, len(interval_list) + 1):
+        interval_ts = interval_list[i-1]
+        ranks_df = convert_trec_results_file_to_pandas_df(
+            results_file_path='/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/RankedLists/LambdaMART' +
+                              interval_ts)
+        ranks_df['Rank'] = ranks_df['Rank'].aplly(lambda x: int(x))
+        feature_idx_dict = create_ltr_feature_dict('/lv_local/home/zivvasilisky/ASR20/epoch_run/Results/Features/' + interval_ts)
+        curr_idx = big_idx_dict[i]
+        for query in curr_idx:
+            winner = list(ranks_df[ranks_df['Query_ID'] == query][ranks_df[ranks_df['Query_ID'] == query]['Rank'] == 1]['Docno'])
+            if len(winner) != 1:
+                raise Exception('ERRRRRRR')
+            else:
+                winner = winner[0].split('-')[1]
+
+            for user in curr_idx[query]:
+                if i == 1:
+                    sim_to_prev = 1.0
+                    sim_to_prev_w = None
+                else:
+                    sim_to_prev = calc_cosine(curr_idx[query][user]['TfIdf'], big_idx_dict[i-1][query][user]['TfIdf'])
+                    sim_to_prev_w = calc_cosine(curr_idx[query][user]['TfIdf'], big_idx_dict[i-1][query][winner]['TfIdf'])
+
+                feature_idx_dict[query][query + '-' + user]['SimToPrev'] = sim_to_prev
+                feature_idx_dict[query][query + '-' + user]['SimToPrevWinner'] = sim_to_prev_w
+        big_feature_idx[i] = feature_idx_dict
+    import pandas as pd
+    features = ['TFSum','TFNormSum', 'FracStops', 'Len','SimToPrev', 'SimToPrevWinner']
+    big_df = pd.DataFrame(columns= ['Query', 'Docno', 'DocnoSlim','Round', 'Group'] + features)
+    next_idx = 0
+
+    for round_ in range(1, len(interval_list) + 1):
+        for query in big_feature_idx[round_]:
+            group = query.split('_')[1]
+            if group == '0':
+                group = 'Control'
+            elif group == '1':
+                group = 'Test'
+            else:
+                continue
+            for docno_slim in big_feature_idx[round_][query]:
+                docno = 'EPOCH-0' + str(round_) + '-' + docno_slim
+                insert_row = [query, docno, docno_slim ,round_, group]
+
+                for feat in features:
+                    insert_row.append(big_feature_idx[round_][query][docno_slim][feat])
+                big_df.loc[next_idx] = insert_row
+                next_idx += 1
+
+    grad_features = features[:]
+    grad_features.remove('SimToPrevWinner')
+    grad_feat_cols = []
+    for grad_feat in grad_features:
+        grad_feat_cols.append(grad_feat + '_Grad')
+    final_df =  pd.DataFrame(columns= ['Query', 'Docno', 'DocnoSlim','Round', 'Group'] + features + grad_feat_cols)
+
+    all_slim_docnos = list(big_df['DocnoSlim'].drop_duplicates())
+    print("Num query-user:" +str(len(all_slim_docnos)))
+    for docno_slim in all_slim_docnos:
+        user_q_df = big_df[big_df['DocnoSlim'] == docno_slim].copy()
+        user_q_df.sort_values('Round', inplace=True)
+        for grad_feat in grad_features:
+            user_q_df[grad_feat + '_Shift'] = user_q_df[grad_feat].shift(1)
+            user_q_df[grad_feat + '_Grad'] = user_q_df.apply(
+                lambda row_: calc_releational_measure(row_[grad_feat], row_[grad_feat + '_Shift']), axis=1)
+
+        final_df = final_df.append(user_q_df[['Query', 'Docno', 'DocnoSlim','Round', 'Group'] + features + grad_feat_cols], ignore_index=True)
+
+    final_df.to_csv('/lv_local/home/zivvasilisky/ASR20/analysis/BigDf.tsv', sep = '\t', index=False)
+
+
+
+
+
 
 if __name__=="__main__":
     interval_list = [ '2021-01-10-22-42-25-566245', '2021-01-14-22-37-00-218428','2021-01-19-01-59-48-181622', '2021-01-24-22-40-57-628006']
-    create_large_idx_files_for_bonus_calc(interval_list)
-
+    # create_large_idx_files(interval_list)
+    craete_all_features_idx_file(interval_list)
 
 
 
