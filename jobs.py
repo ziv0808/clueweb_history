@@ -3250,8 +3250,8 @@ def bert_checker():
     'LM DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/basic_lm/',
                'FileTemplate': '<DatasetName>_0<RoundNum>_LMIR.DIR.txt'},
     'BM25': {
-        'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
-        'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_BM25.txt'},
+        'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/bm25_model_res/final_res/',
+        'FileTemplate': '<DatasetName>_0<RoundNum>__BM25_LoO_Results.txt'},
     }
     dataset = 'asrc'
     qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
