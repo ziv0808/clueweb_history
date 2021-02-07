@@ -241,20 +241,15 @@ def make_adverserial_dict_by_method(
 
     adverserial_dict = {}
     if adverserial_method == 'PrevWinner' or int(curr_round) == 2:
-        if curr_round == 1:
-            rel_df = prev_rounds_dict[int(curr_round)]
-            for q in list(rel_df['Query_ID'].drop_duplicates()):
-                adverserial_dict[str(q).zfill(3)] = {}
-        else:
-            rel_round = int(curr_round) - 1
-            rel_df = prev_rounds_dict[rel_round]
-            for q in list(rel_df['Query_ID'].drop_duplicates()):
-                q_df = rel_df[rel_df['Query_ID'] == q].copy()
-                q_df = q_df[q_df['Rank'] == 1]
-                docno_list = list(q_df['Docno'])
-                adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
-                                                        docno_list=docno_list,
-                                                        dataset_name=dataset_name)
+        rel_round = int(curr_round) - 1
+        rel_df = prev_rounds_dict[rel_round]
+        for q in list(rel_df['Query_ID'].drop_duplicates()):
+            q_df = rel_df[rel_df['Query_ID'] == q].copy()
+            q_df = q_df[q_df['Rank'] == 1]
+            docno_list = list(q_df['Docno'])
+            adverserial_dict[str(q).zfill(3)] = create_adveserial_dict_from_docno_list_for_q(
+                                                    docno_list=docno_list,
+                                                    dataset_name=dataset_name)
     elif adverserial_method == 'Prev2Winners':
         rel_df = pd.DataFrame({})
         for round_ in range(max(1, int(curr_round) - 2), int(curr_round)):
@@ -545,10 +540,13 @@ if __name__=='__main__':
             train_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 0]
 
             # mock adverserial dict
-            adverserial_dict = make_adverserial_dict_by_method(
-                dataset_name=datset_name,
-                curr_round=asrc_round,
-                adverserial_method='PrevWinner')
+            # adverserial_dict = make_adverserial_dict_by_method(
+            #     dataset_name=datset_name,
+            #     curr_round=asrc_round,
+            #     adverserial_method='PrevWinner')
+            adverserial_dict = {}
+            for cur_q in stemmed_queries_df['QueryNum']:
+                adverserial_dict[cur_q] = {}
 
             best_config_dict = None
             best_ndcg = 0.0
