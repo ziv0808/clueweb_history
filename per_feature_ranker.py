@@ -2,11 +2,7 @@ from utils import *
 from rank_svm_model import prepare_svmr_model_data, get_trec_prepared_df_form_res_df
 
 def get_feature_list():
-    base_feature_list = ['CoverQueryNum', 'CoverQueryRatio', 'Ent', 'FracStops',
-                         'IDF', 'Len', 'LMIR.DIR', 'LMIR.JM', 'StopCover', 'TFSum', 'TFMin', 'TFMax',
-                         'TFMean', 'TFStd', 'TFIDFSum', 'TFIDFMin', 'TFIDFMax', 'TFIDFMean', 'TFIDFStd', 'TFNormSum',
-                         'TFNormMin',
-                         'TFNormMax', 'TFNormMean', 'TFNormStd', 'SimClueWeb', 'BM25Score']
+    base_feature_list = ['Ent','FracStops','Len','LMIR.DIR','StopCover','TFSum','TFNormSum','SimClueWeb','BM25Score','IDF','BERTScore']
 
 
     feature_list = []
