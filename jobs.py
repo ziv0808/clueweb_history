@@ -3243,6 +3243,62 @@ def low_quality_satats():
     print(list(set(l)))
 
 
+def bert_checker():
+    model_files_dict = {
+    'BERT': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/bert/',
+             'FileTemplate': '<DatasetName>_0<RoundNum>_BERT_Results.txt'},
+    'LM DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/basic_lm/',
+               'FileTemplate': '<DatasetName>_0<RoundNum>_LMIR.DIR.txt'},
+    'BM25': {
+        'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
+        'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_BM25.txt'},
+    }
+    dataset = 'asrc'
+    qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
+    measures = ['NDCG@1','NDCG@3','NDCG@5']
+    summary_df = pd.DataFrame(columns = ['Dataset', 'Model','Round']+measures)
+    next_idx = 0
+    for round_ in range(1,9):
+        for model in model_files_dict:
+            file_path = model_files_dict[model]['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace(
+                '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
+            filename = model_files_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace(
+                '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
+            print(model, filename)
+            sys.stdout.flush()
+            tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                file_path=file_path,
+                filename=filename,
+                qrel_filepath=qrel_filepath,
+                calc_ndcg_mrr=True,
+                remove_low_quality=False)
+
+            insert_row = [dataset.upper(), model, round_]
+            for measure in measures:
+                insert_row.append(tmp_res_dict['all'][measure])
+            summary_df.loc[next_idx] = insert_row
+    dataset = 'united'
+    qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel"
+    for round_ in range(1, 6):
+        for model in model_files_dict:
+            file_path = model_files_dict[model]['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace(
+                '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
+            filename = model_files_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace(
+                '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
+            print(model, filename)
+            sys.stdout.flush()
+            tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                file_path=file_path,
+                filename=filename,
+                qrel_filepath=qrel_filepath,
+                calc_ndcg_mrr=True,
+                remove_low_quality=False)
+
+            insert_row = [dataset.upper(), model, round_]
+            for measure in measures:
+                insert_row.append(tmp_res_dict['all'][measure])
+            summary_df.loc[next_idx] = insert_row
+    summary_df.to_csv('BERT_CHECKS.tsv', sep = '\t',index = False)
 
 
 
@@ -3524,6 +3580,9 @@ if __name__ == '__main__':
 
     elif operation == 'LQStats':
         low_quality_satats()
+
+    elif operation == 'BERTStats':
+        bert_checker()
         # create_text_manipulated_interval(
 #     sim_folder_name="SIM_TXT_UP_DOWN",
 #     limit_to_clueweb_len=True,
