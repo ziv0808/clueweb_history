@@ -3277,6 +3277,7 @@ def bert_checker():
             for measure in measures:
                 insert_row.append(tmp_res_dict['all'][measure])
             summary_df.loc[next_idx] = insert_row
+            next_idx += 1
     dataset = 'united'
     qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/united.rel"
     for round_ in range(1, 6):
@@ -3298,6 +3299,7 @@ def bert_checker():
             for measure in measures:
                 insert_row.append(tmp_res_dict['all'][measure])
             summary_df.loc[next_idx] = insert_row
+            next_idx += 1
     summary_df.to_csv('BERT_CHECKS.tsv', sep = '\t',index = False)
 
 
