@@ -54,11 +54,12 @@ def get_feature_list():
 def rank_by_feature(
         save_folder,
         work_df,
-        curr_feat):
+        curr_feat,
+        inner_fold):
 
     fin_res_dict = {}
     asc_df = get_trec_prepared_df_form_res_df(work_df, curr_feat)
-    curr_file_name = 'TmpRes.txt'
+    curr_file_name = inner_fold + 'TmpRes.txt'
     with open(os.path.join(save_folder, curr_file_name), 'w') as f:
         f.write(convert_df_to_trec(asc_df))
     res_dict = get_ranking_effectiveness_for_res_file_per_query(
@@ -118,7 +119,7 @@ if __name__=='__main__':
         for feat in feature_list:
             print(feat)
             sys.stdout.flush()
-            scores_dict = rank_by_feature(save_folder=save_folder,work_df=feature_df[['QueryNum', 'Docno'] + [feat]],curr_feat=feat)
+            scores_dict = rank_by_feature(save_folder=save_folder,work_df=feature_df[['QueryNum', 'Docno'] + [feat]],curr_feat=feat,inner_fold=inner_fold)
 
             insert_row = [feat, round_, scores_dict['Dec'], scores_dict['Asc']]
             summary_df.loc[next_idx] = insert_row
