@@ -2,7 +2,7 @@ from utils import *
 from rank_svm_model import prepare_svmr_model_data, get_trec_prepared_df_form_res_df
 
 def get_feature_list():
-    base_feature_list = ['Ent','FracStops','Len','LMIR.DIR','StopCover','TFSum','TFNormSum','SimClueWeb','BM25Score','IDF','BERTScore']
+    base_feature_list = ['IDF'] #['Ent','FracStops','Len','LMIR.DIR','StopCover','TFSum','TFNormSum','SimClueWeb','BM25Score','IDF','BERTScore']
 
 
     feature_list = []
@@ -112,6 +112,7 @@ if __name__=='__main__':
             feature_list=feature_list,
             normalize_relvance=False,
             limited_snaps_num='All')
+        feature_df[['QueryNum', 'Docno', 'IDF']].to_csv('IDF_Round0' +str(round_) + '.tsv', sep = '\t', index = False)
         for feat in feature_list:
             print(feat)
             sys.stdout.flush()
