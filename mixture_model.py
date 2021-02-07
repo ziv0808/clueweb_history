@@ -546,7 +546,7 @@ if __name__=='__main__':
             #     adverserial_method='PrevWinner')
             adverserial_dict = {}
             for cur_q in stemmed_queries_df['QueryNum']:
-                adverserial_dict[cur_q] = {}
+                adverserial_dict[str(cur_q).zfill(3)] = {}
 
             best_config_dict = None
             best_ndcg = 0.0
