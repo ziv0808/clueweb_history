@@ -107,6 +107,7 @@ if __name__=='__main__':
     summary_df = pd.DataFrame(columns = ['Feature', 'Round', 'Dec', 'Asc'])
     next_idx = 0
     for round_ in range(2, round_limit + 1):
+        print(round_)
         base_filename = inner_fold.upper() + '_LTR_All_features_Round0' + str(round_) + '_with_meta.tsv'
         feature_df = prepare_svmr_model_data(
             base_feature_filename=base_filename,
@@ -115,6 +116,8 @@ if __name__=='__main__':
             normalize_relvance=False,
             limited_snaps_num='All')
         for feat in feature_list:
+            print(feat)
+            sys.stdout.flush()
             scores_dict = rank_by_feature(save_folder=save_folder,work_df=feature_df[['QueryNum', 'Docno'] + [feat]],curr_feat=feat)
 
             insert_row = [feat, round_, scores_dict['Dec'], scores_dict['Asc']]
@@ -123,6 +126,6 @@ if __name__=='__main__':
 
     summary_df = summary_df[['Feature', 'Dec', 'Asc']].groupby(['Feature']).mean()
     summary_df = summary_df.reset_index()
-    summary_df.to_csv('Feature_Test_df.tsv', sep = '\t', index = False)
+    summary_df.to_csv(inner_fold.upper() + '_Feature_Test_df.tsv', sep = '\t', index = False)
 
 
