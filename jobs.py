@@ -3251,7 +3251,7 @@ def bert_checker():
                'FileTemplate': '<DatasetName>_0<RoundNum>_LMIR.DIR.txt'},
     'BM25': {
         'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/bm25_model_res/final_res/',
-        'FileTemplate': '<DatasetName>_0<RoundNum>__BM25_LoO_Results.txt'},
+        'FileTemplate': '<DatasetName>_0<RoundNum>_BM25_LoO_Results.txt'},
     }
     dataset = 'asrc'
     qrel_filepath = "/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/documents.rel"
