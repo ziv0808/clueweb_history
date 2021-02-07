@@ -540,11 +540,7 @@ if __name__=='__main__':
             train_queries_df = stemmed_queries_df[stemmed_queries_df['IsTest'] == 0]
 
             # mock adverserial dict
-            adverserial_dict = make_adverserial_dict_by_method(
-                dataset_name=datset_name,
-                curr_round=asrc_round,
-                adverserial_method='PrevWinner')
-
+            adverserial_dict = {}
             best_config_dict = None
             best_ndcg = 0.0
             for beta in beta_option_list:
