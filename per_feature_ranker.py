@@ -77,7 +77,7 @@ def rank_by_feature(
         filename=curr_file_name,
         qrel_filepath=qrel_filepath,
         calc_ndcg_mrr=True)
-    fin_res_dict['Des'] = res_dict['all']['NDCG@5']
+    fin_res_dict['Dec'] = res_dict['all']['NDCG@5']
 
     return fin_res_dict
 
