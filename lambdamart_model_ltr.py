@@ -132,7 +132,8 @@ def train_and_test_model_on_config(
         snap_calc_limit=None,
         backward_elimination=False,
         snap_num_as_hyper_param=False,
-        is_new_server=False):
+        is_new_server=False,
+        trial_num=0):
 
     base_res_folder = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/'
     if is_new_server == True:
@@ -166,7 +167,8 @@ def train_and_test_model_on_config(
         start_test_q=start_test_q,
         end_test_q=end_test_q,
         feat_df=feat_df,
-        base_feature_filename=base_feature_filename)
+        base_feature_filename=base_feature_filename,
+        trial_num=trial_num)
 
 
     valid_df_cp = valid_df.copy()
@@ -329,7 +331,8 @@ def run_cv_for_config(
         is_new_server,
         with_bert_as_feature,
         feature_for_ablation,
-        limited_features_list):
+        limited_features_list,
+        trial_num):
 
     k_fold, fold_list = create_fold_list_for_cv(
         base_feature_filename=base_feature_filename,
@@ -459,7 +462,8 @@ def run_cv_for_config(
             snap_calc_limit=snap_calc_limit,
             backward_elimination=backward_elimination,
             snap_num_as_hyper_param=snap_num_as_hyper_param,
-            is_new_server=is_new_server)
+            is_new_server=is_new_server,
+            trial_num=trial_num)
         if i == 0:
             params_df = fold_params_df
         else:
@@ -575,45 +579,71 @@ def run_grid_search_over_params_for_config(
     feat_group_list_str = ""
     params_df = pd.DataFrame({})
     # for optional_c in optional_c_list:
-    for curr_feat_group in optional_feat_groups_list:
-        feat_group_list_str +=  "__" + curr_feat_group.replace('XXSnap','')
-        if 'XXSnap' in curr_feat_group:
-            snap_limit_list = snap_limit_options
-        else:
-            snap_limit_list = [snap_choosing_config]
-        for snap_limit in snap_limit_list:
-            if snap_limit is None:
-                feat_group = curr_feat_group
+    for trial_num in range(1,6):
+        for curr_feat_group in optional_feat_groups_list:
+            feat_group_list_str +=  "__" + curr_feat_group.replace('XXSnap','')
+            if 'XXSnap' in curr_feat_group:
+                snap_limit_list = snap_limit_options
             else:
-                feat_group = curr_feat_group + "_" + str(snap_limit)
+                snap_limit_list = [snap_choosing_config]
+            for snap_limit in snap_limit_list:
+                if snap_limit is None:
+                    feat_group = curr_feat_group
+                else:
+                    feat_group = curr_feat_group + "_" + str(snap_limit)
 
-            test_res_df, tmp_params_df = run_cv_for_config(
-                base_feature_filename=base_feature_filename,
-                snapshot_limit=snapshot_limit,
-                feature_groupname=feat_group,
-                retrieval_model=retrieval_model + retrieval_model_addition,
-                normalize_method=normalize_method,
-                qrel_filepath=qrel_filepath,
-                snap_chosing_method=snap_chosing_method,
-                train_leave_one_out=tarin_leave_one_out,
-                snap_calc_limit=snap_limit,
-                backward_elimination=backward_elimination,
-                snap_num_as_hyper_param=snap_num_as_hyper_param,
-                is_new_server=is_new_server,
-                with_bert_as_feature=with_bert_as_feature,
-                feature_for_ablation=feature_for_ablation,
-                limited_features_list=limited_features_list)
+                test_res_df, tmp_params_df = run_cv_for_config(
+                    base_feature_filename=base_feature_filename,
+                    snapshot_limit=snapshot_limit,
+                    feature_groupname=feat_group,
+                    retrieval_model=retrieval_model + retrieval_model_addition,
+                    normalize_method=normalize_method,
+                    qrel_filepath=qrel_filepath,
+                    snap_chosing_method=snap_chosing_method,
+                    train_leave_one_out=tarin_leave_one_out,
+                    snap_calc_limit=snap_limit,
+                    backward_elimination=backward_elimination,
+                    snap_num_as_hyper_param=snap_num_as_hyper_param,
+                    is_new_server=is_new_server,
+                    with_bert_as_feature=with_bert_as_feature,
+                    feature_for_ablation=feature_for_ablation,
+                    limited_features_list=limited_features_list,
+                    trial_num=trial_num)
 
-            tmp_params_df['FeatGroup'] = feat_group
-            if 'XXSnap' in feat_group:
-                feat_group = feat_group.replace('XXSnap','') + 'By' + snap_chosing_method
+                tmp_params_df['FeatGroup'] = feat_group
+                if 'XXSnap' in feat_group:
+                    feat_group = feat_group.replace('XXSnap','') + 'By' + snap_chosing_method
 
-            if next_idx == 0 and feature_for_ablation is None:
+                # if next_idx == 0 and feature_for_ablation is None:
+                #     curr_res_df = get_trec_prepared_df_form_res_df(
+                #         scored_docs_df=test_res_df,
+                #         score_colname=retrieval_model + 'Score')
+                #     insert_row = [retrieval_model]
+                #     curr_file_name = model_base_filename + '_' + retrieval_model + '_' + str(trial_num) + '.txt'
+                #     with open(os.path.join(save_folder, curr_file_name), 'w') as f:
+                #         f.write(convert_df_to_trec(curr_res_df))
+                #
+                #     res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                #         file_path=save_folder,
+                #         filename=curr_file_name,
+                #         qrel_filepath=qrel_filepath,
+                #         calc_ndcg_mrr=calc_ndcg_mrr)
+                #     for measure in ['Map', 'P_5', 'P_10']+additional_measures:
+                #         insert_row.append(res_dict['all'][measure])
+                #     per_q_res_dict[retrieval_model] = res_dict
+                #     model_summary_df.loc[next_idx] = insert_row
+                #     next_idx += 1
+                #     params_df = tmp_params_df
+                # else:
+                #     params_df = params_df.append(tmp_params_df, ignore_index=True)
+
                 curr_res_df = get_trec_prepared_df_form_res_df(
                     scored_docs_df=test_res_df,
-                    score_colname=retrieval_model + 'Score')
-                insert_row = [retrieval_model]
-                curr_file_name = model_base_filename + '_' + retrieval_model + '.txt'
+                    score_colname='ModelScore')
+                insert_row = [feat_group.replace('_', '+')]
+                curr_file_name = model_base_filename + '_' + feat_group + '_' + str(trial_num) +'.txt'
+                if feature_for_ablation is not None:
+                    curr_file_name = curr_file_name.replace('_Ablation', '_Abla_' + feature_for_ablation)
                 with open(os.path.join(save_folder, curr_file_name), 'w') as f:
                     f.write(convert_df_to_trec(curr_res_df))
 
@@ -624,44 +654,20 @@ def run_grid_search_over_params_for_config(
                     calc_ndcg_mrr=calc_ndcg_mrr)
                 for measure in ['Map', 'P_5', 'P_10']+additional_measures:
                     insert_row.append(res_dict['all'][measure])
-                per_q_res_dict[retrieval_model] = res_dict
+                per_q_res_dict[feat_group.replace('_', '+')] = res_dict
                 model_summary_df.loc[next_idx] = insert_row
                 next_idx += 1
-                params_df = tmp_params_df
-            else:
-                params_df = params_df.append(tmp_params_df, ignore_index=True)
 
-            curr_res_df = get_trec_prepared_df_form_res_df(
-                scored_docs_df=test_res_df,
-                score_colname='ModelScore')
-            insert_row = [feat_group.replace('_', '+')]
-            curr_file_name = model_base_filename + '_' + feat_group + '.txt'
-            if feature_for_ablation is not None:
-                curr_file_name = curr_file_name.replace('_Ablation', '_Abla_' + feature_for_ablation)
-            with open(os.path.join(save_folder, curr_file_name), 'w') as f:
-                f.write(convert_df_to_trec(curr_res_df))
-
-            res_dict = get_ranking_effectiveness_for_res_file_per_query(
-                file_path=save_folder,
-                filename=curr_file_name,
-                qrel_filepath=qrel_filepath,
-                calc_ndcg_mrr=calc_ndcg_mrr)
-            for measure in ['Map', 'P_5', 'P_10']+additional_measures:
-                insert_row.append(res_dict['all'][measure])
-            per_q_res_dict[feat_group.replace('_', '+')] = res_dict
-            model_summary_df.loc[next_idx] = insert_row
-            next_idx += 1
-
-    if feature_for_ablation is None:
-        significance_df = create_sinificance_df(per_q_res_dict, calc_ndcg_mrr)
-        model_summary_df = pd.merge(
-            model_summary_df,
-            significance_df,
-            on=['FeatureGroup'],
-            how='inner')
-
-        model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '.tsv'), sep='\t', index=False)
-        params_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '_Params.tsv'), sep='\t', index=False)
+    # if feature_for_ablation is None:
+    #     significance_df = create_sinificance_df(per_q_res_dict, calc_ndcg_mrr)
+    #     model_summary_df = pd.merge(
+    #         model_summary_df,
+    #         significance_df,
+    #         on=['FeatureGroup'],
+    #         how='inner')
+    #
+    #     model_summary_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '.tsv'), sep='\t', index=False)
+    #     params_df.to_csv(os.path.join(save_summary_folder, model_base_filename + feat_group_list_str + '_Params.tsv'), sep='\t', index=False)
 
 
 if __name__ == '__main__':

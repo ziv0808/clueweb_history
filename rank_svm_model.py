@@ -319,7 +319,8 @@ def split_to_train_test(
         end_test_q,
         feat_df,
         base_feature_filename,
-        seed = None):
+        seed = None,
+        trial_num = 0):
 
     test_set_q = list(range(start_test_q, end_test_q + 1))
     feat_df['IsTest'] = feat_df['QueryNum'].apply(lambda x: 1 if x in test_set_q else 0)
@@ -333,8 +334,9 @@ def split_to_train_test(
     for potential_fold in potential_folds[:]:
         if start_test_q in range(potential_fold[0], potential_fold[1]+1):
             potential_folds.remove(potential_fold)
+    r = int(base_feature_filename.split('Round')[1].split('_')[0])
     if seed is None:
-        seed = get_seed_for_test_q(int(start_test_q))
+        seed = get_seed_for_test_q(int(start_test_q), r,trial_num)
     valid_fold = potential_folds[seed]
     valid_set_q = list(range(valid_fold[0], valid_fold[1] + 1))
 
