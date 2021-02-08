@@ -1078,5 +1078,5 @@ def get_seed_for_test_q(test_q):
         193: 4,
         195: 5,
     }
-    # return q_to_seed_dict[test_q]
-    return random.randint(0,8)
+    return q_to_seed_dict[test_q]
+
