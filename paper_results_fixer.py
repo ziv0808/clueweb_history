@@ -26,7 +26,7 @@ def get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
     for trial_num in range(1, 6):
         trial_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
             file_path=file_path,
-            filename=filename.replace('.txt', '_' + str(trial_num)+ '.txt'),
+            filename=filename[:-4] + '_' + str(trial_num)+ '.txt',
             qrel_filepath=qrel_filepath,
             calc_ndcg_mrr=calc_ndcg_mrr,
             remove_low_quality=remove_low_quality)
