@@ -17,16 +17,16 @@ def orginize_res_dict_by_q_order(
 
 def get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
         file_path,
-        filename_,
+        filename,
         qrel_filepath,
         calc_ndcg_mrr,
         remove_low_quality):
 
     first = True
     for trial_num in range(1, 6):
-        trial_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
+        trial_res_dict = get_ranking_effectiveness_for_res_file_per_query(
             file_path=file_path,
-            filename=filename_.replace('.txt', '_' + str(trial_num)+ '.txt'),
+            filename=filename.replace('.txt', '_' + str(trial_num)+ '.txt'),
             qrel_filepath=qrel_filepath,
             calc_ndcg_mrr=calc_ndcg_mrr,
             remove_low_quality=remove_low_quality)
@@ -65,7 +65,7 @@ def create_reults_dataframe_for_models(
             if model_files_dict[model]['NeedAdjust'] == True:
                 tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
                     file_path=file_path,
-                    filename_=filename,
+                    filename=filename,
                     qrel_filepath=qrel_filepath,
                     calc_ndcg_mrr=True,
                     remove_low_quality=False)
@@ -93,7 +93,7 @@ def create_reults_dataframe_for_models(
                 if model_files_dict[model]['NeedAdjust'] == True:
                     tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
                         file_path=file_path,
-                        filename_=filename,
+                        filename=filename,
                         qrel_filepath=qrel_filepath,
                         calc_ndcg_mrr=True,
                         remove_low_quality=True)
@@ -125,7 +125,7 @@ def create_reults_dataframe_for_models(
             if basline_model_dict[model]['NeedAdjust'] == True:
                 tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
                     file_path=file_path,
-                    filename_=filename,
+                    filename=filename,
                     qrel_filepath=qrel_filepath,
                     calc_ndcg_mrr=True,
                     remove_low_quality=False)
@@ -149,7 +149,7 @@ def create_reults_dataframe_for_models(
                 if basline_model_dict[model]['NeedAdjust'] == True:
                     tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
                         file_path=file_path,
-                        filename_=filename,
+                        filename=filename,
                         qrel_filepath=qrel_filepath,
                         calc_ndcg_mrr=True,
                         remove_low_quality=True)
