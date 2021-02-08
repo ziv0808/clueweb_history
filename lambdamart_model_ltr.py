@@ -706,7 +706,7 @@ if __name__ == '__main__':
         normalize_method = 'MinMax'
         snap_chosing_method = 'Months'
         tarin_leave_one_out = True
-        feat_group_list = ['Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap']
+        feat_group_list = ['Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
         calc_ndcg_mrr = True
         backward_elimination = False
         snap_num_as_hyper_param = False
