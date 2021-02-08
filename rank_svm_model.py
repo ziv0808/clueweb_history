@@ -334,7 +334,7 @@ def split_to_train_test(
         if start_test_q in range(potential_fold[0], potential_fold[1]+1):
             potential_folds.remove(potential_fold)
     if seed is None:
-        seed = random.randint(0,len(potential_folds) - 1)
+        seed = get_seed_for_test_q(int(start_test_q))
     valid_fold = potential_folds[seed]
     valid_set_q = list(range(valid_fold[0], valid_fold[1] + 1))
 
