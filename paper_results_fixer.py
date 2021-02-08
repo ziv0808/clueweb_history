@@ -1,6 +1,7 @@
 from utils import *
 
 
+
 def orginize_res_dict_by_q_order(
         tmp_res_dict,
         q_ordered_list):
@@ -13,6 +14,32 @@ def orginize_res_dict_by_q_order(
         for key in res_dict:
             res_dict[key].append(tmp_res_dict[q][key])
     return res_dict
+
+def get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
+        file_path,
+        filename,
+        qrel_filepath,
+        calc_ndcg_mrr,
+        remove_low_quality):
+
+    first = True
+    for trial_num in range(1, 6):
+        trial_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
+            file_path=file_path,
+            filename=filename.replace('.txt', '_' + str(trial_num)+ '.txt'),
+            qrel_filepath=qrel_filepath,
+            calc_ndcg_mrr=calc_ndcg_mrr,
+            remove_low_quality=remove_low_quality)
+        if first == True:
+            current_res_dict = trial_res_dict
+            first = False
+        else:
+            for key in current_res_dict:
+                for measure in current_res_dict[key]:
+                    current_res_dict[key][measure] = (float(current_res_dict[key][measure]) * (trial_num - 1) + trial_res_dict[key][measure]) / float(trial_num)
+
+    return current_res_dict
+
 
 
 
@@ -35,12 +62,20 @@ def create_reults_dataframe_for_models(
             filename = model_files_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
             print(model, filename)
             sys.stdout.flush()
-            tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
-                file_path=file_path,
-                filename=filename,
-                qrel_filepath=qrel_filepath,
-                calc_ndcg_mrr=True,
-                remove_low_quality=False)
+            if model_files_dict[model]['NeedAdjust'] == True:
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
+                    file_path=file_path,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True,
+                    remove_low_quality=False)
+            else:
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                    file_path=file_path,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True,
+                    remove_low_quality=False)
             if first == True:
                 q_ordered_list = list(tmp_res_dict.keys())
                 q_ordered_list.remove('all')
@@ -55,12 +90,20 @@ def create_reults_dataframe_for_models(
                 big_res_dict[model][key].extend(orginized_res_dict[key])
 
             if 'AlsoLQRmv' in model_files_dict[model]:
-                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
-                    file_path=file_path,
-                    filename=filename,
-                    qrel_filepath=qrel_filepath,
-                    calc_ndcg_mrr=True,
-                    remove_low_quality=True)
+                if model_files_dict[model]['NeedAdjust'] == True:
+                    tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
+                        file_path=file_path,
+                        filename=filename,
+                        qrel_filepath=qrel_filepath,
+                        calc_ndcg_mrr=True,
+                        remove_low_quality=True)
+                else:
+                    tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                        file_path=file_path,
+                        filename=filename,
+                        qrel_filepath=qrel_filepath,
+                        calc_ndcg_mrr=True,
+                        remove_low_quality=True)
                 model_rmv_lq = model + ' RMV LQ'
                 if model_rmv_lq not in big_res_dict:
                     big_res_dict[model_rmv_lq] = {'NDCG@1': [],
@@ -79,12 +122,20 @@ def create_reults_dataframe_for_models(
             filename = basline_model_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
             print(model, filename)
             sys.stdout.flush()
-            tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
-                file_path=file_path,
-                filename=filename,
-                qrel_filepath=qrel_filepath,
-                calc_ndcg_mrr=True,
-                remove_low_quality=False)
+            if basline_model_dict[model]['NeedAdjust'] == True:
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
+                    file_path=file_path,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True,
+                    remove_low_quality=False)
+            else:
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                    file_path=file_path,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True,
+                    remove_low_quality=False)
 
             if model not in big_res_dict:
                 big_res_dict[model] = {'NDCG@1': [],
@@ -95,12 +146,20 @@ def create_reults_dataframe_for_models(
                 big_res_dict[model][key].extend(orginized_res_dict[key])
 
             if 'AlsoLQRmv' in basline_model_dict[model]:
-                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
-                    file_path=file_path,
-                    filename=filename,
-                    qrel_filepath=qrel_filepath,
-                    calc_ndcg_mrr=True,
-                    remove_low_quality=True)
+                if basline_model_dict[model]['NeedAdjust'] == True:
+                    tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
+                        file_path=file_path,
+                        filename=filename,
+                        qrel_filepath=qrel_filepath,
+                        calc_ndcg_mrr=True,
+                        remove_low_quality=True)
+                else:
+                    tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                        file_path=file_path,
+                        filename=filename,
+                        qrel_filepath=qrel_filepath,
+                        calc_ndcg_mrr=True,
+                        remove_low_quality=True)
                 model_rmv_lq = model + ' RMV LQ'
                 if model_rmv_lq not in big_res_dict:
                     big_res_dict[model_rmv_lq] = {'NDCG@1': [],
@@ -158,20 +217,24 @@ if __name__=='__main__':
     svm_compare = ast.literal_eval(sys.argv[6])
 
     model_files_dict = {
-        'S'  : {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_All.txt',
-                'AlsoLQRmv' : True},
+        'S'  : {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_All.txt',
+                'AlsoLQRmv' : True,
+                'NeedAdjust': True},
         'S+MSMM+MG': {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
-                   'AlsoLQRmv': True},
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
+                'AlsoLQRmv': True,
+                'NeedAdjust': True},
         'S+MSMM': {
-            'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
-            'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
-                   'AlsoLQRmv': True},
-        'S+MG': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_MG_AllByMonths.txt',
-                   'AlsoLQRmv': True},
+            'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
+            'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
+                   'AlsoLQRmv': True,
+                    'NeedAdjust': True},
+        'S+MG': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_MG_AllByMonths.txt',
+                   'AlsoLQRmv': True,
+                 'NeedAdjust': True},
     }
 
     basline_model_dict = {
@@ -275,11 +338,13 @@ if __name__=='__main__':
             'S': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_All.txt',
-                'AlsoLQRmv': True},
+                'AlsoLQRmv': True,
+                'NeedAdjust': True},
             'S+MSMM+MG': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
-                'AlsoLQRmv': True},
+                'AlsoLQRmv': True,
+                'NeedAdjust': True},
             # 'S+MSMM+MG': {
             #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
             #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'},
@@ -289,15 +354,18 @@ if __name__=='__main__':
             'S+DIRPrev3Winners': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w_MinMax_Static_All.txt',
-                'AlsoLQRmv': True},
+                'AlsoLQRmv': True,
+                'NeedAdjust': True},
             'S+DIRPrev3BestImprove': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i_MinMax_Static_All.txt',
-                'AlsoLQRmv': True},
+                'AlsoLQRmv': True,
+                'NeedAdjust': True},
             'S+DIROnlyReservoir': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrOr/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrOr_MinMax_Static_All.txt',
-                'AlsoLQRmv': True},
+                'AlsoLQRmv': True,
+                'NeedAdjust': True},
             # 'S+ED KL': {
             #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_EDKl/',
             #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_EDKl_MinMax_Static_All.txt'},
@@ -321,14 +389,26 @@ if __name__=='__main__':
             #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_RhsLm/',
             #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_RhsLm_MinMax_Static_All.txt',
             #     'AlsoLQRmv': True},
-            # 'S+MSMM+MG+DIRPrev3Winners': {
-            #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrP3w/',
-            #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrP3w_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
-            #     'AlsoLQRmv': True},
-            # 'S+MSMM+MG+DIRPrev3BestImprove': {
-            #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrB3i/',
-            #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MDrB3i_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
-            #     'AlsoLQRmv': True}
+            'S+MSMM+MG+DIRPrev3Winners': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
+                'AlsoLQRmv': True,
+                'NeedAdjust': True},
+            'S+MSMM+MG+DIRPrev3BestImprove': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
+                'AlsoLQRmv': True,
+                'NeedAdjust': True},
+            'S+MSMM+DIRPrev3Winners': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
+                'AlsoLQRmv': True,
+                'NeedAdjust': True},
+            'S+MSMM+DIRPrev3BestImprove': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
+                'AlsoLQRmv': True,
+                'NeedAdjust': True}
 
         }
 
@@ -380,15 +460,15 @@ if __name__=='__main__':
 
         basline_model_dict_examp = {
             'Sample': {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Ablation_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Abla_<AblaFeat>_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'},
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Ablation_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Abla_<AblaFeat>_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'},
             }
 
         basline_model_dict = {}
         for abla_feat in abla_feat_list:
             basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')] = {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Ablation_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Abla_' + abla_feat+ '_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'}
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Ablation_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Abla_' + abla_feat+ '_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'}
 
         print(basline_model_dict)
     # if svm_compare == True:
