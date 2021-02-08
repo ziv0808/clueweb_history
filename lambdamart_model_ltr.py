@@ -496,9 +496,13 @@ def run_grid_search_over_params_for_config(
     if feat_group_list is None:
         optional_feat_groups_list = ['Static',
                                      # 'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap_RMGXXSnap',
-                                     'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap',
-                                     'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap',
-                                     'Static_MGXXSnap',
+
+
+                                     # 'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap',
+                                     # 'Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap_MGXXSnap',
+                                     # 'Static_MGXXSnap',
+                                    
+
                                      # 'Static_RMGXXSnap'
                                      ]
     else:
