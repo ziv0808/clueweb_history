@@ -712,12 +712,12 @@ if __name__ == '__main__':
         normalize_method = 'MinMax'
         snap_chosing_method = 'Months'
         tarin_leave_one_out = True
-        feat_group_list = ['Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
+        feat_group_list = ast.literal_eval(sys.argv[3])#['Static_MXXSnap_STDXXSnap_MinXXSnap_MaxXXSnap']
         calc_ndcg_mrr = True
         backward_elimination = False
         snap_num_as_hyper_param = False
         snap_choosing_config = 'All'
-        is_new_server = ast.literal_eval(sys.argv[3])
+        is_new_server = False
         with_bert_as_feature = False
         feature_for_ablation_list = ast.literal_eval(sys.argv[4])
         limited_features_list = ast.literal_eval(sys.argv[5])
