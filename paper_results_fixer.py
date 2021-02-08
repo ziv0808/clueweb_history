@@ -62,7 +62,7 @@ def create_reults_dataframe_for_models(
             filename = model_files_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
             print(model, filename)
             sys.stdout.flush()
-            if model_files_dict[model]['NeedAdjust'] == True:
+            if 'NeedAdjust' in model_files_dict[model] and model_files_dict[model]['NeedAdjust'] == True:
                 tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
                     file_path=file_path,
                     filename=filename,
@@ -90,7 +90,7 @@ def create_reults_dataframe_for_models(
                 big_res_dict[model][key].extend(orginized_res_dict[key])
 
             if 'AlsoLQRmv' in model_files_dict[model]:
-                if model_files_dict[model]['NeedAdjust'] == True:
+                if 'NeedAdjust' in model_files_dict[model] and model_files_dict[model]['NeedAdjust'] == True:
                     tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
                         file_path=file_path,
                         filename=filename,
@@ -122,7 +122,7 @@ def create_reults_dataframe_for_models(
             filename = basline_model_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace('<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
             print(model, filename)
             sys.stdout.flush()
-            if basline_model_dict[model]['NeedAdjust'] == True:
+            if 'NeedAdjust' in basline_model_dict[model] and basline_model_dict[model]['NeedAdjust'] == True:
                 tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
                     file_path=file_path,
                     filename=filename,
@@ -146,7 +146,7 @@ def create_reults_dataframe_for_models(
                 big_res_dict[model][key].extend(orginized_res_dict[key])
 
             if 'AlsoLQRmv' in basline_model_dict[model]:
-                if basline_model_dict[model]['NeedAdjust'] == True:
+                if 'NeedAdjust' in basline_model_dict[model] and basline_model_dict[model]['NeedAdjust'] == True:
                     tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
                         file_path=file_path,
                         filename=filename,
