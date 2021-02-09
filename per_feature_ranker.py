@@ -51,11 +51,12 @@ def rank_by_feature(
         save_folder,
         work_df,
         curr_feat,
-        inner_fold):
+        inner_fold,
+        round_):
 
     fin_res_dict = {}
     asc_df = get_trec_prepared_df_form_res_df(work_df, curr_feat)
-    curr_file_name = inner_fold + 'TmpRes.txt'
+    curr_file_name = inner_fold + '_0' + str(round_) + '_' +  curr_feat + '_Asc.txt'
     with open(os.path.join(save_folder, curr_file_name), 'w') as f:
         f.write(convert_df_to_trec(asc_df))
     res_dict = get_ranking_effectiveness_for_res_file_per_query(
@@ -67,6 +68,7 @@ def rank_by_feature(
 
     work_df[curr_feat] = work_df[curr_feat].apply(lambda x: x*(-1))
     dec_df = get_trec_prepared_df_form_res_df(work_df, curr_feat)
+    curr_file_name = inner_fold + '_0' + str(round_) + '_' + curr_feat + '_Dec.txt'
     with open(os.path.join(save_folder, curr_file_name), 'w') as f:
         f.write(convert_df_to_trec(dec_df))
     res_dict = get_ranking_effectiveness_for_res_file_per_query(
@@ -75,7 +77,14 @@ def rank_by_feature(
         qrel_filepath=qrel_filepath,
         calc_ndcg_mrr=True)
     fin_res_dict['Dec'] = res_dict['all']['NDCG@5']
-
+    if fin_res_dict['Asc'] > fin_res_dict['Dec']:
+        curr_file_name = inner_fold + '_0' + str(round_) + '_' + curr_feat + '_best.txt'
+        with open(os.path.join(save_folder, curr_file_name), 'w') as f:
+            f.write(convert_df_to_trec(asc_df))
+    else:
+        curr_file_name = inner_fold + '_0' + str(round_) + '_' + curr_feat + '_best.txt'
+        with open(os.path.join(save_folder, curr_file_name), 'w') as f:
+            f.write(convert_df_to_trec(dec_df))
     return fin_res_dict
 
 
@@ -116,7 +125,7 @@ if __name__=='__main__':
         for feat in feature_list:
             print(feat)
             sys.stdout.flush()
-            scores_dict = rank_by_feature(save_folder=save_folder,work_df=feature_df[['QueryNum', 'Docno'] + [feat]],curr_feat=feat,inner_fold=inner_fold)
+            scores_dict = rank_by_feature(save_folder=save_folder,work_df=feature_df[['QueryNum', 'Docno'] + [feat]],curr_feat=feat,inner_fold=inner_fold,round_ =round_)
 
             insert_row = [feat, round_, scores_dict['Dec'], scores_dict['Asc']]
             summary_df.loc[next_idx] = insert_row
