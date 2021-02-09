@@ -46,7 +46,8 @@ def create_per_round_reults_dataframe_for_models(
         dataset,
         qrel_filepath,
         init_round,
-        round_limit):
+        round_limit,
+        rmv_lq):
     big_res_dict = {}
 
     for round_ in range(init_round, round_limit + 1):
@@ -68,14 +69,14 @@ def create_per_round_reults_dataframe_for_models(
                     filename=filename,
                     qrel_filepath=qrel_filepath,
                     calc_ndcg_mrr=True,
-                    remove_low_quality=False)
+                    remove_low_quality=rmv_lq)
             else:
                 tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
                     file_path=file_path,
                     filename=filename,
                     qrel_filepath=qrel_filepath,
                     calc_ndcg_mrr=True,
-                    remove_low_quality=False)
+                    remove_low_quality=rmv_lq)
             if first == True:
                 q_ordered_list = list(tmp_res_dict.keys())
                 q_ordered_list.remove('all')
@@ -101,14 +102,14 @@ def create_per_round_reults_dataframe_for_models(
                     filename=filename,
                     qrel_filepath=qrel_filepath,
                     calc_ndcg_mrr=True,
-                    remove_low_quality=False)
+                    remove_low_quality=rmv_lq)
             else:
                 tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
                     file_path=file_path,
                     filename=filename,
                     qrel_filepath=qrel_filepath,
                     calc_ndcg_mrr=True,
-                    remove_low_quality=False)
+                    remove_low_quality=rmv_lq)
             if first == True:
                 q_ordered_list = list(tmp_res_dict.keys())
                 q_ordered_list.remove('all')
@@ -643,6 +644,7 @@ if __name__=='__main__':
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/curr_comp.rel'
 
     if graphs_per_round == True:
+        rmv_lq = ast.literal_eval(sys.argv[7])
         model_files_dict = {
             'S': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
@@ -669,7 +671,8 @@ if __name__=='__main__':
             dataset=dataset,
             qrel_filepath=qrel_filepath,
             init_round=init_round,
-            round_limit=round_limit)
+            round_limit=round_limit,
+            rmv_lq=rmv_lq)
 
     else:
         res_df = create_reults_dataframe_for_models(
@@ -684,6 +687,8 @@ if __name__=='__main__':
     save_filename = dataset.upper() + '_LambdaMART_All_Results.tsv'
     if graphs_per_round == True:
         save_filename = save_filename.replace('_All_', '_PerRound_')
+        if rmv_lq == True:
+            save_filename.replace('_PerRound_', '_PerRoundLQRmv_')
     if is_svm_rank == True:
         save_filename = save_filename.replace('_LambdaMART_', '_SVMRank_')
     if static_feat_compare == True:
