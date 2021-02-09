@@ -40,8 +40,80 @@ def get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
 
     return current_res_dict
 
+def create_per_round_reults_dataframe_for_models(
+        model_files_dict,
+        dataset,
+        qrel_filepath,
+        init_round,
+        round_limit):
+    big_res_dict = {}
+    for round_ in range(init_round, round_limit + 1):
+        first = True
+        for model in model_files_dict:
+            if dataset == 'united' and model in ['MM Prev3Winners DIR' , 'MM Prev3BestImprove DIR', 'MM OnlyReservoir DIR']:
+                continue
+            file_path = model_files_dict[model]['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace(
+                '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
+            if is_svm_rank == True:
+                file_path = file_path.replace('lambdamart_res', 'rank_svm_res')
+            filename = model_files_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace(
+                '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
+            print(model, filename)
+            sys.stdout.flush()
+            if 'NeedAdjust' in model_files_dict[model] and model_files_dict[model]['NeedAdjust'] == True:
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
+                    file_path=file_path,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True,
+                    remove_low_quality=False)
+            else:
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                    file_path=file_path,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True,
+                    remove_low_quality=False)
+            if first == True:
+                q_ordered_list = list(tmp_res_dict.keys())
+                q_ordered_list.remove('all')
+                first = False
+            orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict, q_ordered_list=q_ordered_list)
+            if model not in big_res_dict:
+                big_res_dict[model] = {}
+            big_res_dict[model][round_] = orginized_res_dict
 
-
+    all_models = list(big_res_dict.keys())
+    measures = ['NDCG@1', 'NDCG@3', 'NDCG@5']
+    model_pval_col_list = []
+    for model in all_models:
+        for measure in measures:
+            model_pval_col_list.append(model + '_' + measure + '_Pval')
+    res_df = pd.DataFrame(columns=['Model', 'Round'] + measures + model_pval_col_list)
+    next_idx =0
+    for test_model in big_res_dict:
+        print(test_model)
+        sys.stdout.flush()
+        for round_ in big_res_dict[test_model]:
+            insert_row = [test_model, round_]
+            for measure in measures:
+                insert_row.append(np.mean(big_res_dict[test_model][round_][measure]))
+            for model in all_models:
+                for measure in measures:
+                    models_set = tuple(sorted([model, test_model]))
+                    if len(big_res_dict[model][round_][measure]) != len(big_res_dict[test_model][round_][measure]):
+                        print(models_set, measure)
+                        print("Prob!")
+                        sys.stdout.flush()
+                    if model == test_model:
+                        insert_row.append(np.nan)
+                    else:
+                        t_stat, p_val = pemutation_test(big_res_dict[model][round_][measure], big_res_dict[test_model][round_][measure],
+                                                        total_number=10000)
+                        insert_row.append(p_val)
+            res_df.loc[next_idx] = insert_row
+            next_idx += 1
+    return res_df
 
 def create_reults_dataframe_for_models(
         model_files_dict,
@@ -213,7 +285,7 @@ def create_reults_dataframe_for_models(
 if __name__=='__main__':
 
     dataset = sys.argv[1]
-    is_lts = ast.literal_eval(sys.argv[2])
+    graphs_per_round = ast.literal_eval(sys.argv[2])
     is_svm_rank = ast.literal_eval(sys.argv[3])
     static_feat_compare = ast.literal_eval(sys.argv[4])
     ablation = ast.literal_eval(sys.argv[5])
@@ -519,21 +591,40 @@ if __name__=='__main__':
     elif 'comp2020' in dataset:
         qrel_filepath = '/mnt/bi-strg3/v/zivvasilisky/ziv/results/qrels/curr_comp.rel'
 
+    if graphs_per_round == True:
+        model_files_dict = {
+            'S': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_All.txt',
+                'NeedAdjust': True},
+            'S+MSMM': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
+                'NeedAdjust': True},
+            'LM DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/basic_lm/',
+                       'FileTemplate': '<DatasetName>_0<RoundNum>_LMIR.DIR.txt'},
 
+            'MM Prev3Winners DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+                                    'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3Winners_MixtureDIR_LoO_Results.txt'},
+            'MM Prev3BestImprove DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+                                        'FileTemplate': '<DatasetName>_0<RoundNum>_Prev3BestImprove_MixtureDIR_LoO_Results.txt'},
+            'MM OnlyReservoir DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
+                                     'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_MixtureDIR_OnlyReservoir_LoO_Results.txt'},
+                }
 
-    res_df = create_reults_dataframe_for_models(
-        model_files_dict=model_files_dict,
-        basline_model_dict=basline_model_dict,
-        dataset=dataset,
-        qrel_filepath=qrel_filepath,
-        is_svm_rank=is_svm_rank,
-        init_round=init_round,
-        round_limit=round_limit,
-        ablation=ablation)
-
+    else:
+        res_df = create_reults_dataframe_for_models(
+            model_files_dict=model_files_dict,
+            basline_model_dict=basline_model_dict,
+            dataset=dataset,
+            qrel_filepath=qrel_filepath,
+            is_svm_rank=is_svm_rank,
+            init_round=init_round,
+            round_limit=round_limit,
+            ablation=ablation)
     save_filename = dataset.upper() + '_LambdaMART_All_Results.tsv'
-    if is_lts == True:
-        save_filename = save_filename.replace('_All_', '_LTS_')
+    if graphs_per_round == True:
+        save_filename = save_filename.replace('_All_', '_PerRound_')
     if is_svm_rank == True:
         save_filename = save_filename.replace('_LambdaMART_', '_SVMRank_')
     if static_feat_compare == True:
