@@ -42,11 +42,13 @@ def get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
 
 def create_per_round_reults_dataframe_for_models(
         model_files_dict,
+        basline_model_dict,
         dataset,
         qrel_filepath,
         init_round,
         round_limit):
     big_res_dict = {}
+
     for round_ in range(init_round, round_limit + 1):
         first = True
         for model in model_files_dict:
@@ -61,6 +63,39 @@ def create_per_round_reults_dataframe_for_models(
             print(model, filename)
             sys.stdout.flush()
             if 'NeedAdjust' in model_files_dict[model] and model_files_dict[model]['NeedAdjust'] == True:
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
+                    file_path=file_path,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True,
+                    remove_low_quality=False)
+            else:
+                tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query(
+                    file_path=file_path,
+                    filename=filename,
+                    qrel_filepath=qrel_filepath,
+                    calc_ndcg_mrr=True,
+                    remove_low_quality=False)
+            if first == True:
+                q_ordered_list = list(tmp_res_dict.keys())
+                q_ordered_list.remove('all')
+                first = False
+            orginized_res_dict = orginize_res_dict_by_q_order(tmp_res_dict=tmp_res_dict, q_ordered_list=q_ordered_list)
+            if model not in big_res_dict:
+                big_res_dict[model] = {}
+            big_res_dict[model][round_] = orginized_res_dict
+        for model in basline_model_dict:
+            if dataset == 'united' and model in ['MM Prev3Winners DIR', 'MM Prev3BestImprove DIR', 'MM OnlyReservoir DIR']:
+                continue
+            file_path = basline_model_dict[model]['Folder'].replace('<DatasetNameUpper>', dataset.upper()).replace(
+                '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
+            if is_svm_rank == True:
+                file_path = file_path.replace('lambdamart_res', 'rank_svm_res')
+            filename = basline_model_dict[model]['FileTemplate'].replace('<DatasetNameUpper>', dataset.upper()).replace(
+                '<RoundNum>', str(round_)).replace('<DatasetName>', dataset)
+            print(model, filename)
+            sys.stdout.flush()
+            if 'NeedAdjust' in basline_model_dict[model] and basline_model_dict[model]['NeedAdjust'] == True:
                 tmp_res_dict = get_ranking_effectiveness_for_res_file_per_query_after_mean_trials(
                     file_path=file_path,
                     filename=filename,
@@ -600,7 +635,8 @@ if __name__=='__main__':
             'S+MSMM': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
-                'NeedAdjust': True},
+                'NeedAdjust': True},}
+        basline_model_dict ={
             'LM DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/basic_lm/',
                        'FileTemplate': '<DatasetName>_0<RoundNum>_LMIR.DIR.txt'},
 
@@ -613,6 +649,7 @@ if __name__=='__main__':
                 }
         res_df = create_per_round_reults_dataframe_for_models(
             model_files_dict=model_files_dict,
+            basline_model_dict=basline_model_dict,
             dataset=dataset,
             qrel_filepath=qrel_filepath,
             init_round=init_round,
