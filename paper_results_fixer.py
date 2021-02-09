@@ -566,16 +566,16 @@ if __name__=='__main__':
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_AllByMonths.txt'}
             }
-        abla_feat_list = ['BERTScore', 'BERTScore_MaxXXSnaps','BERTScore_MGXXSnaps','BERTScore_MinXXSnaps','BERTScore_MXXSnaps','BERTScore_STDXXSnaps',
-                          'BM25Score','BM25Score_MaxXXSnaps','BM25Score_MGXXSnaps','BM25Score_MinXXSnaps','BM25Score_MXXSnaps','BM25Score_STDXXSnaps',
-                          'Ent', 'Ent_MaxXXSnaps', 'Ent_MGXXSnaps', 'Ent_MinXXSnaps','Ent_MXXSnaps', 'Ent_STDXXSnaps',
-                          'FracStops', 'FracStops_MaxXXSnaps', 'FracStops_MGXXSnaps', 'FracStops_MinXXSnaps','FracStops_MXXSnaps', 'FracStops_STDXXSnaps',
-                          'Len', 'Len_MaxXXSnaps', 'Len_MGXXSnaps', 'Len_MinXXSnaps','Len_MXXSnaps', 'Len_STDXXSnaps',
-                          'LMIR.DIR', 'LMIR.DIR_MaxXXSnaps', 'LMIR.DIR_MGXXSnaps', 'LMIR.DIR_MinXXSnaps','LMIR.DIR_MXXSnaps', 'LMIR.DIR_STDXXSnaps',
-                          'SimClueWeb_MaxXXSnaps', 'SimClueWeb_MGXXSnaps', 'SimClueWeb_MinXXSnaps','SimClueWeb_MXXSnaps', 'SimClueWeb_STDXXSnaps',
-                          'StopCover', 'StopCover_MaxXXSnaps', 'StopCover_MGXXSnaps', 'StopCover_MinXXSnaps', 'StopCover_MXXSnaps', 'StopCover_STDXXSnaps',
-                          'TFNormSum', 'TFNormSum_MaxXXSnaps', 'TFNormSum_MGXXSnaps', 'TFNormSum_MinXXSnaps', 'TFNormSum_MXXSnaps', 'TFNormSum_STDXXSnaps',
-                          'TFSum', 'TFSum_MaxXXSnaps', 'TFSum_MGXXSnaps', 'TFSum_MinXXSnaps', 'TFSum_MXXSnaps', 'TFSum_STDXXSnaps',
+        abla_feat_list = ['BERTScore', 'BERTScore_MaxXXSnaps','BERTScore_MinXXSnaps','BERTScore_MXXSnaps','BERTScore_STDXXSnaps',
+                          'BM25Score','BM25Score_MaxXXSnaps','BM25Score_MinXXSnaps','BM25Score_MXXSnaps','BM25Score_STDXXSnaps',
+                          'Ent', 'Ent_MaxXXSnaps', 'Ent_MinXXSnaps','Ent_MXXSnaps', 'Ent_STDXXSnaps',
+                          'FracStops', 'FracStops_MaxXXSnaps', 'FracStops_MinXXSnaps','FracStops_MXXSnaps', 'FracStops_STDXXSnaps',
+                          'Len', 'Len_MaxXXSnaps', 'Len_MinXXSnaps','Len_MXXSnaps', 'Len_STDXXSnaps',
+                          'LMIR.DIR', 'LMIR.DIR_MaxXXSnaps', 'LMIR.DIR_MinXXSnaps','LMIR.DIR_MXXSnaps', 'LMIR.DIR_STDXXSnaps',
+                          'SimClueWeb_MaxXXSnaps', 'SimClueWeb_MinXXSnaps','SimClueWeb_MXXSnaps', 'SimClueWeb_STDXXSnaps',
+                          'StopCover', 'StopCover_MaxXXSnaps', 'StopCover_MinXXSnaps', 'StopCover_MXXSnaps', 'StopCover_STDXXSnaps',
+                          'TFNormSum', 'TFNormSum_MaxXXSnaps', 'TFNormSum_MinXXSnaps', 'TFNormSum_MXXSnaps', 'TFNormSum_STDXXSnaps',
+                          'TFSum', 'TFSum_MaxXXSnaps', 'TFSum_MinXXSnaps', 'TFSum_MXXSnaps', 'TFSum_STDXXSnaps',
            ]
 
         # basline_model_dict_examp = {
