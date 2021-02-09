@@ -121,7 +121,7 @@ if __name__=='__main__':
             feature_list=feature_list,
             normalize_relvance=False,
             limited_snaps_num='All')
-        feature_df[['QueryNum', 'Docno', 'IDF']].to_csv('IDF_Round0' +str(round_) + '.tsv', sep = '\t', index = False)
+        # feature_df[['QueryNum', 'Docno', 'IDF']].to_csv('IDF_Round0' +str(round_) + '.tsv', sep = '\t', index = False)
         for feat in feature_list:
             print(feat)
             sys.stdout.flush()
