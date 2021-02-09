@@ -2,7 +2,7 @@ from utils import *
 from rank_svm_model import prepare_svmr_model_data, get_trec_prepared_df_form_res_df
 
 def get_feature_list():
-    base_feature_list = ['IDF'] #['Ent','FracStops','Len','LMIR.DIR','StopCover','TFSum','TFNormSum','SimClueWeb','BM25Score','IDF','BERTScore']
+    base_feature_list = ['Ent','FracStops','Len','LMIR.DIR','StopCover','TFSum','TFNormSum','SimClueWeb','BM25Score','BERTScore']
 
 
     feature_list = []
