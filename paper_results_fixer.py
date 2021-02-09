@@ -577,6 +577,7 @@ if __name__=='__main__':
         #         }
         #     init_round = 4
     if ablation == True:
+        vs_ordered = ast.literal_eval(sys.argv[7])
         model_files_dict = {
             'S+MSMM': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
@@ -603,10 +604,15 @@ if __name__=='__main__':
 
         basline_model_dict = {}
         for abla_feat in abla_feat_list:
-            basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')] = {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Ablation_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Abla_' + abla_feat+ '_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
-                'NeedAdjust': True}
+            if vs_ordered == True:
+                basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')] = {
+                    'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/feature_test/',
+                    'FileTemplate': '<DatasetName>_0<RoundNum>_' + abla_feat + '_best.txt'}
+            else:
+                basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')] = {
+                    'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Ablation_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
+                    'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Abla_' + abla_feat+ '_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
+                    'NeedAdjust': True}
 
         print(basline_model_dict)
     # if svm_compare == True:
@@ -688,13 +694,15 @@ if __name__=='__main__':
     if graphs_per_round == True:
         save_filename = save_filename.replace('_All_', '_PerRound_')
         if rmv_lq == True:
-            save_filename.replace('_PerRound_', '_PerRoundLQRmv_')
+            save_filename = save_filename.replace('_PerRound_', '_PerRoundLQRmv_')
     if is_svm_rank == True:
         save_filename = save_filename.replace('_LambdaMART_', '_SVMRank_')
     if static_feat_compare == True:
         save_filename = save_filename.replace('Results', 'S_Features_Results')
     if ablation == True:
         save_filename = save_filename.replace('_Results','_Ablation_Results')
+        if vs_ordered == True:
+            save_filename = save_filename.replace('_Ablation_Results', '_OrderedFeat_Ablation_Results')
     if svm_compare == True:
         save_filename = save_filename.replace('_Results', '_SVM_COMPARE_Results')
     res_df.to_csv(save_filename, sep = '\t', index = False)
