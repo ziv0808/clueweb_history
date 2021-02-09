@@ -50,7 +50,8 @@ def create_reults_dataframe_for_models(
         qrel_filepath,
         is_svm_rank,
         init_round,
-        round_limit):
+        round_limit,
+        ablation):
 
     big_res_dict = {}
     for round_ in range(init_round, round_limit + 1):
@@ -193,6 +194,8 @@ def create_reults_dataframe_for_models(
                     print("Prob!")
                     sys.stdout.flush()
                 if model == test_model:
+                    insert_row.append(np.nan)
+                elif ablation == True and 'S+MSMM' not in models_set:
                     insert_row.append(np.nan)
                 elif (models_set in model_pval_dict) and (measure in model_pval_dict[models_set]):
                     insert_row.append(model_pval_dict[models_set][measure])
@@ -345,11 +348,11 @@ if __name__=='__main__':
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_All.txt',
                 'AlsoLQRmv': True,
                 'NeedAdjust': True},
-            'S+MSMM+MG': {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
-                'AlsoLQRmv': True,
-                'NeedAdjust': True},
+            # 'S+MSMM+MG': {
+            #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
+            #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
+            #     'AlsoLQRmv': True,
+            #     'NeedAdjust': True},
             # 'S+MSMM+MG': {
             #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT/',
             #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'},
@@ -369,6 +372,11 @@ if __name__=='__main__':
             'S+DIROnlyReservoir': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrOr/',
                 'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrOr_MinMax_Static_All.txt',
+                'AlsoLQRmv': True,
+                'NeedAdjust': True},
+            'S+DIRPrev3Winners+DIRPrev3BestImprove': {
+                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w_MDrB3i/',
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w_MDrB3i_MinMax_Static_All.txt',
                 'AlsoLQRmv': True,
                 'NeedAdjust': True},
             # 'S+ED KL': {
@@ -394,26 +402,26 @@ if __name__=='__main__':
             #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_RhsLm/',
             #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_IDF_BRT_RhsLm_MinMax_Static_All.txt',
             #     'AlsoLQRmv': True},
-            'S+MSMM+MG+DIRPrev3Winners': {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
-                'AlsoLQRmv': True,
-                'NeedAdjust': True},
-            'S+MSMM+MG+DIRPrev3BestImprove': {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
-                'AlsoLQRmv': True,
-                'NeedAdjust': True},
-            'S+MSMM+DIRPrev3Winners': {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
-                'AlsoLQRmv': True,
-                'NeedAdjust': True},
-            'S+MSMM+DIRPrev3BestImprove': {
-                'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
-                'AlsoLQRmv': True,
-                'NeedAdjust': True}
+            # 'S+MSMM+MG+DIRPrev3Winners': {
+            #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w/',
+            #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
+            #     'AlsoLQRmv': True,
+            #     'NeedAdjust': True},
+            # 'S+MSMM+MG+DIRPrev3BestImprove': {
+            #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i/',
+            #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
+            #     'AlsoLQRmv': True,
+            #     'NeedAdjust': True},
+            # 'S+MSMM+DIRPrev3Winners': {
+            #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w/',
+            #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrP3w_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
+            #     'AlsoLQRmv': True,
+            #     'NeedAdjust': True},
+            # 'S+MSMM+DIRPrev3BestImprove': {
+            #     'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i/',
+            #     'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MDrB3i_MinMax_Static_M_STD_Min_Max_AllByMonths.txt',
+            #     'AlsoLQRmv': True,
+            #     'NeedAdjust': True}
 
         }
 
@@ -447,9 +455,9 @@ if __name__=='__main__':
         #     init_round = 4
     if ablation == True:
         model_files_dict = {
-            'S+MSMM+MG': {
+            'S+MSMM': {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'}
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_AllByMonths.txt'}
             }
         abla_feat_list = ['BERTScore', 'BERTScore_MaxXXSnaps','BERTScore_MGXXSnaps','BERTScore_MinXXSnaps','BERTScore_MXXSnaps','BERTScore_STDXXSnaps',
                           'BM25Score','BM25Score_MaxXXSnaps','BM25Score_MGXXSnaps','BM25Score_MinXXSnaps','BM25Score_MXXSnaps','BM25Score_STDXXSnaps',
@@ -473,7 +481,8 @@ if __name__=='__main__':
         for abla_feat in abla_feat_list:
             basline_model_dict[abla_feat.replace('XXSnaps', '').replace('SimClueWeb', 'Sim')] = {
                 'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/lambdamart_res/ret_res/<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Ablation_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT/',
-                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Abla_' + abla_feat+ '_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt'}
+                'FileTemplate': '<DatasetNameUpper>_LTR_All_features_Round0<RoundNum>_with_meta.tsvSNL1_BM25_ByMonths_All_LoO_Abla_' + abla_feat+ '_E_FS_L_LMD_SC_TFSm_TFNSm_SCw_BM25_BRT_MinMax_Static_M_STD_Min_Max_MG_AllByMonths.txt',
+                'NeedAdjust': True}
 
         print(basline_model_dict)
     # if svm_compare == True:
@@ -519,7 +528,8 @@ if __name__=='__main__':
         qrel_filepath=qrel_filepath,
         is_svm_rank=is_svm_rank,
         init_round=init_round,
-        round_limit=round_limit)
+        round_limit=round_limit,
+        ablation=ablation)
 
     save_filename = dataset.upper() + '_LambdaMART_All_Results.tsv'
     if is_lts == True:
