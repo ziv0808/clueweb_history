@@ -611,6 +611,12 @@ if __name__=='__main__':
             'MM OnlyReservoir DIR': {'Folder': '/mnt/bi-strg3/v/zivvasilisky/ziv/results/mixture_model_res/final_res/',
                                      'FileTemplate': '<DatasetName>_0<RoundNum>_PrevWinner_MixtureDIR_OnlyReservoir_LoO_Results.txt'},
                 }
+        res_df = create_per_round_reults_dataframe_for_models(
+            model_files_dict=model_files_dict,
+            dataset=dataset,
+            qrel_filepath=qrel_filepath,
+            init_round=init_round,
+            round_limit=round_limit)
 
     else:
         res_df = create_reults_dataframe_for_models(
