@@ -23,7 +23,7 @@ def create_df_dict_from_raw_passage_file():
     df_dict = {'ALL_DOCS_COUNT' : 0.0,
                'AVG_DOC_LEN'    : 0.0}
 
-    ps = nltk.stemmer.PorterStemmer()
+    ps = nltk.stem.porter.PorterStemmer()
     for row in df.itertuples():
         fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', row.passage.strip())
         curr_fulltext_list = fulltext.split(" ")
