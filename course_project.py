@@ -159,13 +159,14 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
                 k1=0.6,
                 b=0.62)
 
-            # inputs = tokenizer.encode_plus(row.query, row.pospar, return_tensors="pt")
-            # outputs = model(**inputs)
-            # proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
-            # cls = outputs.hidden_states[-1][0][0]
-            # q_res_dict[q_num][str(curr_idx) + '_Pos'] = {'BM25': bm25_score,
-            #                                              'BERT': proba,
-            #                                              'CLS' : cls}
+            inputs = tokenizer.encode_plus(row.query, row.pospar, return_tensors="pt")
+            outputs = model(**inputs)
+            proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
+            cls = outputs.hidden_states[-1][0][0]
+            q_res_dict[q_num][str(curr_idx) + '_Pos'] = {'BM25': bm25_score,
+                                                         'BERT': proba,
+                                                         # 'CLS' : cls
+                                                         }
 
             bm25_score = bm25_score_doc_for_query(
                 query_stem_dict=qid_to_q_txt_dict[q_num],
@@ -173,13 +174,14 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
                 doc_dict=create_tf_dict_bm25_ready(row.negpar, ps),
                 k1=0.6,
                 b=0.62)
-            # inputs = tokenizer.encode_plus(row.query, row.negpar, return_tensors="pt")
-            # outputs = model(**inputs)
-            # proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
-            # cls = outputs.hidden_states[-1][0][0]
-            # q_res_dict[q_num][str(curr_idx) + '_Neg'] = {'BM25': bm25_score,
-            #                                              'BERT': proba,
-            #                                              'CLS': cls}
+            inputs = tokenizer.encode_plus(row.query, row.negpar, return_tensors="pt")
+            outputs = model(**inputs)
+            proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
+            cls = outputs.hidden_states[-1][0][0]
+            q_res_dict[q_num][str(curr_idx) + '_Neg'] = {'BM25': bm25_score,
+                                                         'BERT': proba,
+                                                         # 'CLS': cls
+                                                         }
 
             if curr_idx == int(q_to_train_row_index[q_num][-1]):
                 with open('/lv_local/home/zivvasilisky/dataset/processed_queries/doc_idx/' + str(q_num) +'.json', 'w') as f:
