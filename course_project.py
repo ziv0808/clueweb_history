@@ -75,6 +75,7 @@ def create_query_to_row_idx_index_file():
 
             curr_idx += 1
         print(curr_idx)
+        sys.stdout.flush()
     with open('/lv_local/home/zivvasilisky/dataset/query_to_train_row_idx.json', 'w') as f:
         f.write(str(large_index_dict))
 
