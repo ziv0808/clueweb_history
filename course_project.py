@@ -131,7 +131,7 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
 
     print("fixed qid_to_q_txt_dict")
     sys.stdout.flush()
-    q_txt_to_qid_dict = get_queries_file_to_df('train', as_dict='Regular', frac=frac)
+    q_txt_to_qid_dict = get_queries_file_to_df('train', as_dict='Regular')
     print("got q_txt_to_qid_dict")
     sys.stdout.flush()
     q_res_dict = {}
