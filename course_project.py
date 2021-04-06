@@ -37,7 +37,7 @@ def create_df_dict_from_raw_passage_file():
 
     ps = nltk.stem.porter.PorterStemmer()
     for row in df.itertuples():
-        fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', row.passage.strip())
+        fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', row.passage.strip().lower())
         curr_fulltext_list = fulltext.split(" ")
         p_len = 0
         curr_dict = {}
@@ -99,7 +99,7 @@ def get_query_to_train_row_index(frac_idx_to_filter_by=None):
     return big_idx
 
 def create_tf_dict_bm25_ready(curr_txt, stemmer):
-    fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', curr_txt.strip())
+    fulltext = re.sub('[^a-zA-Z0-9 ]', ' ', curr_txt.strip().lower())
     curr_fulltext_list = fulltext.split(" ")
     p_len = 0
     curr_dict = {}
@@ -186,6 +186,7 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
             if curr_idx == int(q_to_train_row_index[q_num][-1]):
                 with open('/lv_local/home/zivvasilisky/dataset/processed_queries/doc_idx/' + str(q_num) +'.json', 'w') as f:
                     f.write(str(q_res_dict[q_num]))
+                del q_res_dict[q_num]
 
             curr_idx += 1
 
@@ -196,8 +197,8 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
 
 
 if __name__=="__main__":
-    # create_df_dict_from_raw_passage_file()
+    create_df_dict_from_raw_passage_file()
     # create_query_to_row_idx_index_file()
-    frac = sys.argv[1]
-    create_bm25_and_bert_scores_and_cls_for_train_frac(frac)
+    # frac = sys.argv[1]
+    # create_bm25_and_bert_scores_and_cls_for_train_frac(frac)
 
