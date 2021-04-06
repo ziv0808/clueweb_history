@@ -5,14 +5,20 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from utils import *
 
 
-def get_queries_file_to_df(specif_file):
+def get_queries_file_to_df(specif_file, as_dict=False):
     df = pd.read_csv('/lv_local/home/zivvasilisky/dataset/queries.'+specif_file+'.tsv', sep = '\t', header = None)
     df.columns = ['qid', 'query']
-    return df
+    if as_dict == False:
+        return df
+    else:
+        q_dict = {}
+        for index, row in df.iterrows():
+            q_dict[row['query']] = row['qid']
+        return q_dict
 
 def load_fine_tuned_bert_model():
     tokenizer = AutoTokenizer.from_pretrained("amberoad/bert-multilingual-passage-reranking-msmarco")
-    model = AutoModelForSequenceClassification.from_pretrained("amberoad/bert-multilingual-passage-reranking-msmarco")
+    model = AutoModelForSequenceClassification.from_pretrained("amberoad/bert-multilingual-passage-reranking-msmarco", output_hidden_states=True)
 
     return model, tokenizer
 
@@ -54,9 +60,25 @@ def create_df_dict_from_raw_passage_file():
     with open('/lv_local/home/zivvasilisky/dataset/df_dict.json', 'w') as f:
         f.write(str(df_dict))
 
+def create_query_to_row_idx_index_file():
+    q_txt_to_qid_dict = get_queries_file_to_df('train',as_dict=True)
+    large_index_dict = {}
+    curr_idx = 0
+    for df in pd.read_csv('/lv_local/home/zivvasilisky/dataset/triples.train.small.tsv', sep = '\t', chunksize = 50000, header = None):
+        df.columns = ['query', 'pospar','negpar']
+        for row in df['query']:
+            q_num = q_txt_to_qid_dict[row.query]
+            if q_num in large_index_dict:
+                large_index_dict[q_num].append(curr_idx)
+            else:
+                large_index_dict[q_num]= [curr_idx]
 
+            curr_idx += 1
+    with open('/lv_local/home/zivvasilisky/dataset/query_to_train_row_idx.json', 'w') as f:
+        f.write(str(large_index_dict))
 
 if __name__=="__main__":
-    create_df_dict_from_raw_passage_file()
+    # create_df_dict_from_raw_passage_file()
+    create_query_to_row_idx_index_file()
 
 
