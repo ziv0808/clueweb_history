@@ -117,6 +117,38 @@ def create_tf_dict_bm25_ready(curr_txt, stemmer):
     return curr_dict
 
 
+def bm25_score_doc_for_query_course_proj(
+        query_stem_dict,
+        df_dict,
+        doc_dict,
+        k1=1.0,
+        b=0.5):
+
+
+    bm25_score = 0.0
+    work_stem_list = list(query_stem_dict.keys())
+
+    for stem in work_stem_list:
+        doc_stem_tf = 0
+        if stem in doc_dict:
+            doc_stem_tf = float(doc_dict[stem])
+
+        if stem not in df_dict:
+            if doc_stem_tf == 0:
+                continue
+            else:
+                raise Exception('Unexpected Situation on ' + str(stem))
+        if df_dict[stem] == 0:
+            df_dict[stem] = 1
+
+        idf = math.log(df_dict['ALL_DOCS_COUNT'] / float(df_dict[stem]), 10)
+        stem_d_proba = (doc_stem_tf * (k1 + 1)) / (
+            doc_stem_tf + k1 * ((1 - b) + b * (float(doc_dict['NumWords']) / df_dict['AVG_DOC_LEN'])))
+
+        bm25_score += idf * stem_d_proba
+
+    return bm25_score
+
 def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
     qid_to_q_txt_dict = get_queries_file_to_df('train', as_dict='Reverse', frac=frac)
     print("got qid_to_q_txt_dict")
@@ -152,7 +184,7 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
             if q_num not in q_res_dict:
                 q_res_dict[q_num] = {}
 
-            bm25_score = bm25_score_doc_for_query(
+            bm25_score = bm25_score_doc_for_query_course_proj(
                 query_stem_dict=qid_to_q_txt_dict[q_num],
                 df_dict=df_dict,
                 doc_dict=create_tf_dict_bm25_ready(row.pospar, ps),
@@ -162,13 +194,13 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
             inputs = tokenizer.encode_plus(row.query, row.pospar, return_tensors="pt")
             outputs = model(**inputs)
             proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
-            cls = outputs.hidden_states[-1][0][0]
+            cls = outputs.hidden_states[-1][0][0].tolist()
             q_res_dict[q_num][str(curr_idx) + '_Pos'] = {'BM25': bm25_score,
                                                          'BERT': proba,
-                                                         # 'CLS' : cls
+                                                         'CLS' : cls
                                                          }
 
-            bm25_score = bm25_score_doc_for_query(
+            bm25_score = bm25_score_doc_for_query_course_proj(
                 query_stem_dict=qid_to_q_txt_dict[q_num],
                 df_dict=df_dict,
                 doc_dict=create_tf_dict_bm25_ready(row.negpar, ps),
@@ -177,10 +209,10 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
             inputs = tokenizer.encode_plus(row.query, row.negpar, return_tensors="pt")
             outputs = model(**inputs)
             proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
-            cls = outputs.hidden_states[-1][0][0]
+            cls = outputs.hidden_states[-1][0][0].tolist()
             q_res_dict[q_num][str(curr_idx) + '_Neg'] = {'BM25': bm25_score,
                                                          'BERT': proba,
-                                                         # 'CLS': cls
+                                                         'CLS': cls
                                                          }
 
             if curr_idx == int(q_to_train_row_index[q_num][-1]):
@@ -197,8 +229,8 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
 
 
 if __name__=="__main__":
-    create_df_dict_from_raw_passage_file()
+    # create_df_dict_from_raw_passage_file()
     # create_query_to_row_idx_index_file()
-    # frac = sys.argv[1]
-    # create_bm25_and_bert_scores_and_cls_for_train_frac(frac)
+    frac = sys.argv[1]
+    create_bm25_and_bert_scores_and_cls_for_train_frac(frac)
 
