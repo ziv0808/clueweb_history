@@ -104,7 +104,7 @@ def create_tf_dict_bm25_ready(curr_txt, stemmer):
     p_len = 0
     curr_dict = {}
     for stem in curr_fulltext_list:
-        stem = stemmer(stem)
+        stem = stemmer.stem(stem)
         if stem == '' or stem == '\n':
             continue
         p_len += 1
