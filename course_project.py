@@ -88,10 +88,14 @@ def create_query_to_row_idx_index_file():
 def get_query_to_train_row_index(frac_idx_to_filter_by=None):
     with open('/lv_local/home/zivvasilisky/dataset/query_to_train_row_idx.json', 'r') as f:
         big_idx = ast.literal_eval(f.read())
+    del_q_list = []
     if frac_idx_to_filter_by is not None:
         for q in big_idx:
             if q not in frac_idx_to_filter_by:
-                del big_idx[q]
+                del_q_list.append(q)
+
+    for q in del_q_list:
+        del big_idx[q]
     return big_idx
 
 def create_tf_dict_bm25_ready(curr_txt, stemmer):
@@ -115,19 +119,28 @@ def create_tf_dict_bm25_ready(curr_txt, stemmer):
 
 def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
     qid_to_q_txt_dict = get_queries_file_to_df('train', as_dict='Reverse', frac=frac)
+    print("got qid_to_q_txt_dict")
+    sys.stdout.flush()
     q_to_train_row_index = get_query_to_train_row_index(qid_to_q_txt_dict)
+    print("got q_to_train_row_index")
+    sys.stdout.flush()
     ps = nltk.stem.porter.PorterStemmer()
     for qid in qid_to_q_txt_dict:
         qid_to_q_txt_dict[qid] = create_tf_dict_bm25_ready(qid_to_q_txt_dict[qid], ps)
         del qid_to_q_txt_dict[qid]['NumWords']
 
+    print("fixed qid_to_q_txt_dict")
+    sys.stdout.flush()
     q_txt_to_qid_dict = get_queries_file_to_df('train', as_dict=True, frac=frac)
+    print("got q_txt_to_qid_dict")
+    sys.stdout.flush()
     q_res_dict = {}
 
     with open('/lv_local/home/zivvasilisky/dataset/df_dict.json', 'r') as f:
         df_dict = ast.literal_eval(f.read())
     model, tokenizer = load_fine_tuned_bert_model()
-
+    print("got df_dict, model and tokenizer")
+    sys.stdout.flush()
     curr_idx = 0
     for df in pd.read_csv('/lv_local/home/zivvasilisky/dataset/triples.train.small.tsv', sep='\t', chunksize=5000,header=None):
         df.columns = ['query', 'pospar', 'negpar']
