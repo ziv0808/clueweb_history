@@ -5,20 +5,20 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from utils import *
 
 
-def get_queries_file_to_df(specif_file, as_dict=False, frac =None):
+def get_queries_file_to_df(specif_file, as_dict=None, frac =None):
     if frac is None:
         df = pd.read_csv('/lv_local/home/zivvasilisky/dataset/queries.'+specif_file+'.tsv', sep = '\t', header = None)
     else:
         df = pd.read_csv('/lv_local/home/zivvasilisky/dataset/processed_queries/queries.frac.tsva'+ frac, sep='\t', header=None)
     df.columns = ['qid', 'query']
-    if as_dict == False:
+    if as_dict is None:
         return df
     else:
         q_dict = {}
         for index, row in df.iterrows():
             if as_dict == 'Reverse':
                 q_dict[row['qid']] = row['query']
-            else:
+            elif as_dict == 'Regular':
                 q_dict[row['query']] = row['qid']
         return q_dict
 
@@ -67,7 +67,7 @@ def create_df_dict_from_raw_passage_file():
         f.write(str(df_dict))
 
 def create_query_to_row_idx_index_file():
-    q_txt_to_qid_dict = get_queries_file_to_df('train',as_dict=True)
+    q_txt_to_qid_dict = get_queries_file_to_df('train',as_dict='Regular')
     large_index_dict = {}
     curr_idx = 0
     for df in pd.read_csv('/lv_local/home/zivvasilisky/dataset/triples.train.small.tsv', sep = '\t', chunksize = 50000, header = None):
@@ -131,7 +131,7 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
 
     print("fixed qid_to_q_txt_dict")
     sys.stdout.flush()
-    q_txt_to_qid_dict = get_queries_file_to_df('train', as_dict=True, frac=frac)
+    q_txt_to_qid_dict = get_queries_file_to_df('train', as_dict='Regular', frac=frac)
     print("got q_txt_to_qid_dict")
     sys.stdout.flush()
     q_res_dict = {}
