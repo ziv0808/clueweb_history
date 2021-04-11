@@ -1,6 +1,7 @@
 import re
 import torch
 import nltk
+import time
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from utils import *
 
@@ -151,20 +152,20 @@ def bm25_score_doc_for_query_course_proj(
 
 def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
     qid_to_q_txt_dict = get_queries_file_to_df('train', as_dict='Reverse', frac=frac)
-    print("got qid_to_q_txt_dict")
+    print(frac + ": got qid_to_q_txt_dict: " + str(len(qid_to_q_txt_dict)))
     sys.stdout.flush()
     q_to_train_row_index = get_query_to_train_row_index(qid_to_q_txt_dict)
-    print("got q_to_train_row_index")
+    print(frac + ": got q_to_train_row_index: " + str(len(q_to_train_row_index)))
     sys.stdout.flush()
     ps = nltk.stem.porter.PorterStemmer()
     for qid in qid_to_q_txt_dict:
         qid_to_q_txt_dict[qid] = create_tf_dict_bm25_ready(qid_to_q_txt_dict[qid], ps)
         del qid_to_q_txt_dict[qid]['NumWords']
 
-    print("fixed qid_to_q_txt_dict")
+    print(frac + ": fixed qid_to_q_txt_dict")
     sys.stdout.flush()
     q_txt_to_qid_dict = get_queries_file_to_df('train', as_dict='Regular')
-    print("got q_txt_to_qid_dict")
+    print(frac + ": got q_txt_to_qid_dict")
     sys.stdout.flush()
     q_res_dict = {}
 
@@ -174,6 +175,7 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
     print("got df_dict, model and tokenizer")
     sys.stdout.flush()
     curr_idx = 0
+    first_run = True
     for df in pd.read_csv('/lv_local/home/zivvasilisky/dataset/triples.train.small.tsv', sep='\t', chunksize=5000,header=None):
         df.columns = ['query', 'pospar', 'negpar']
         for row in df.itertuples():
@@ -183,18 +185,26 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
                 continue
             if q_num not in q_res_dict:
                 q_res_dict[q_num] = {}
-
+            if first_run == True:
+                print(frac + ": Curr Idx: " + str(curr_idx))
+                print(frac + ": " + str(time.time()))
+                sys.stdout.flush()
             bm25_score = bm25_score_doc_for_query_course_proj(
                 query_stem_dict=qid_to_q_txt_dict[q_num],
                 df_dict=df_dict,
                 doc_dict=create_tf_dict_bm25_ready(row.pospar, ps),
                 k1=0.6,
                 b=0.62)
-
-            inputs = tokenizer.encode_plus(row.query, row.pospar, return_tensors="pt")
-            outputs = model(**inputs)
-            proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
-            cls = outputs.hidden_states[-1][0][0].tolist()
+            try:
+                inputs = tokenizer.encode_plus(row.query, row.pospar, return_tensors="pt")
+                outputs = model(**inputs)
+                proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
+                cls = outputs.hidden_states[-1][0][0].tolist()
+            except Exception as e:
+                print("BERT Exception " + str(e))
+                sys.stdout.flush()
+                proba = None
+                cls = None
             q_res_dict[q_num][str(curr_idx) + '_Pos'] = {'BM25': bm25_score,
                                                          'BERT': proba,
                                                          'CLS' : cls
@@ -206,14 +216,24 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
                 doc_dict=create_tf_dict_bm25_ready(row.negpar, ps),
                 k1=0.6,
                 b=0.62)
-            inputs = tokenizer.encode_plus(row.query, row.negpar, return_tensors="pt")
-            outputs = model(**inputs)
-            proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
-            cls = outputs.hidden_states[-1][0][0].tolist()
+            try:
+                inputs = tokenizer.encode_plus(row.query, row.negpar, return_tensors="pt")
+                outputs = model(**inputs)
+                proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
+                cls = outputs.hidden_states[-1][0][0].tolist()
+            except Exception as e:
+                print("BERT Exception " + str(e))
+                sys.stdout.flush()
+                proba = None
+                cls = None
             q_res_dict[q_num][str(curr_idx) + '_Neg'] = {'BM25': bm25_score,
                                                          'BERT': proba,
                                                          'CLS': cls
                                                          }
+            if first_run == True:
+                print(frac + ": " + str(time.time()))
+                sys.stdout.flush()
+                first_run = False
 
             if curr_idx == int(q_to_train_row_index[q_num][-1]):
                 with open('/lv_local/home/zivvasilisky/dataset/processed_queries/doc_idx/' + str(q_num) +'.json', 'w') as f:
