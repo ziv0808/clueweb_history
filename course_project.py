@@ -253,6 +253,7 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
                     with open('/lv_local/home/zivvasilisky/dataset/processed_queries/doc_idx/' + str(q_num) +'.json', 'w') as f:
                         f.write(str(q_res_dict[q_num]))
                     del q_res_dict[q_num]
+                    del curr_chunk_check_index[q_num]
 
                 curr_idx += 1
 
