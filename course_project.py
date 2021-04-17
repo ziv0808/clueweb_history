@@ -179,13 +179,14 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
     model, tokenizer = load_fine_tuned_bert_model()
     print("got df_dict, model and tokenizer")
     sys.stdout.flush()
-    curr_idx = 0
+
     first_run = True
     chunk_size = 5000
     all_queries_to_handle = list(q_to_train_row_index.keys())
     for chunk_num in range(0, len(all_queries_to_handle), chunk_size):
+        curr_idx = 0
         curr_chunk = all_queries_to_handle[chunk_num:chunk_num + chunk_size]
-        print(frac + ': Chunk ' + str(curr_chunk))
+        print(frac + ': Chunk ' + str(chunk_num))
         sys.stdout.flush()
         curr_chunk_check_index = {}
         for q in curr_chunk:
