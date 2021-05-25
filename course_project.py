@@ -269,7 +269,7 @@ def get_all_relavnt_scores_for_ranked_df(ranked_df):
     map_50 = 0.0
     curr_num_rel = 0.0
     num_rows = 0.0
-    for index, row in ranked_df.iterrows:
+    for index, row in ranked_df.iterrows():
         num_rows += 1
         if row['Relevance'] == 1:
             if np.isnan(mrr):
