@@ -261,6 +261,97 @@ def create_bm25_and_bert_scores_and_cls_for_train_frac(frac):
             print(frac + ':' + str(curr_idx))
             sys.stdout.flush()
 
+def get_all_relavnt_scores_for_ranked_df(ranked_df):
+    mrr  = np.nan
+    p_5  = np.nan
+    p_10 = np.nan
+    map  = 0.0
+    map_50 = 0.0
+    curr_num_rel = 0.0
+    num_rows = 0.0
+    for index, row in ranked_df.iterrows:
+        num_rows += 1
+        if row['Relevance'] == 1:
+            if np.isnan(mrr):
+                mrr = 1.0 / num_rows
+            curr_num_rel += 1
+
+        map += curr_num_rel / float(num_rows)
+        if num_rows <= 50:
+            map_50 += curr_num_rel / float(num_rows)
+        if num_rows == 5:
+            p_5 = curr_num_rel / float(num_rows)
+        if num_rows == 10:
+            p_10 = curr_num_rel / float(num_rows)
+
+    if np.isnan(p_5):
+        p_5 = curr_num_rel / float(num_rows)
+
+    if np.isnan(p_10):
+        p_10 = curr_num_rel / float(num_rows)
+
+    if num_rows < 50:
+        map_50 = map_50 / float(num_rows)
+    else:
+        map_50 = map_50 / 50.0
+
+    map = map / float(num_rows)
+
+    return {'MRR' : mrr, 'P_5' : p_5, 'P_10' : p_10, 'MAP' : map, 'MAP_50' : map_50}
+
+
+def sort_df_by_score_and_get_eval(df):
+    df.sort_values('Score', inplace=True, ascending=False)
+    return get_all_relavnt_scores_for_ranked_df(df)
+
+
+def get_reciprocal_rank_and_bm25_bert_scores(frac):
+    qid_to_q_txt_dict = get_queries_file_to_df('train', as_dict='Reverse', frac=frac)
+    for filename in os.listdir('/lv_local/home/zivvasilisky/dataset/processed_queries/doc_idx/'):
+        curr_q = int(filename.replace('.json', ''))
+        if curr_q in qid_to_q_txt_dict:
+            print(curr_q)
+            sys.stdout.flush()
+            with open(os.path.join('/lv_local/home/zivvasilisky/dataset/processed_queries/doc_idx/', filename), 'r') as f:
+                curr_dict = ast.literal_eval(f.read())
+            curr_df = pd.DataFrame(columns=['Docno', 'BM25', 'BERT', 'Relevance'])
+            curr_idx = 0
+            for docno in curr_dict:
+                insert_row = [docno, curr_dict[docno]['BM25'], curr_dict[docno]['BERT']]
+                if docno.endswith('_Pos'):
+                    insert_row.append(1)
+                else:
+                    insert_row.append(0)
+                curr_df.loc[curr_idx] = insert_row
+                curr_idx += 1
+
+            score_list = ['MRR', 'P_5', 'P_10', 'MAP', 'MAP_50']
+            summary_df = pd.DataFrame(columns=['ReMethod', 'K', 'Lambda1']+score_list )
+            next_idx = 0
+
+            for score in ['BM25', 'BERT']:
+                curr_df.sort_values(score, ascending=False, inplace=True)
+                curr_df[score + 'Rank'] = list(range(1, len(curr_idx) + 1))
+                curr_df['Score'] = curr_df[score]
+                res_dict = sort_df_by_score_and_get_eval(curr_df[['Score', 'Relevance']])
+                insert_row = [score, 0.0, 0.0]
+                for eval_meth in score_list:
+                    insert_row.append(res_dict[eval_meth])
+                summary_df.loc[next_idx] = insert_row
+                next_idx += 1
+
+            for k in [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]:
+                for lambda1 in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+                    curr_df['Score'] = curr_df.apply(lambda row: lambda1*(1.0 / float(k + row['BM25Rank'])) + (1.0 - lambda1)*(1.0 / float(k + row['BERTRank'])), axis =1)
+                    res_dict = sort_df_by_score_and_get_eval(curr_df[['Score', 'Relevance']])
+                    insert_row = ['Mixed', k, lambda1]
+                    for eval_meth in score_list:
+                        insert_row.append(res_dict[eval_meth])
+                    summary_df.loc[next_idx] = insert_row
+                    next_idx += 1
+
+            summary_df.to_csv('/lv_local/home/zivvasilisky/dataset/results/' + filename.replace('.json', '.tsv'), sep = '\t', index = False)
+
 
 
 
@@ -268,5 +359,8 @@ if __name__=="__main__":
     # create_df_dict_from_raw_passage_file()
     # create_query_to_row_idx_index_file()
     frac = sys.argv[1]
-    create_bm25_and_bert_scores_and_cls_for_train_frac(frac)
+    # get initial measures
+    # create_bm25_and_bert_scores_and_cls_for_train_frac(frac)
+
+    get_reciprocal_rank_and_bm25_bert_scores(frac)
 
