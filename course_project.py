@@ -331,7 +331,7 @@ def get_reciprocal_rank_and_bm25_bert_scores(frac):
 
             for score in ['BM25', 'BERT']:
                 curr_df.sort_values(score, ascending=False, inplace=True)
-                curr_df[score + 'Rank'] = list(range(1, len(curr_idx) + 1))
+                curr_df[score + 'Rank'] = list(range(1, curr_idx + 1))
                 curr_df['Score'] = curr_df[score]
                 res_dict = sort_df_by_score_and_get_eval(curr_df[['Score', 'Relevance']])
                 insert_row = [score, 0.0, 0.0]
