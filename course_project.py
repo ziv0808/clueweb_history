@@ -86,6 +86,25 @@ def create_query_to_row_idx_index_file():
     with open('/lv_local/home/zivvasilisky/dataset/query_to_train_row_idx.json', 'w') as f:
         f.write(str(large_index_dict))
 
+def create_query_to_row_idx_index_file_for_test_set():
+    q_txt_to_qid_dict = get_queries_file_to_df('dev',as_dict='Regular')
+    large_index_dict = {}
+    curr_idx = 0
+    for df in pd.read_csv('/lv_local/home/zivvasilisky/dataset/top1000.dev', sep = '\t', chunksize = 50000, header = None):
+        df.columns = ['qid', 'pid', 'query', 'par']
+        for query in df['query']:
+            q_num = q_txt_to_qid_dict[query.encode('latin1').decode('utf8')]
+            if q_num in large_index_dict:
+                large_index_dict[q_num].append(curr_idx)
+            else:
+                large_index_dict[q_num]= [curr_idx]
+
+            curr_idx += 1
+        print(curr_idx)
+        sys.stdout.flush()
+    with open('/lv_local/home/zivvasilisky/dataset/query_to_train_row_idx_for_test_set.json', 'w') as f:
+        f.write(str(large_index_dict))
+
 def get_query_to_train_row_index(frac_idx_to_filter_by=None):
     with open('/lv_local/home/zivvasilisky/dataset/query_to_train_row_idx.json', 'r') as f:
         big_idx = ast.literal_eval(f.read())
@@ -353,14 +372,106 @@ def get_reciprocal_rank_and_bm25_bert_scores(frac):
             summary_df.to_csv('/lv_local/home/zivvasilisky/dataset/results/' + filename.replace('.json', '.tsv'), sep = '\t', index = False)
 
 
+def create_bm25_and_bert_scores_and_cls_for_test():
+    qid_to_q_txt_dict = get_queries_file_to_df('dev', as_dict='Reverse', frac=None)
+    print(frac + ": got qid_to_q_txt_dict: " + str(len(qid_to_q_txt_dict)))
+    sys.stdout.flush()
+    ps = nltk.stem.porter.PorterStemmer()
+    for qid in qid_to_q_txt_dict:
+        qid_to_q_txt_dict[qid] = create_tf_dict_bm25_ready(qid_to_q_txt_dict[qid], ps)
+        del qid_to_q_txt_dict[qid]['NumWords']
 
+    print(frac + ": fixed qid_to_q_txt_dict")
+    sys.stdout.flush()
+    q_txt_to_qid_dict = get_queries_file_to_df('dev', as_dict='Regular')
+    print(frac + ": got q_txt_to_qid_dict")
+    sys.stdout.flush()
+    q_res_dict = {}
+
+    with open('/lv_local/home/zivvasilisky/dataset/df_dict.json', 'r') as f:
+        df_dict = ast.literal_eval(f.read())
+    model, tokenizer = load_fine_tuned_bert_model()
+    print("got df_dict, model and tokenizer")
+    sys.stdout.flush()
+
+    # for df in pd.read_csv('/lv_local/home/zivvasilisky/dataset/top1000.dev', sep='\t', chunksize=50000,header=None):
+    #     df.columns = ['qid', 'pid', 'query', 'par']
+    #     for row in df.itertuples():
+    #         q_num = q_txt_to_qid_dict[row.query.encode('latin1').decode('utf8')]
+    #         if q_num not in curr_chunk_check_index:
+    #             curr_idx += 1
+    #             continue
+    #         if q_num not in q_res_dict:
+    #             q_res_dict[q_num] = {}
+    #         if first_run == True:
+    #             print(frac + ": Curr Idx: " + str(curr_idx))
+    #             print(frac + ": " + str(time.time()))
+    #             sys.stdout.flush()
+    #         bm25_score = bm25_score_doc_for_query_course_proj(
+    #             query_stem_dict=qid_to_q_txt_dict[q_num],
+    #             df_dict=df_dict,
+    #             doc_dict=create_tf_dict_bm25_ready(row.pospar, ps),
+    #             k1=0.6,
+    #             b=0.62)
+    #         try:
+    #             inputs = tokenizer.encode_plus(row.query, row.pospar, return_tensors="pt")
+    #             outputs = model(**inputs)
+    #             proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
+    #             cls = outputs.hidden_states[-1][0][0].tolist()
+    #         except Exception as e:
+    #             print("BERT Exception " + str(e))
+    #             sys.stdout.flush()
+    #             proba = None
+    #             cls = None
+    #         q_res_dict[q_num][str(curr_idx) + '_Pos'] = {'BM25': bm25_score,
+    #                                                      'BERT': proba,
+    #                                                      'CLS': cls
+    #                                                      }
+    #
+    #         bm25_score = bm25_score_doc_for_query_course_proj(
+    #             query_stem_dict=qid_to_q_txt_dict[q_num],
+    #             df_dict=df_dict,
+    #             doc_dict=create_tf_dict_bm25_ready(row.negpar, ps),
+    #             k1=0.6,
+    #             b=0.62)
+    #         try:
+    #             inputs = tokenizer.encode_plus(row.query, row.negpar, return_tensors="pt")
+    #             outputs = model(**inputs)
+    #             proba = torch.softmax(outputs[0], dim=1).tolist()[0][1]
+    #             cls = outputs.hidden_states[-1][0][0].tolist()
+    #         except Exception as e:
+    #             print("BERT Exception " + str(e))
+    #             sys.stdout.flush()
+    #             proba = None
+    #             cls = None
+    #         q_res_dict[q_num][str(curr_idx) + '_Neg'] = {'BM25': bm25_score,
+    #                                                      'BERT': proba,
+    #                                                      'CLS': cls
+    #                                                      }
+    #         if first_run == True:
+    #             print(frac + ": " + str(time.time()))
+    #             sys.stdout.flush()
+    #             first_run = False
+    #
+    #         if curr_idx == int(q_to_train_row_index[q_num][-1]):
+    #             with open('/lv_local/home/zivvasilisky/dataset/processed_queries/doc_idx/' + str(q_num) + '.json',
+    #                       'w') as f:
+    #                 f.write(str(q_res_dict[q_num]))
+    #             del q_res_dict[q_num]
+    #             del curr_chunk_check_index[q_num]
+    #
+    #         curr_idx += 1
+    #
+    #     print(frac + ':' + str(curr_idx))
+    #     sys.stdout.flush()
 
 if __name__=="__main__":
     # create_df_dict_from_raw_passage_file()
     # create_query_to_row_idx_index_file()
-    frac = sys.argv[1]
+    # frac = sys.argv[1]
     # get initial measures
     # create_bm25_and_bert_scores_and_cls_for_train_frac(frac)
+    # train scores
+    # get_reciprocal_rank_and_bm25_bert_scores(frac)
 
-    get_reciprocal_rank_and_bm25_bert_scores(frac)
-
+    create_query_to_row_idx_index_file_for_test_set()
