@@ -93,6 +93,7 @@ def create_query_to_row_idx_index_file_for_test_set():
     for df in pd.read_csv('/lv_local/home/zivvasilisky/dataset/top1000.dev', sep = '\t', chunksize = 50000, header = None):
         df.columns = ['qid', 'pid', 'query', 'par']
         for query in df['query']:
+            print(query)
             q_num = q_txt_to_qid_dict[query.encode('latin1').decode('utf8')]
             if q_num in large_index_dict:
                 large_index_dict[q_num].append(curr_idx)
