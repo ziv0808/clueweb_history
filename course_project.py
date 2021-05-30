@@ -410,7 +410,7 @@ def create_bm25_and_bert_scores_and_cls_for_test(frac):
     sys.stdout.flush()
 
     first_run = True
-    chunk_size = 5000
+    chunk_size = 1000
     all_queries_to_handle = list(q_to_train_row_index.keys())
     for chunk_num in range(0, len(all_queries_to_handle), chunk_size):
         curr_idx = 0
@@ -474,6 +474,35 @@ def create_bm25_and_bert_scores_and_cls_for_test(frac):
 
             print(frac + ':' + str(curr_idx))
             sys.stdout.flush()
+
+def create_dataset_file_for_nn(is_train=True):
+    folder_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/doc_idx/'
+    if is_train == False:
+        folder_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/test_doc_idx/'
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.json'):
+            df = pd.DataFrame(columns = ['Docno', 'Relevance', 'BM25'] + ['CLS_'+ str(i) for i in range(1,769)])
+            next_idx =0
+            with open(os.path.join(folder_path, filename), 'r') as f:
+                file_dict = ast.literal_eval(f.read())
+
+            for docno in file_dict:
+                insert_row = [docno]
+                if docno.endswith('_Pos'):
+                    insert_row.append(1)
+                else:
+                    insert_row.append(0)
+                insert_row.append(file_dict[docno]['BM25'])
+                insert_row.extend(file_dict[docno]['CLS'])
+                df.loc[next_idx] = insert_row
+                next_idx += 1
+            mean_bm25 = df['BM25'].mean()
+            std_bm25  = df['BM25'].std()
+            if pd.np.isnan(std_bm25) or std_bm25 == 0:
+                std_bm25 = 1.0
+
+            df['BM25'] = df['BM25'].apply(lambda x: (x - mean_bm25) / float(std_bm25))
+            df.to_csv(folder_path.replace('doc_idx', 'tsv_files') + filename.replace('.json', '.tsv'), sep = '\t', index = False)
 
 if __name__=="__main__":
     # create_df_dict_from_raw_passage_file()
