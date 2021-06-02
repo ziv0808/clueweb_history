@@ -481,6 +481,8 @@ def create_dataset_file_for_nn(is_train=True):
         folder_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/test_doc_idx/'
     for filename in os.listdir(folder_path):
         if filename.endswith('.json'):
+            print(filename)
+            sys.stdout.flush()
             df = pd.DataFrame(columns = ['Docno', 'Relevance', 'BM25'] + ['CLS_'+ str(i) for i in range(1,769)])
             next_idx =0
             with open(os.path.join(folder_path, filename), 'r') as f:
@@ -507,11 +509,13 @@ def create_dataset_file_for_nn(is_train=True):
 if __name__=="__main__":
     # create_df_dict_from_raw_passage_file()
     # create_query_to_row_idx_index_file()
-    frac = sys.argv[1]
+    # frac = sys.argv[1]
     # get initial measures
     # create_bm25_and_bert_scores_and_cls_for_train_frac(frac)
     # train scores
     # get_reciprocal_rank_and_bm25_bert_scores(frac)
 
     # create_query_to_row_idx_index_file_for_test_set()
-    create_bm25_and_bert_scores_and_cls_for_test(frac)
+    # create_bm25_and_bert_scores_and_cls_for_test(frac)
+
+    create_dataset_file_for_nn()
