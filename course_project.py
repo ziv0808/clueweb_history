@@ -481,7 +481,8 @@ def create_dataset_file_for_nn(is_train=True):
     if is_train == False:
         folder_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/test_doc_idx/'
 
-    filelist = shuffle(list(os.listdir(folder_path)))
+    filelist = list(os.listdir(folder_path))
+    shuffle(filelist)
     for filename in filelist:
         if filename.endswith('.json') and (not os.path.isfile(folder_path.replace('doc_idx', 'tsv_files') + filename.replace('.json', '.tsv'))):
             print(filename)
