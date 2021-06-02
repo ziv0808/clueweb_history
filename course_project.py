@@ -2,6 +2,7 @@ import re
 import torch
 import nltk
 import time
+from random import shuffle
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from utils import *
 
@@ -479,8 +480,10 @@ def create_dataset_file_for_nn(is_train=True):
     folder_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/doc_idx/'
     if is_train == False:
         folder_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/test_doc_idx/'
-    for filename in os.listdir(folder_path):
-        if filename.endswith('.json'):
+
+    filelist = shuffle(list(os.listdir(folder_path)))
+    for filename in filelist:
+        if filename.endswith('.json') and (not os.path.isfile(folder_path.replace('doc_idx', 'tsv_files') + filename.replace('.json', '.tsv'))):
             print(filename)
             sys.stdout.flush()
             df = pd.DataFrame(columns = ['Docno', 'Relevance', 'BM25'] + ['CLS_'+ str(i) for i in range(1,769)])
