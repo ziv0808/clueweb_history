@@ -524,7 +524,7 @@ def summarize_train_results_non_nn():
             # summary_df = summary_df.append(df)
     summary_df = pd.concat(df_list, axis=0, ignore_index=True)
     summary_df = summary_df.groupby(['ReMethod', 'K', 'Lambda1']).mean()
-    summary_df = summary_df.reaset_index()
+    summary_df = summary_df.reset_index()
     summary_df.to_csv('/lv_local/home/zivvasilisky/dataset/Train_Results.tsv', sep = '\t', index = False)
 
 
