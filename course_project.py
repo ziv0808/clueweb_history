@@ -540,5 +540,5 @@ if __name__=="__main__":
     # create_query_to_row_idx_index_file_for_test_set()
     # create_bm25_and_bert_scores_and_cls_for_test(frac)
 
-    # create_dataset_file_for_nn()
-    summarize_train_results_non_nn()
+    create_dataset_file_for_nn()
+    # summarize_train_results_non_nn()
