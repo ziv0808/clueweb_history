@@ -513,15 +513,16 @@ def create_dataset_file_for_nn(is_train=True):
             df.to_csv(folder_path.replace('doc_idx', 'tsv_files') + filename.replace('.json', '.tsv'), sep = '\t', index = False)
 
 def summarize_train_results_non_nn():
-    summary_df = pd.DataFrame({})
     folder_path = '/lv_local/home/zivvasilisky/dataset/results/'
+    df_list = []
     for filename in os.listdir(folder_path):
         if filename.endswith('.tsv'):
             print(filename)
             sys.stdout.flush()
             df = pd.read_csv(folder_path +filename, sep = '\t', index_col=False)
-            summary_df = summary_df.append(df, ignore_index=True)
-
+            df_list.append(df)
+            # summary_df = summary_df.append(df)
+    summary_df = pd.concat(df_list, axis=0, ignore_index=True)
     summary_df = summary_df.groupby(['ReMethod', 'K', 'Lambda1']).mean()
     summary_df = summary_df.reaset_index()
     summary_df.to_csv('/lv_local/home/zivvasilisky/dataset/Train_Results.tsv', sep = '\t', index = False)
@@ -539,5 +540,5 @@ if __name__=="__main__":
     # create_query_to_row_idx_index_file_for_test_set()
     # create_bm25_and_bert_scores_and_cls_for_test(frac)
 
-    create_dataset_file_for_nn()
-    # summarize_train_results_non_nn()
+    # create_dataset_file_for_nn()
+    summarize_train_results_non_nn()
