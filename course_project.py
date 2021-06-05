@@ -499,6 +499,8 @@ def create_dataset_file_for_nn(is_train=True):
                 else:
                     insert_row.append(0)
                 insert_row.append(file_dict[docno]['BM25'])
+                if file_dict[docno]['CLS'] is None:
+                    continue
                 insert_row.extend(file_dict[docno]['CLS'])
                 df.loc[next_idx] = insert_row
                 next_idx += 1
@@ -537,5 +539,5 @@ if __name__=="__main__":
     # create_query_to_row_idx_index_file_for_test_set()
     # create_bm25_and_bert_scores_and_cls_for_test(frac)
 
-    # create_dataset_file_for_nn()
-    summarize_train_results_non_nn()
+    create_dataset_file_for_nn()
+    # summarize_train_results_non_nn()
