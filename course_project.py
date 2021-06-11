@@ -494,7 +494,9 @@ def create_dataset_file_for_nn(is_train=True):
 
             for docno in file_dict:
                 insert_row = [docno]
-                if docno.endswith('_Pos'):
+                if is_train == False:
+                    insert_row.append(pd.np.nan)
+                elif docno.endswith('_Pos'):
                     insert_row.append(1)
                 else:
                     insert_row.append(0)
@@ -540,5 +542,6 @@ if __name__=="__main__":
     # create_query_to_row_idx_index_file_for_test_set()
     # create_bm25_and_bert_scores_and_cls_for_test(frac)
 
-    create_dataset_file_for_nn()
+    # create_dataset_file_for_nn()
+    create_dataset_file_for_nn(False)
     # summarize_train_results_non_nn()
