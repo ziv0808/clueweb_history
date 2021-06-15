@@ -557,8 +557,35 @@ def append_relevance_to_test_files_nn():
                 for index, row in df.iterrows():
                     if int(row['Docno']) in rel_dict[q]:
                         df.at[index, 'Relevance'] = 1
+                        print("Rel")
             df.to_csv(res_folder + filename, sep ='\t', index = False)
 
+def append_relevance_to_test_files_non_nn():
+    folder_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/test_doc_idx/'
+    res_folder = '/lv_local/home/zivvasilisky/dataset/processed_queries/test_doc_idx_fixed/'
+
+    rel_dict = create_rel_dict_for_test_set()
+    filelist = list(os.listdir(folder_path))
+    shuffle(filelist)
+    for filename in filelist:
+        if filename.endswith('.json') and (not os.path.isfile(res_folder + filename)):
+            print(filename)
+            sys.stdout.flush()
+            with open(folder_path + filename, 'r') as f:
+                curr_dict = ast.literal_eval(f.read())
+            q = int(filename.replace('.json', ''))
+            new_dict = {}
+            for docno in curr_dict:
+                new_docno = docno + '_Neg'
+                if int(docno) in rel_dict[q]:
+                    new_docno = docno +'_Pos'
+
+                new_dict[new_docno] = {}
+                new_dict[new_docno]['BM25'] = curr_dict[docno]['BM25']
+                new_dict[new_docno]['BERT'] = curr_dict[docno]['BERT']
+
+            with open(res_folder + filename, 'w') as f:
+                f.write(str(new_dict))
 
 
 if __name__=="__main__":
@@ -576,4 +603,5 @@ if __name__=="__main__":
     # create_dataset_file_for_nn()
     # create_dataset_file_for_nn(False)
     # summarize_train_results_non_nn()
-    append_relevance_to_test_files_nn()
+    # append_relevance_to_test_files_nn()
+    append_relevance_to_test_files_non_nn()
