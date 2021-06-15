@@ -529,6 +529,37 @@ def summarize_train_results_non_nn():
     summary_df = summary_df.reset_index()
     summary_df.to_csv('/lv_local/home/zivvasilisky/dataset/Train_Results.tsv', sep = '\t', index = False)
 
+def create_rel_dict_for_test_set():
+    rel_dict = {}
+    rel_df = pd.read_csv('/lv_local/home/zivvasilisky/dataset/qrels.dev.tsv', sep ='\t', index_col=False, header=None)
+    rel_df.columns = ['qid', 'not_relvant', 'pid', 'not_relvant2']
+    for index, row in rel_df.iterrows():
+        if row['qid'] not in rel_dict:
+            rel_dict[int(row['qid'])] = {}
+        rel_dict[int(row['qid'])][int(row['pid'])] = None
+    return rel_dict
+
+def append_relevance_to_test_files_nn():
+    folder_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/test_tsv_files/'
+    res_folder = '/lv_local/home/zivvasilisky/dataset/processed_queries/test_tsv_files_fixed/'
+
+    rel_dict = create_rel_dict_for_test_set()
+    filelist = list(os.listdir(folder_path))
+    shuffle(filelist)
+    for filename in filelist:
+        if filename.endswith('.tsv') and (not os.path.isfile(res_folder + filename)):
+            print(filename)
+            sys.stdout.flush()
+            df = pd.read_csv(folder_path + filename, sep ='\t', index_col = False)
+            q = int(filename.replace('.tsv', ''))
+            df['Relevance'] = 0
+            if q in rel_dict:
+                for index, row in df.iterrows():
+                    if int(row['Docno']) in rel_dict[q]:
+                        df.at[index, 'Relevance'] = 1
+            df.to_csv(res_folder + filename, sep ='\t', index = False)
+
+
 
 if __name__=="__main__":
     # create_df_dict_from_raw_passage_file()
@@ -543,5 +574,6 @@ if __name__=="__main__":
     # create_bm25_and_bert_scores_and_cls_for_test(frac)
 
     # create_dataset_file_for_nn()
-    create_dataset_file_for_nn(False)
+    # create_dataset_file_for_nn(False)
     # summarize_train_results_non_nn()
+    append_relevance_to_test_files_nn()
