@@ -384,6 +384,51 @@ def get_reciprocal_rank_and_bm25_bert_scores(frac):
 
             summary_df.to_csv('/lv_local/home/zivvasilisky/dataset/results/' + filename.replace('.json', '.tsv'), sep = '\t', index = False)
 
+def get_reciprocal_rank_and_bm25_bert_scores_for_test():
+    for filename in os.listdir('/lv_local/home/zivvasilisky/dataset/processed_queries/test_doc_idx_fixed/'):
+        curr_q = int(filename.replace('.json', ''))
+        print(curr_q)
+        sys.stdout.flush()
+        with open(os.path.join('/lv_local/home/zivvasilisky/dataset/processed_queries/test_doc_idx_fixed/', filename), 'r') as f:
+            curr_dict = ast.literal_eval(f.read())
+        curr_df = pd.DataFrame(columns=['Docno', 'BM25', 'BERT', 'Relevance'])
+        curr_idx = 0
+        for docno in curr_dict:
+            insert_row = [docno, curr_dict[docno]['BM25'], curr_dict[docno]['BERT']]
+            if docno.endswith('_Pos'):
+                insert_row.append(1)
+            else:
+                insert_row.append(0)
+            curr_df.loc[curr_idx] = insert_row
+            curr_idx += 1
+
+        score_list = ['MRR', 'P_5', 'P_10', 'MAP', 'MAP_50']
+        summary_df = pd.DataFrame(columns=['ReMethod', 'K', 'Lambda1']+score_list )
+        next_idx = 0
+
+        for score in ['BM25', 'BERT']:
+            curr_df.sort_values(score, ascending=False, inplace=True)
+            curr_df[score + 'Rank'] = list(range(1, curr_idx + 1))
+            curr_df['Score'] = curr_df[score]
+            res_dict = sort_df_by_score_and_get_eval(curr_df[['Score', 'Relevance']])
+            insert_row = [score, 0.0, 0.0]
+            for eval_meth in score_list:
+                insert_row.append(res_dict[eval_meth])
+            summary_df.loc[next_idx] = insert_row
+            next_idx += 1
+
+        for k in [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]:
+            for lambda1 in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+                curr_df['Score'] = curr_df.apply(lambda row: lambda1*(1.0 / float(k + row['BM25Rank'])) + (1.0 - lambda1)*(1.0 / float(k + row['BERTRank'])), axis =1)
+                res_dict = sort_df_by_score_and_get_eval(curr_df[['Score', 'Relevance']])
+                insert_row = ['Mixed', k, lambda1]
+                for eval_meth in score_list:
+                    insert_row.append(res_dict[eval_meth])
+                summary_df.loc[next_idx] = insert_row
+                next_idx += 1
+
+        summary_df.to_csv('/lv_local/home/zivvasilisky/dataset/results_test/' + filename.replace('.json', '.tsv'), sep = '\t', index = False)
+
 
 def create_bm25_and_bert_scores_and_cls_for_test(frac):
     qid_to_q_txt_dict = get_queries_file_to_df('dev_' +str(frac), as_dict='Reverse', frac=None)
@@ -596,7 +641,7 @@ if __name__=="__main__":
     # create_bm25_and_bert_scores_and_cls_for_train_frac(frac)
     # train scores
     # get_reciprocal_rank_and_bm25_bert_scores(frac)
-
+    get_reciprocal_rank_and_bm25_bert_scores_for_test()
     # create_query_to_row_idx_index_file_for_test_set()
     # create_bm25_and_bert_scores_and_cls_for_test(frac)
 
@@ -604,4 +649,4 @@ if __name__=="__main__":
     # create_dataset_file_for_nn(False)
     # summarize_train_results_non_nn()
     # append_relevance_to_test_files_nn()
-    append_relevance_to_test_files_non_nn()
+    # append_relevance_to_test_files_non_nn()
