@@ -48,7 +48,7 @@ for i in range(num_epochs):
     print("Epoch: " + str(i + 1))
     sys.stdout.flush()
     train_files = 0
-    for train_filename in train_q_file_list[:12]:
+    for train_filename in train_q_file_list:
         df = pd.read_csv(train_data_path + train_filename, sep = '\t', index_col = False)
         # df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
         X = Variable(torch.from_numpy(df[feature_cols].values).float())
@@ -66,21 +66,14 @@ for i in range(num_epochs):
 
     correct = 0
     total = 0
-    for test_file in test_file_list[:10]:
+    for test_file in test_file_list:
         df = pd.read_csv(test_data_path + test_file, sep='\t', index_col=False)
         # df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
         X = Variable(torch.from_numpy(df[feature_cols].values).float())
         labels = torch.from_numpy(df['Relevance'].values)
         outputs = net(X)
         proba = pd.np.array(torch.softmax(outputs.data, dim=1).tolist())
-        print(test_file)
-        print(proba)
-        # print(proba[:,0])
-        print(proba[:,1])
-
         _, predicted = torch.max(outputs.data, 1)
-        print(predicted)
-        sys.stdout.flush()
         total += labels.size(0)
         correct += (predicted == labels).sum()
         df = df[['Docno', 'Relevance']]
