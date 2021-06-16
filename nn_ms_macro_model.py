@@ -72,17 +72,20 @@ for i in range(num_epochs):
         X = Variable(torch.from_numpy(df[feature_cols].values).float())
         labels = torch.from_numpy(df['Relevance'].values)
         outputs = net(X)
-        proba = torch.softmax(outputs.data, dim=1).tolist()
+        proba = pd.np.array(torch.softmax(outputs.data, dim=1).tolist())
         print(test_file)
         print(proba)
-        print(proba[0,:])
-        print(proba[1, :])
-        sys.stdout.flush()
+        # print(proba[:,0])
+        print(proba[:,1])
+
         _, predicted = torch.max(outputs.data, 1)
+        print(predicted)
+        sys.stdout.flush()
         total += labels.size(0)
         correct += (predicted == labels).sum()
         df = df[['Docno', 'Relevance']]
-        df[['NonRelProba', 'RelProba']] = proba
+        df['NonRelProba'] = list(proba[:,0])
+        df['RelProba'] = list(proba[:,1])
         df.to_csv(res_path + 'Epoch_' + str(i) + test_file, sep ='\t', index = False)
 
     print('Accuracy of the model on the test queries: %f %%' % (100 * float(correct) / total))
