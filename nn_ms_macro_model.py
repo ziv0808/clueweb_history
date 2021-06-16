@@ -60,7 +60,7 @@ for i in range(num_epochs):
         loss.backward()
         optimizer.step()
         train_files += 1
-        if train_files % 10 == 0:
+        if train_files % 10000 == 0:
             print("[" + str(train_files) + " : " + str(len(train_q_file_list)) + "] train file processed ")
             sys.stdout.flush()
 
