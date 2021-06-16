@@ -47,9 +47,8 @@ feature_cols =  ['BM25'] + ['CLS_'+ str(i) for i in range(1,769)]
 for i in range(num_epochs):
     print("Epoch: " + str(i + 1))
     sys.stdout.flush()
-    for train_filename in train_q_file_list[:10]:
-        print(train_filename)
-        sys.stdout.flush()
+    train_files = 0
+    for train_filename in train_q_file_list[:12]:
         df = pd.read_csv(train_data_path + train_filename, sep = '\t', index_col = False)
         # df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
         X = Variable(torch.from_numpy(df[feature_cols].values).float())
@@ -60,6 +59,10 @@ for i in range(num_epochs):
         loss = criterion(outputs, Y)
         loss.backward()
         optimizer.step()
+        train_files += 1
+        if train_files % 10 == 0:
+            print("[" + str(train_files) + " : " + str(len(train_q_file_list)) + "] train file processed ")
+            sys.stdout.flush()
 
     correct = 0
     total = 0
@@ -69,12 +72,12 @@ for i in range(num_epochs):
         X = Variable(torch.from_numpy(df[feature_cols].values).float())
         labels = torch.from_numpy(df['Relevance'].values)
         outputs = net(X)
-
+        proba = torch.softmax(outputs[0], dim=1).tolist()
+        print(proba)
+        sys.stdout.flush()
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
-        print(outputs)
-        print(predicted)
-        sys.stdout.flush()
         correct += (predicted == labels).sum()
+
     print('Accuracy of the model on the test queries: %f %%' % (100 * float(correct) / total))
     sys.stdout.flush()
