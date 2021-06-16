@@ -51,8 +51,8 @@ for i in range(num_epochs):
         print(train_filename)
         sys.stdout.flush()
         df = pd.read_csv(train_data_path + train_filename, sep = '\t', index_col = False)
-        df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
-        X = Variable(torch.from_numpy(df[feature_cols].values))
+        # df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
+        X = Variable(torch.from_numpy(df[feature_cols].values).float())
         Y = Variable(torch.from_numpy(df['Relevance'].values))
 
         optimizer.zero_grad()
@@ -65,8 +65,8 @@ for i in range(num_epochs):
     total = 0
     for test_file in test_file_list[:10]:
         df = pd.read_csv(test_data_path + test_file, sep='\t', index_col=False)
-        df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
-        X = Variable(torch.from_numpy(df[feature_cols].values))
+        # df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
+        X = Variable(torch.from_numpy(df[feature_cols].values).float())
         labels = torch.from_numpy(df['Relevance'].values)
         outputs = net(X)
 
