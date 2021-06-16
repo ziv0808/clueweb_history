@@ -8,7 +8,7 @@ import pandas as pd
 
 train_data_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/tsv_files/'
 test_data_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/test_tsv_files_fixed/'
-
+res_path = '/lv_local/home/zivvasilisky/dataset/nn_res/'
 
 hidden_size = 64
 learning_rate = 0.001
@@ -72,13 +72,16 @@ for i in range(num_epochs):
         X = Variable(torch.from_numpy(df[feature_cols].values).float())
         labels = torch.from_numpy(df['Relevance'].values)
         outputs = net(X)
-        print(outputs)
         proba = torch.softmax(outputs.data, dim=1).tolist()
+        print(test_file)
         print(proba)
         sys.stdout.flush()
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum()
+        df = df[['Docno', 'Relevance']]
+        df[['NonRelProba', 'RelProba']] = proba
+        df.to_csv(res_path + 'Epoch_' + str(i) + test_file, sep ='\t', index = False)
 
     print('Accuracy of the model on the test queries: %f %%' % (100 * float(correct) / total))
     sys.stdout.flush()
