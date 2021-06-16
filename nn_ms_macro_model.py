@@ -72,6 +72,8 @@ for i in range(num_epochs):
 
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
+        print(predicted)
+        sys.stdout.flush()
         correct += (predicted == labels).sum()
     print('Accuracy of the model on the test queries: %f %%' % (100 * float(correct) / total))
     sys.stdout.flush()
