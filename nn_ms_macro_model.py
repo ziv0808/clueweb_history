@@ -75,6 +75,8 @@ for i in range(num_epochs):
         proba = torch.softmax(outputs.data, dim=1).tolist()
         print(test_file)
         print(proba)
+        print(proba[0,:])
+        print(proba[1, :])
         sys.stdout.flush()
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
