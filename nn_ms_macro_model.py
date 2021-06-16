@@ -72,6 +72,7 @@ for i in range(num_epochs):
 
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
+        print(outputs)
         print(predicted)
         sys.stdout.flush()
         correct += (predicted == labels).sum()
