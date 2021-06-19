@@ -79,7 +79,7 @@ for i in range(num_epochs):
         df = df[['Docno', 'Relevance']]
         df['NonRelProba'] = list(proba[:,0])
         df['RelProba'] = list(proba[:,1])
-        df.to_csv(res_path + 'Epoch_' + str(i) + test_file, sep ='\t', index = False)
+        df.to_csv(res_path + 'Epoch_' + str(i) + '_' + test_file, sep ='\t', index = False)
 
     print('Accuracy of the model on the test queries: %f %%' % (100 * float(correct) / total))
     sys.stdout.flush()
