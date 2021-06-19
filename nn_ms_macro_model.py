@@ -67,7 +67,13 @@ for i in range(num_epochs):
     correct = 0
     total = 0
     for test_file in test_file_list:
-        df = pd.read_csv(test_data_path + test_file, sep='\t', index_col=False)
+        try:
+            df = pd.read_csv(test_data_path + test_file, sep='\t', index_col=False)
+        except Exception as e:
+            print(test_file)
+            print(str(e))
+            sys.stdout.flush()
+            continue
         # df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
         X = Variable(torch.from_numpy(df[feature_cols].values).float())
         labels = torch.from_numpy(df['Relevance'].values)
