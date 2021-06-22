@@ -714,6 +714,30 @@ def full_res_summary(nn_epoch_num):
 
     fin_2_df.to_csv('/lv_local/home/zivvasilisky/dataset/Other_M_Res.tsv', sep='\t', index=False)
 
+    methods = ['NN', 'BERT', 'BM25', 'FuseByMAP_50', 'FuseByMRR', 'FuseByP_10']
+    fin_df = pd.merge(
+        fin_df,
+        fin_2_df,
+        on = ['Query'],
+        how = 'inner')
+
+    summary_df = pd.DataFrame(columns=['Method'] + eval_m_list + [eval_m +'_sign' for eval_m in eval_m_list])
+    curr_idx = 0
+    for method in methods:
+        insert_row = [method]
+        for m_eval in eval_m_list:
+            insert_row.append(fin_df[method + '_' + m_eval].mean())
+        for m_eval in eval_m_list:
+            curr_str = ""
+            for method_2 in methods:
+                if method_2 != method:
+                    t_stat, p_val = stats.ttest_rel(list(fin_df[method + '_' + m_eval].dropna()), list(fin_df[method_2 + '_' + m_eval].dropna()))
+                    if p_val <= 0.05:
+                        curr_str += method_2 +','
+            insert_row.append(curr_str)
+        summary_df.loc[curr_idx] = insert_row
+        curr_idx += 1
+    summary_df.to_csv('/lv_local/home/zivvasilisky/dataset/FinalRes_DF.tsv', sep = '\t', index = False)
 if __name__=="__main__":
     # create_df_dict_from_raw_passage_file()
     # create_query_to_row_idx_index_file()
