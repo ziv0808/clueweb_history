@@ -732,8 +732,9 @@ def full_res_summary(nn_epoch_num):
             for method_2 in methods:
                 if method_2 != method:
                     print(method, method_2)
-                    sys.stdout.flush()
                     tmp_df = fin_df[[method + '_' + m_eval, method_2 + '_' + m_eval]].dropna()
+                    print(len(tmp_df))
+                    sys.stdout.flush()
                     t_stat, p_val = stats.ttest_rel(list(tmp_df[method + '_' + m_eval]), list(tmp_df[method_2 + '_' + m_eval]))
                     if p_val <= 0.05:
                         curr_str += method_2 +','
