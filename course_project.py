@@ -632,6 +632,87 @@ def append_relevance_to_test_files_non_nn():
             with open(res_folder + filename, 'w') as f:
                 f.write(str(new_dict))
 
+def full_res_summary(nn_epoch_num):
+    nn_res_dir = '/lv_local/home/zivvasilisky/dataset/nn_res/'
+    res_dir = '/lv_local/home/zivvasilisky/dataset/results_test/'
+
+    eval_m_list =  ['MRR','P_5','P_10','MAP', 'MAP_50']
+    fin_df = pd.DataFrame(columns=['Query'] + ['NN_' + eval_m for eval_m in eval_m_list])
+    next_idx = 0
+    print("NN calc")
+    sys.stdout.flush()
+    for filename in os.listdir(nn_res_dir):
+        if filename.startswith('Epoch_' + str(nn_epoch_num)+'_') and filename.endswith('.tsv'):
+            print(filename)
+            sys.stdout.flush()
+            df = pd.read_csv(nn_res_dir + filename, sep = '\t', index_col =False)
+            res_dict = sort_df_by_score_and_get_eval(df.rename(columns={'RelProba' : 'Score'}))
+            q_num = filename.replace('Epoch_' + str(nn_epoch_num)+'_','').replace('.tsv','')
+            insert_row = [q_num]
+            for eval_m in eval_m_list:
+                insert_row.append(res_dict[eval_m])
+            fin_df.loc[next_idx] = insert_row
+            next_idx += 1
+
+    fin_df.to_csv('/lv_local/home/zivvasilisky/dataset/Epoch_'+ str(nn_epoch_num)+'_Res.tsv', sep = '\t', index=False)
+    train_summary_df = pd.read_csv('/lv_local/home/zivvasilisky/dataset/Train_Results.tsv', sep = '\t', index_col=False)
+    train_summary_df['Idx'] = train_summary_df.apply(lambda row: row['ReMethod'] + '_' + str(float(row['K'])) + '_'+ str(float(row['Lambda1'])), axis =1)
+
+    best_config_by_model_dict = {}
+    relevant_mathods = []#['BERT', 'BM25']
+    for eval_m in eval_m_list:
+        best_config_by_model_dict[eval_m] = {'BestScore' : train_summary_df[eval_m].max()}
+    
+    for index, row in train_summary_df.iterrows():
+        for eval_m in eval_m_list:
+            if row[eval_m] == best_config_by_model_dict[eval_m]['BestScore']:
+                best_config_by_model_dict[eval_m]['Method'] = row['Idx']
+
+    for eval_m in eval_m_list:
+        relevant_mathods.append(best_config_by_model_dict[eval_m]['Method'])
+
+    relevant_mathods.extend(['BERT_0.0_0.0', 'BM25_0.0_0.0'])
+    relevant_mathods = list(set(relevant_mathods))
+    print("Rel Methods: " + str(relevant_mathods))
+    print(best_config_by_model_dict)
+    sys.stdout.flush()
+
+    fin_2_df = pd.DataFrame({})
+    for filename in os.listdir(res_dir):
+        if filename.endswith('.tsv'):
+            print(filename)
+            sys.stdout.flush()
+            df = pd.read_csv(res_dir + filename, sep='\t', index_col=False)
+            df['Idx'] = df.apply(lambda row: row['ReMethod'] + '_' + str(float(row['K'])) + '_' + str(float(row['Lambda1'])), axis=1)
+            first = True
+            q_num = filename.replace('.tsv', '')
+
+            for rel_m in relevant_mathods:
+                t_df = df[df['Idx'] == rel_m]
+                t_df['Query'] = q_num
+                if 'BERT' in rel_m:
+                    report_m = 'BERT'
+                elif 'BM25' in rel_m:
+                    report_m = 'BM25'
+                else:
+                    for eval_m in eval_m_list:
+                        if best_config_by_model_dict[eval_m]['Method'] == rel_m:
+                            report_m = 'FuseBy' + eval_m
+                rename_dict = {}
+                for eval_m in eval_m_list:
+                    rename_dict[eval_m] = report_m + '_' + eval_m
+                if first == True:
+                    q_df = t_df[['Query'] + eval_m_list].rename(columns=rename_dict)
+                    first = False
+                else:
+                    q_df = pd.merge(
+                        q_df,
+                        t_df[['Query'] + eval_m_list].rename(columns=rename_dict),
+                        on = ['Query'],
+                        how = 'inner')
+            fin_2_df = fin_2_df.append(q_df, ignore_index=True)
+
+    fin_2_df.to_csv('/lv_local/home/zivvasilisky/dataset/Other_M_Res.tsv', sep='\t', index=False)
 
 if __name__=="__main__":
     # create_df_dict_from_raw_passage_file()
@@ -641,7 +722,7 @@ if __name__=="__main__":
     # create_bm25_and_bert_scores_and_cls_for_train_frac(frac)
     # train scores
     # get_reciprocal_rank_and_bm25_bert_scores(frac)
-    get_reciprocal_rank_and_bm25_bert_scores_for_test()
+    # get_reciprocal_rank_and_bm25_bert_scores_for_test()
     # create_query_to_row_idx_index_file_for_test_set()
     # create_bm25_and_bert_scores_and_cls_for_test(frac)
 
@@ -650,3 +731,4 @@ if __name__=="__main__":
     # summarize_train_results_non_nn()
     # append_relevance_to_test_files_nn()
     # append_relevance_to_test_files_non_nn()
+    full_res_summary('5')
