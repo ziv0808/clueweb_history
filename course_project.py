@@ -646,7 +646,7 @@ def full_res_summary(nn_epoch_num):
             print(filename)
             sys.stdout.flush()
             df = pd.read_csv(nn_res_dir + filename, sep = '\t', index_col =False)
-            res_dict = sort_df_by_score_and_get_eval(df.rename(columns={'NonRelProba' : 'Score'}))
+            res_dict = sort_df_by_score_and_get_eval(df.rename(columns={'RelProba' : 'Score'}))
             q_num = filename.replace('Epoch_' + str(nn_epoch_num)+'_','').replace('.tsv','')
             insert_row = [q_num]
             for eval_m in eval_m_list:
@@ -742,7 +742,7 @@ def full_res_summary(nn_epoch_num):
             insert_row.append(curr_str)
         summary_df.loc[curr_idx] = insert_row
         curr_idx += 1
-    summary_df.to_csv('/lv_local/home/zivvasilisky/dataset/FinalRes_DF.tsv', sep = '\t', index = False)
+    summary_df.to_csv('/lv_local/home/zivvasilisky/dataset/FinalRes_DF_Epoch_' + str(nn_epoch_num) +  '.tsv', sep = '\t', index = False)
 if __name__=="__main__":
     # create_df_dict_from_raw_passage_file()
     # create_query_to_row_idx_index_file()
@@ -760,4 +760,5 @@ if __name__=="__main__":
     # summarize_train_results_non_nn()
     # append_relevance_to_test_files_nn()
     # append_relevance_to_test_files_non_nn()
-    full_res_summary('5')
+    epoch = sys.argv[1]
+    full_res_summary(epoch)
