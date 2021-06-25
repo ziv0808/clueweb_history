@@ -646,7 +646,7 @@ def full_res_summary(nn_epoch_num):
             print(filename)
             sys.stdout.flush()
             df = pd.read_csv(nn_res_dir + filename, sep = '\t', index_col =False)
-            res_dict = sort_df_by_score_and_get_eval(df.rename(columns={'RelProba' : 'Score'}))
+            res_dict = sort_df_by_score_and_get_eval(df.rename(columns={'NonRelProba' : 'Score'}))
             q_num = filename.replace('Epoch_' + str(nn_epoch_num)+'_','').replace('.tsv','')
             insert_row = [q_num]
             for eval_m in eval_m_list:
@@ -736,6 +736,7 @@ def full_res_summary(nn_epoch_num):
                     print(len(tmp_df))
                     sys.stdout.flush()
                     t_stat, p_val = stats.ttest_rel(list(tmp_df[method + '_' + m_eval]), list(tmp_df[method_2 + '_' + m_eval]))
+                    print(p_val)
                     if p_val <= 0.05:
                         curr_str += method_2 +','
             insert_row.append(curr_str)
