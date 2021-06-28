@@ -52,7 +52,7 @@ for i in range(num_epochs):
     sys.stdout.flush()
     train_files = 0
     shuffle(train_q_file_list)
-    for train_filename in train_q_file_list[:11]:
+    for train_filename in train_q_file_list:
         df = pd.read_csv(train_data_path + train_filename, sep = '\t', index_col = False)
         # df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
         X = Variable(torch.from_numpy(df[feature_cols].values).float())
@@ -64,7 +64,7 @@ for i in range(num_epochs):
         loss.backward()
         optimizer.step()
         train_files += 1
-        if train_files % 10 == 0:
+        if train_files % 10000 == 0:
             print("[" + str(train_files) + " : " + str(len(train_q_file_list)) + "] train file processed Loss " + str(loss.data))
             sys.stdout.flush()
 
@@ -74,7 +74,7 @@ for i in range(num_epochs):
     total_non_rel = 0
     total_rel_corr = 0
     total_non_rel_corr = 0
-    for test_file in test_file_list[:10]:
+    for test_file in test_file_list:
         try:
             df = pd.read_csv(test_data_path + test_file, sep='\t', index_col=False)
         except Exception as e:
