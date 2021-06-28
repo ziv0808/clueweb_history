@@ -93,11 +93,17 @@ for i in range(num_epochs):
         total_rel += num_rel
         total_non_rel += ((labels.size(0)) - num_rel)
         correct += (predicted == labels).sum()
-        total_rel_corr += (predicted == labels & labels == 1).sum()
+        for j in range(labels.size(0)):
+            if labels[j] == 1 and predicted[j] == labels[j]:
+                total_rel_corr += 1
+            if labels[j] == 0 and predicted[j] == labels[j]:
+                total_non_rel_corr += 1
         df = df[['Docno', 'Relevance']]
         df['NonRelProba'] = list(proba[:,0])
         df['RelProba'] = list(proba[:,1])
         df.to_csv(res_path + 'Epoch_' + str(i) + '_' + test_file, sep ='\t', index = False)
 
     print('Accuracy of the model on the test queries: %f %%' % (100 * float(correct) / total))
+    print('Accuracy of the model on relevant docs: %f %%' % (100 * float(total_rel_corr) / total_rel))
+    print('Accuracy of the model on non-relevant docs: %f %%' % (100 * float(total_non_rel_corr) / total_non_rel))
     sys.stdout.flush()
