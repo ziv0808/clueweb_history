@@ -65,7 +65,7 @@ for i in range(num_epochs):
         optimizer.step()
         train_files += 1
         if train_files % 10 == 0:
-            print("[" + str(train_files) + " : " + str(len(train_q_file_list)) + "] train file processed Loss " + str(loss.data[0]))
+            print("[" + str(train_files) + " : " + str(len(train_q_file_list)) + "] train file processed Loss " + str(loss.data))
             sys.stdout.flush()
 
     correct = 0
