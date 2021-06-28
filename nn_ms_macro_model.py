@@ -52,7 +52,7 @@ for i in range(num_epochs):
     sys.stdout.flush()
     train_files = 0
     shuffle(train_q_file_list)
-    for train_filename in train_q_file_list[:10]:
+    for train_filename in train_q_file_list[:11]:
         df = pd.read_csv(train_data_path + train_filename, sep = '\t', index_col = False)
         # df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
         X = Variable(torch.from_numpy(df[feature_cols].values).float())
@@ -64,7 +64,7 @@ for i in range(num_epochs):
         loss.backward()
         optimizer.step()
         train_files += 1
-        if train_files % 10000 == 0:
+        if train_files % 10 == 0:
             print("[" + str(train_files) + " : " + str(len(train_q_file_list)) + "] train file processed Loss " + str(loss.data[0]))
             sys.stdout.flush()
 
@@ -89,8 +89,11 @@ for i in range(num_epochs):
         proba = pd.np.array(torch.softmax(outputs.data, dim=1).tolist())
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
-        print(labels == 1).sum()
+        num_rel = (labels == 1).sum()
+        total_rel += num_rel
+        total_non_rel += ((labels.size(0)) - num_rel)
         correct += (predicted == labels).sum()
+        total_rel_corr += (predicted == labels & labels == 1).sum()
         df = df[['Docno', 'Relevance']]
         df['NonRelProba'] = list(proba[:,0])
         df['RelProba'] = list(proba[:,1])
