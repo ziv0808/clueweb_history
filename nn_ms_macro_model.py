@@ -3,6 +3,7 @@ import sys
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+from random import shuffle
 import pandas as pd
 
 
@@ -10,8 +11,8 @@ train_data_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/tsv_fil
 test_data_path = '/lv_local/home/zivvasilisky/dataset/processed_queries/test_tsv_files_fixed/'
 res_path = '/lv_local/home/zivvasilisky/dataset/nn_res/'
 
-hidden_size = 64
-learning_rate = 0.001
+# hidden_size = 64
+learning_rate = 0.000001
 num_epochs = 10
 features_num = 769
 
@@ -27,28 +28,31 @@ for filename in os.listdir(test_data_path):
 class NeuralNet(nn.Module):
     def __init__(self, input_size, num_classes):
         super(NeuralNet, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_size, num_classes)
-        self.logsoftmax = nn.LogSoftmax()
+        self.fc1 = nn.Linear(input_size, num_classes)
+        # self.relu = nn.ReLU()
+        # self.fc2 = nn.Linear(hidden_size, num_classes)
+        # self.logsoftmax = nn.LogSoftmax()
+        self.dropout = nn.Dropout(p=0.1)
     def forward(self, x):
-        out = self.fc1(x)
-        out = self.relu(out)
-        out = self.fc2(out)
-        out = self.logsoftmax(out)
+        out = self.dropout(x)
+        out = self.fc1(out)
+        # out = self.relu(out)
+        # out = self.fc2(out)
+        # out = self.logsoftmax(out)
         return out
 
 net = NeuralNet(features_num, 2)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate, weight_decay=5e-4)
+optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate, weight_decay=5e-4)
 
 feature_cols =  ['BM25'] + ['CLS_'+ str(i) for i in range(1,769)]
 for i in range(num_epochs):
     print("Epoch: " + str(i + 1))
     sys.stdout.flush()
     train_files = 0
-    for train_filename in train_q_file_list:
+    shuffle(train_q_file_list)
+    for train_filename in train_q_file_list[:10]:
         df = pd.read_csv(train_data_path + train_filename, sep = '\t', index_col = False)
         # df[feature_cols] = df[feature_cols].applymap(lambda x: float(x))
         X = Variable(torch.from_numpy(df[feature_cols].values).float())
@@ -61,12 +65,16 @@ for i in range(num_epochs):
         optimizer.step()
         train_files += 1
         if train_files % 10000 == 0:
-            print("[" + str(train_files) + " : " + str(len(train_q_file_list)) + "] train file processed ")
+            print("[" + str(train_files) + " : " + str(len(train_q_file_list)) + "] train file processed Loss " + str(loss.data[0]))
             sys.stdout.flush()
 
     correct = 0
     total = 0
-    for test_file in test_file_list:
+    total_rel = 0
+    total_non_rel = 0
+    total_rel_corr = 0
+    total_non_rel_corr = 0
+    for test_file in test_file_list[:10]:
         try:
             df = pd.read_csv(test_data_path + test_file, sep='\t', index_col=False)
         except Exception as e:
@@ -81,6 +89,7 @@ for i in range(num_epochs):
         proba = pd.np.array(torch.softmax(outputs.data, dim=1).tolist())
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
+        print(labels == 1).sum()
         correct += (predicted == labels).sum()
         df = df[['Docno', 'Relevance']]
         df['NonRelProba'] = list(proba[:,0])
